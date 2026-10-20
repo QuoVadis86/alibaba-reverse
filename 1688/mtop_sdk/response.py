@@ -1,18 +1,16 @@
-"""MTOP 服务共用的数据类型和响应模型。"""
+"""SDK 共用的 JSON 类型和 MTOP 响应封装。"""
 
 from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, TypeAdapter
 
-type JsonValue = (
-    str | int | float | bool | None | list[JsonValue] | dict[str, JsonValue]
-)
+type JsonValue = str | int | float | bool | None | list[JsonValue] | dict[str, JsonValue]
 type JsonObject = dict[str, JsonValue]
 JSON_OBJECT_ADAPTER = TypeAdapter(JsonObject)
 
 
 class MtopResponse[T](BaseModel):
-    """统一的 MTOP 响应；业务数据放在 data，原始响应保留在 raw。"""
+    """统一 MTOP 响应；业务数据放在 data，原始响应保留在 raw。"""
 
     model_config = ConfigDict(frozen=True)
 

@@ -29,8 +29,8 @@ uv run --project 1688 mtop-1688 566344866833
 
 ```python
 from mtop_sdk import MtopClient, OfferLogisticsQuery, create_http_client
-from mtop_sdk.models.offer.ratings import OfferRatingsQuery
-from mtop_sdk.models.search import TextSearchQuery
+from mtop_sdk.services.trade.mtoprateservice import OfferRatingsQuery
+from mtop_sdk.services.relationrecommend.wirelessrecommend import TextSearchQuery
 
 with create_http_client() as http:
     client = MtopClient(http)
@@ -67,7 +67,7 @@ services/
 └── user/usersimple.py
 ```
 
-`models/` 按业务数据组织，与 MTOP 服务路径分开。物流入参在 `models/offer/logistics.py`，搜索入参在 `models/search.py`。
+各 API 的入参和响应模型与接口实现放在同一服务模块中，例如物流模型在 `services/mmga/offerdetail.py`，商品评价模型在 `services/trade/mtoprateservice.py`。跨接口共用的 JSON 类型和 `MtopResponse` 位于 `mtop_sdk/response.py`。
 
 ## 使用边界
 

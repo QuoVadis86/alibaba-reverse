@@ -5,12 +5,24 @@ from __future__ import annotations
 import json
 from typing import assert_never
 
+from pydantic import BaseModel, ConfigDict, Field
+
 from mtop_sdk.exceptions import MtopError
-from mtop_sdk.models.common import JsonObject, JsonValue, MtopResponse
-from mtop_sdk.models.offer.detail.miniod import OfferDetailData
+from mtop_sdk.response import JsonObject, JsonValue, MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 API = "mtop.1688.laputa.miniod"
+
+
+class OfferDetailData(BaseModel):
+    """详情接口的稳定外层；动态商品字段保留为 JSON 对象。"""
+
+    model_config = ConfigDict(frozen=True, populate_by_name=True, extra="forbid")
+
+    offer_detail: JsonObject = Field(alias="offerDetail")
+    data_model: JsonObject = Field(default_factory=dict, alias="dataModel")
+    endpoint: JsonValue | None = None
+    hierarchy: JsonValue | None = None
 
 
 class MiniodService:

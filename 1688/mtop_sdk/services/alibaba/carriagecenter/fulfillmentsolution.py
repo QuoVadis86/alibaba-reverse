@@ -2,11 +2,22 @@
 
 from typing import Final
 
-from mtop_sdk.models.common import JsonValue, MtopResponse
-from mtop_sdk.models.offer.shipping import FulfillmentQuery
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt
+
+from mtop_sdk.response import JsonValue, MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 API: Final = "mtop.alibaba.carriagecenter.fulfillmentsolution.query4offer"
+
+
+class FulfillmentQuery(BaseModel):
+    """商品履约配送方案查询条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offer_id: PositiveInt
+    amount: PositiveInt = 1
+    address_code: str = Field(default="440300", min_length=1)
 
 
 class FulfillmentSolutionService:

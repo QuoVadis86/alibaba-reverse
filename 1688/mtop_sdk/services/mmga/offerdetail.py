@@ -4,13 +4,37 @@ from __future__ import annotations
 
 import json
 
-from mtop_sdk.models.common import JsonObject, JsonValue, MtopResponse
-from mtop_sdk.models.offer.logistics import OfferLogisticsQuery
-from mtop_sdk.models.shop import ShopRelationQuery
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt
+
+from mtop_sdk.response import JsonObject, JsonValue, MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 API = "mtop.1688.mmga.offerdetail.service"
 HEADERS = {"_bx-login": "new"}
+
+
+class OfferLogisticsQuery(BaseModel):
+    """物流查询入参，值来自商品详情上下文。"""
+
+    model_config = ConfigDict(frozen=True, populate_by_name=True, extra="forbid")
+
+    offer_id: PositiveInt = Field(alias="offerId")
+    seller_id: PositiveInt = Field(alias="sellerId")
+    to_address_code: str = Field(default="440300", alias="toAddressCode")
+    from_address_id: str = Field(default="", alias="fromAddressId")
+    protection_infos: list[JsonValue] = Field(default_factory=list, alias="protectionInfos")
+    buyer_protection_model: list[JsonValue] = Field(
+        default_factory=list, alias="buyerProtectionModel"
+    )
+    offer_delivery_time: int = Field(default=0, alias="offerDeliveryTime", ge=0)
+
+
+class ShopRelationQuery(BaseModel):
+    """检查当前会话与店铺的关注关系。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    shop_login_id: str = Field(min_length=1)
 
 
 class OfferDetailMtopService:

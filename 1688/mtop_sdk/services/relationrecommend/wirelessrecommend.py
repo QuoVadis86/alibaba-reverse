@@ -9,18 +9,52 @@ from typing import Final, assert_never
 from urllib.parse import urlsplit
 
 import httpx2
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt
 
 from mtop_sdk.exceptions import MtopError
-from mtop_sdk.models.common import JsonObject, JsonValue, MtopResponse
-from mtop_sdk.models.search import (
-    ImageIdSearchQuery,
-    ImageSearchQuery,
-    SearchConfigQuery,
-    TextSearchQuery,
-)
+from mtop_sdk.response import JsonObject, JsonValue, MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 API: Final = "mtop.relationrecommend.WirelessRecommend.recommend"
+
+
+class TextSearchQuery(BaseModel):
+    """商品关键词搜索条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    keywords: str = Field(min_length=1)
+    page: PositiveInt = 1
+    page_size: PositiveInt = 60
+    sort_type: str = "normal"
+
+
+class SearchConfigQuery(BaseModel):
+    """搜索页筛选和类目配置查询条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    keywords: str = Field(min_length=1)
+
+
+class ImageSearchQuery(BaseModel):
+    """基于远程图片地址的相似商品搜索条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    image_address: str = Field(min_length=1)
+    page: PositiveInt = 1
+    page_size: PositiveInt = 60
+
+
+class ImageIdSearchQuery(BaseModel):
+    """基于已上传图片 ID 的商品搜索条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    image_id: str = Field(min_length=1)
+    page: PositiveInt = 1
+    page_size: PositiveInt = 60
 
 
 class WirelessRecommendService:

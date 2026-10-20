@@ -2,11 +2,24 @@
 
 from typing import Final
 
-from mtop_sdk.models.common import JsonValue, MtopResponse
-from mtop_sdk.models.shop import ShopCardQuery
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt
+
+from mtop_sdk.response import JsonValue, MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 API: Final = "mtop.1688.moga.pc.shopcard"
+
+
+class ShopCardQuery(BaseModel):
+    """店铺卡片所需的商品和卖家标识。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offer_id: PositiveInt
+    seller_user_id: PositiveInt
+    seller_member_id: str = Field(min_length=1)
+    winport_url: str = ""
+    top_category_id: PositiveInt = 15
 
 
 class ShopCardService:

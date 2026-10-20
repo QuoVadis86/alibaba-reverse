@@ -2,11 +2,23 @@
 
 from typing import Final
 
-from mtop_sdk.models.common import JsonValue, MtopResponse
-from mtop_sdk.models.offer.shipping import FreightInfoQuery
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt
+
+from mtop_sdk.response import JsonValue, MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 API: Final = "mtop.1688.freightInfoService.getFreightInfoWithScene"
+
+
+class FreightInfoQuery(BaseModel):
+    """商品运费查询条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offer_id: PositiveInt
+    to_address_code: str = Field(default="440300", min_length=1)
+    scene: str = "dsc"
+    amount: PositiveInt = 1
 
 
 class FreightInfoService:

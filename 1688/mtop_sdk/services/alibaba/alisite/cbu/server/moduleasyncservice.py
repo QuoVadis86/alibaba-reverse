@@ -3,11 +3,20 @@
 import json
 from typing import Final
 
-from mtop_sdk.models.common import JsonValue, MtopResponse
-from mtop_sdk.models.shop import ShopMemberQuery
+from pydantic import BaseModel, ConfigDict, Field
+
+from mtop_sdk.response import JsonValue, MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 API: Final = "mtop.alibaba.alisite.cbu.server.moduleasyncservice"
+
+
+class ShopMemberQuery(BaseModel):
+    """店铺异步模块查询条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    member_id: str = Field(min_length=1)
 
 
 class ModuleAsyncService:

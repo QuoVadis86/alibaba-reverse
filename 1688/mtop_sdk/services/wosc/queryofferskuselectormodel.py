@@ -2,7 +2,7 @@
 
 from typing import Final
 
-from mtop_sdk.models.common import JsonValue, MtopResponse
+from mtop_sdk.response import JsonValue, MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 API: Final = "mtop.1688.wosc.queryOfferSkuSelectorModel"
