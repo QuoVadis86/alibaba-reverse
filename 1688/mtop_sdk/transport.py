@@ -43,6 +43,7 @@ class MtopRequest:
     data: JsonObject
     method: Literal["GET", "POST"] = "GET"
     headers: dict[str, str] | None = None
+    extra_params: dict[str, str | None] | None = None
 
 
 def create_http_client() -> httpx2.Client:
@@ -136,6 +137,11 @@ class MtopTransport:
                 )
             ),
         }
+        for name, value in (request.extra_params or {}).items():
+            if value is None:
+                params.pop(name, None)
+            else:
+                params[name] = value
 
         url = f"{GATEWAY}/{request.api.lower()}/{request.version.lower()}/"
         match request.method:

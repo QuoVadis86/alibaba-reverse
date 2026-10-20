@@ -30,6 +30,7 @@ uv run --project 1688 mtop-1688 566344866833
 ```python
 from mtop_sdk import MtopClient, OfferLogisticsQuery, create_http_client
 from mtop_sdk.services.mmga.offerdetail import OfferRateCardInfoQuery
+from mtop_sdk.services.alibaba.alisite.cbu.server.moduleasyncservice import ShopOfferListQuery
 from mtop_sdk.services.trade.mtoprateservice import OfferRatingsQuery
 from mtop_sdk.services.relationrecommend.wirelessrecommend import TextSearchQuery
 
@@ -53,6 +54,13 @@ with create_http_client() as http:
     results = client.relationrecommend.wirelessrecommend.search_text(
         TextSearchQuery(keywords="收纳盒")
     )
+    shop_offers = client.alibaba.alisite.cbu.server.moduleasyncservice.get_offer_list(
+        ShopOfferListQuery(
+            member_id="b2b-2222311704593bd41a",
+            keywords="板凳",
+            shop_url="https://shop.example.1688.com",
+        )
+    )
 ```
 
 所有 MTOP 接口返回 `MtopResponse[T]`，通过 `success`、`ret`、`data` 读取状态和业务数据，通过 `raw` 查看完整响应。商品详情将稳定的 `offerDetail`、`dataModel` 等外层整理为 `OfferDetailData`；动态商品字段和其他接口的响应暂保留为 JSON。
@@ -70,7 +78,7 @@ services/
 ├── trade/mtoprateservice.py                    # 评价列表和 DSR
 ├── freightinfoservice.py                       # 运费
 ├── alibaba/carriagecenter/fulfillmentsolution.py
-├── alibaba/alisite/cbu/server/moduleasyncservice.py
+├── alibaba/alisite/cbu/server/moduleasyncservice.py # 店铺头部、认证和商品列表组件
 ├── relationrecommend/wirelessrecommend.py      # 关键词和图片搜索
 └── user/usersimple.py
 ```
