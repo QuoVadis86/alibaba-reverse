@@ -17,8 +17,10 @@ sign = lowercase_hex(MD5(UTF8(token + "&" + timestamp + "&" + appKey + "&" + dat
 
 ## 本地计算
 
+安装 SDK 后，可直接导入签名模块：
+
 ```python
-from mtop_sign import AppKey, MtopSignInput, RequestData, TimestampMs, compute_sign
+from mtop_sdk.sign import AppKey, MtopSignInput, RequestData, TimestampMs, compute_sign
 
 sign = compute_sign(
     MtopSignInput(
@@ -30,25 +32,24 @@ sign = compute_sign(
 )
 ```
 
-实际导入时，将 `1688/tools/` 加入 `PYTHONPATH`，或从该文件所在目录导入 `mtop_sign`。
+本地开发时可从仓库根目录安装：`python -m pip install -e ./1688`。
 
 ## 接入商品接口
 
-`tools/mtop_client.py` 复用上述签名实现。没有已有 Cookie 时，客户端先对匿名引导接口使用 `token=None`（即签名串里的字面值 `undefined`），从响应头的 `Set-Cookie` 取得 `_m_h5_tk`，再发送目标请求。已有授权会话也可通过 `MTOP_COOKIE` 环境变量传入。命令行示例：
+`mtop_sdk/transport.py` 复用上述签名实现。没有已有 Cookie 时，传输层先对匿名引导接口使用 `token=None`（即签名串里的字面值 `undefined`），从响应头的 `Set-Cookie` 取得 `_m_h5_tk`，再发送目标请求。已有授权会话也可通过 `MTOP_COOKIE` 环境变量传入。CLI 命令示例：
 
 ```bash
-uv run 1688/tools/mtop_client.py 566344866833
+uv run --project 1688 mtop-1688 566344866833
 ```
 
-不提供环境变量时会自动执行匿名引导。Cookie 是可选的；如需传入，请通过安全方式设置 `MTOP_COOKIE`，不要提交到仓库或写进命令历史。CLI 当前查询一个商品的 SKU；Python 客户端还封装了 `mtop.1688.mmga.offerdetail.service` 下已确认的详情子服务：`offerDetailPCABService` 和 `offerLogisticsService`。两者都通过 POST 调用，并附带 `_bx-login: new` 请求头：
+不提供环境变量时会自动执行匿名引导。Cookie 是可选的；如需传入，请通过安全方式设置 `MTOP_COOKIE`，不要提交到仓库或写进命令历史。接口按业务域和功能拆分到 `mtop_sdk/services/`。当前商品服务提供 SKU 查询、详情 AB 配置和物流时效查询；详情子服务通过 POST 调用，并附带 `_bx-login: new` 请求头：
 
 ```python
-from mtop_client import MtopClient, create_http_client
-from mtop_models import OfferLogisticsQuery
+from mtop_sdk import MtopClient, OfferLogisticsQuery, create_http_client
 
 with create_http_client() as http:
     client = MtopClient(http)
-    response = client.get_offer_logistics(
+    response = client.offer.detail.get_logistics(
         OfferLogisticsQuery(
             offer_id="566344866833",
             to_address_code="从详情页请求中读取",
@@ -62,7 +63,7 @@ with create_http_client() as http:
     print(response.data)
 ```
 
-示例中的文本是说明占位符，调用时须换成授权会话中采集到的真实值。详情 AB 配置使用 `client.get_offer_detail_config(ab_test_key)`。接口方法返回统一的 `MtopResponse`：`success` 表示 MTOP 是否成功，`ret` 保存服务端状态码，`data` 是业务响应数据，`raw` 保留完整原始响应。
+示例中的文本是说明占位符，调用时须换成授权会话中采集到的真实值。详情 AB 配置使用 `client.offer.detail.get_config(ab_test_key)`。接口方法返回统一的 `MtopResponse`：`success` 表示 MTOP 是否成功，`ret` 保存服务端状态码，`data` 是业务响应数据，`raw` 保留完整原始响应。
 
 完整标题、图片和描述主要由详情页 SSR 内容提供，当前未接入 HTML 解析；运费计算接口 `mtop.alibaba.carriagecenter.fulfillmentsolution.query4offer` 需要登录态，暂未封装。客户端不处理登录、验证码或风控挑战。
 
