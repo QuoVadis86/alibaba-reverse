@@ -1,10 +1,10 @@
-# Contributing
+# 贡献指南
 
-Before submitting a contribution:
+提交贡献前，请确认：
 
-- Confirm that you have the right to share it and that it was obtained within an authorized scope.
-- Remove credentials, cookies, tokens, personal information, private account data, and confidential materials.
-- Do not contribute code or instructions designed to bypass access controls, defeat anti-abuse protections, or collect data without authorization.
-- Describe the scope, authorization basis, and safe reproduction steps without disclosing sensitive data.
+- 你有权分享所提交的内容，且材料是在明确授权范围内取得的。
+- 已删除凭据、Cookie、令牌、个人信息、私人账号数据和保密材料。
+- 不提交旨在绕过访问控制、规避反滥用保护或未经授权采集数据的代码和说明。
+- 说明研究范围、授权依据和安全复现步骤，但不要披露敏感数据。
 
-Contributions are subject to the repository's [Acceptable Use](ACCEPTABLE_USE.md) and [License](LICENSE).
+贡献内容须遵守[使用规则](ACCEPTABLE_USE.md)及[许可说明](LICENSE)。提交贡献不代表这些内容自动获得公众使用许可；许可范围以权利人明确授予的许可为准。

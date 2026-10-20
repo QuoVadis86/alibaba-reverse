@@ -1,16 +1,16 @@
-# Acceptable Use
+# 使用规则
 
-This repository is intended for independent analysis of Alibaba products and interfaces within a lawful, explicitly authorized scope.
+本仓库用于在合法且明确授权的范围内，对阿里产品及其接口进行独立分析。
 
-By using material from this repository, you agree to:
+项目维护者要求使用者：
 
-- Test only accounts, devices, services, and data that you own or are explicitly authorized to assess.
-- Follow applicable law, platform terms, access controls, rate limits, and written authorization.
-- Stop testing and delete collected data if authorization is withdrawn or the scope is exceeded.
-- Protect credentials and personal information; do not publish or redistribute them.
-- Avoid disrupting services, evading access controls, harvesting data at scale, or enabling others to do so.
-- Not use or adapt the material for fraud, account compromise, privacy violations, unauthorized access, service disruption, or other unlawful activity.
+- 仅测试自己拥有或获明确授权评估的账号、设备、服务和数据。
+- 遵守适用法律、平台条款、访问控制、频率限制及书面授权范围。
+- 授权撤回或测试超出约定范围时，立即停止测试并删除已收集的数据。
+- 妥善保护凭据和个人信息，不得公开或转发。
+- 不得干扰服务运行、规避访问控制、批量采集数据，或帮助他人实施上述行为。
+- 不得将仓库材料用于欺诈、账号入侵、侵犯隐私、未授权访问、干扰服务或其他违法活动。
 
-No permission to access Alibaba systems, accounts, or data is granted by this repository. No permission to bypass a technical protection measure is granted. You are responsible for your own actions and for obtaining any authorization required for your use.
+本仓库不授予访问阿里系统、账号或数据的许可，也不授予绕过技术保护措施的许可。使用者须自行取得所需授权，并对自己的行为负责。
 
-This policy states the project owner's conditions for use. It is not legal advice and cannot waive or limit responsibilities that applicable law does not permit to be waived. A disclaimer or policy does not by itself prevent liability.
+本规则表达项目维护者对使用行为的要求，不构成法律意见，也不能免除或限制适用法律规定不可免除的责任。免责声明或使用规则本身不能保证免责。

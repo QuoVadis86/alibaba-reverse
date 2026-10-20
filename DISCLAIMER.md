@@ -1,7 +1,7 @@
-# Disclaimer
+# 免责声明
 
-This repository is provided for independent research and interoperability analysis. It is not affiliated with or endorsed by Alibaba Group or any related company.
+本仓库用于独立研究与互操作性分析，与阿里巴巴集团及其关联公司无隶属或背书关系。
 
-The materials are provided "as is" for lawful use within an authorized scope. The maintainers make no promise that the materials are accurate, current, complete, safe, or suitable for a particular purpose. Use them at your own risk and verify the applicable law, permissions, and platform terms before acting.
+仓库内容按“现状”提供，仅供在获授权范围内合法使用。维护者不保证内容准确、及时、完整、安全，或适用于任何特定目的。使用者应自行核实适用法律、授权范围和平台条款，并自行承担使用风险。
 
-Nothing in this document excludes or limits liability where such exclusion or limitation is not permitted by applicable law. This notice does not make unauthorized use lawful and is not a guarantee that maintainers or users cannot incur liability.
+本声明不排除或限制适用法律不允许排除或限制的责任。它不会使未授权行为合法，也不保证维护者或使用者不会承担法律责任。

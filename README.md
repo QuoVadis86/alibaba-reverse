@@ -1,25 +1,25 @@
 # alibaba-reverse
 
-Independent research notes and tools for analyzing Alibaba products and their publicly observable interfaces.
+阿里产品及其公开可观察接口的独立分析记录与工具。本仓库仅供依法且在明确授权范围内开展分析。
 
-This project is not affiliated with, endorsed by, or sponsored by Alibaba Group or its affiliates. Product names and trademarks belong to their respective owners.
+本项目与阿里巴巴集团及其关联公司无隶属、合作、背书或赞助关系。产品名称和商标归各自权利人所有。
 
-## Scope
+## 范围
 
-- Document observations from systems and accounts we are authorized to access.
-- Keep research reproducible, minimal, and limited to the stated scope.
-- Do not publish credentials, session data, personal information, confidential materials, or data obtained without authorization.
+- 仅记录对自有系统、账号，或已获明确授权的系统和账号所做的观察。
+- 分析应可复现、保持必要的最小范围，并遵守授权约定。
+- 不得提交或公开凭据、会话数据、个人信息、保密材料或未经授权取得的数据。
 
-## Topics
+## GitHub Topics
 
 `alibaba` · `reverse-engineering` · `api-analysis` · `protocol-analysis` · `security-research`
 
-These are suggested GitHub topics; the repository owner may update them as the project changes.
+## 使用前须知
 
-## Usage requirements
+请先阅读[使用规则](ACCEPTABLE_USE.md)、[免责声明](DISCLAIMER.md)及[许可说明](LICENSE)。仓库公开可见不代表获得了访问或测试任何第三方系统的许可。
 
-Read [Acceptable Use](ACCEPTABLE_USE.md), [Disclaimer](DISCLAIMER.md), and [License](LICENSE) before using or contributing. The repository is public for inspection; public availability does not grant permission to access or test any third-party system.
+**许可状态：保留所有权利。** 本仓库目前没有采用开源许可证，不授予公众使用、修改或再分发仓库内容的许可。详见 [LICENSE](LICENSE)。
 
-## Contributions
+## 贡献
 
-Contributions must follow [CONTRIBUTING.md](CONTRIBUTING.md). Do not submit secrets, third-party personal data, proprietary source code, or material gathered outside an authorized scope.
+贡献内容须符合[贡献指南](CONTRIBUTING.md)。请勿提交凭据、第三方个人信息、专有源代码或在未授权范围内取得的材料。
