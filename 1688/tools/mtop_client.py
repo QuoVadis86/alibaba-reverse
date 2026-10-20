@@ -46,6 +46,7 @@ JSV: Final = "2.7.4"
 GATEWAY: Final = "https://h5api.m.1688.com/h5"
 TOKEN_COOKIE: Final = "_m_h5_tk"
 SKU_API: Final = "mtop.1688.wosc.queryOfferSkuSelectorModel"
+OFFER_DETAIL_API: Final = "mtop.1688.mmga.offerdetail.service"
 
 # 用递归类型描述 JSON，避免把服务端响应当作无类型数据处理。
 type JsonValue = (
@@ -76,7 +77,7 @@ class MtopRequest:
 
 
 class MtopError(RuntimeError):
-    """表示令牌获取或 MTOP 响应格式错误。"""
+    """表示请求输入或 MTOP 响应格式错误。"""
 
 
 def create_http_client() -> httpx2.Client:
@@ -133,6 +134,21 @@ class MtopClient:
         )
         return self.request(request)
 
+    def request_offer_detail_service(
+        self,
+        service_name: Literal["offerDetailPCABService", "offerLogisticsService"],
+        service_data: JsonObject,
+    ) -> JsonObject:
+        """调用详情服务中的 AB 配置或物流时效子服务。"""
+        mmga_request = {**service_data, "serviceName": service_name}
+        request = MtopRequest(
+            api=OFFER_DETAIL_API,
+            version="1.0",
+            method="POST",
+            data={"mmgaRequest": mmga_request},
+        )
+        return self.request(request)
+
     def request(self, request: MtopRequest) -> JsonObject:
         """对请求参数签名并发送请求，返回 MTOP JSON 响应。"""
         return self._send(request, self._token)
@@ -151,7 +167,7 @@ class MtopClient:
             "data": data,
         }
 
-        # 引导请求不带签名；拿到 Cookie 后的接口请求使用同一份原始 data 签名。
+        # 签名和请求都使用同一份原始 JSON 字符串。
         if token is not None:
             timestamp = TimestampMs(str(int(time.time() * 1000)))
             params["t"] = timestamp
@@ -169,10 +185,13 @@ class MtopClient:
             case "GET":
                 response = self._http.get(url, params=params)
             case "POST":
+                # 1688 商品详情服务会检查这个页面请求头。
+                headers = {"_bx-login": "new"} if request.api == OFFER_DETAIL_API else {}
                 response = self._http.post(
                     url,
                     params=params,
                     data={"data": data},
+                    headers=headers,
                 )
             case unreachable:
                 assert_never(unreachable)

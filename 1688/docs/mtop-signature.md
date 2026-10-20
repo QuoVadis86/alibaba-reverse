@@ -30,7 +30,7 @@ sign = compute_sign(
 
 实际导入时，将 `1688/tools/` 加入 `PYTHONPATH`，或从该文件所在目录导入 `mtop_sign`。
 
-## 接入 SKU 接口
+## 接入商品接口
 
 `tools/mtop_client.py` 复用上述签名实现，从已获授权的浏览器 Cookie 中读取 `_m_h5_tk`，然后签名并请求 SKU 接口。纯 HTTP 客户端的匿名初始化不一定能取得令牌，因此客户端不假设可以自动获取 Cookie。命令行示例：
 
@@ -39,7 +39,32 @@ export MTOP_COOKIE
 uv run 1688/tools/mtop_client.py 566344866833
 ```
 
-请在运行命令前通过安全方式设置 `MTOP_COOKIE`，不要把 Cookie 提交到仓库或写进命令历史。客户端当前只封装 `mtop.1688.wosc.queryOfferSkuSelectorModel`，每次调用查询一个商品。响应保留 MTOP 原始 JSON 对象，业务错误通过响应中的 `ret` 字段查看。
+请在运行命令前通过安全方式设置 `MTOP_COOKIE`，不要把 Cookie 提交到仓库或写进命令历史。CLI 当前查询一个商品的 SKU；Python 客户端还封装了 `mtop.1688.mmga.offerdetail.service` 下已确认的详情子服务：`offerDetailPCABService` 和 `offerLogisticsService`。两者都通过 POST 调用，并附带 `_bx-login: new` 请求头：
+
+```python
+import os
+
+from mtop_client import MtopClient, create_http_client
+
+with create_http_client() as http:
+    client = MtopClient(http, os.environ["MTOP_COOKIE"])
+    response = client.request_offer_detail_service(
+        "offerLogisticsService",
+        {
+            "offerId": "566344866833",
+            "toAddressCode": "从详情页请求中读取",
+            "fromAddressId": "从详情页请求中读取",
+            "sellerId": "从详情页请求中读取",
+            "protectionInfos": {},
+            "buyerProtectionModel": {},
+            "offerDeliveryTime": {},
+        },
+    )
+```
+
+示例中的文本是说明占位符，调用时须换成授权会话中采集到的真实值。`offerDetailPCABService` 需要的 `abTestKey` 也是动态值。响应保留 MTOP 原始 JSON 对象，业务错误通过 `ret` 字段查看。
+
+完整标题、图片和描述主要由详情页 SSR 内容提供，当前未接入 HTML 解析；运费计算接口 `mtop.alibaba.carriagecenter.fulfillmentsolution.query4offer` 需要登录态，暂未封装。客户端不处理登录、验证码或风控挑战。
 
 ## 边界
 
