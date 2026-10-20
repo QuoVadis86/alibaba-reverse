@@ -29,6 +29,7 @@ uv run --project 1688 mtop-1688 566344866833
 
 ```python
 from mtop_sdk import MtopClient, OfferLogisticsQuery, create_http_client
+from mtop_sdk.services.mmga.offerdetail import OfferRateCardInfoQuery
 from mtop_sdk.services.trade.mtoprateservice import OfferRatingsQuery
 from mtop_sdk.services.relationrecommend.wirelessrecommend import TextSearchQuery
 
@@ -38,6 +39,13 @@ with create_http_client() as http:
     detail = client.laputa.miniod.get(566344866605)
     logistics = client.mmga.offerdetail.get_logistics(
         OfferLogisticsQuery(offer_id=566344866605, seller_id=123456789)
+    )
+    rate_card = client.mmga.offerdetail.get_rate_card_info(
+        OfferRateCardInfoQuery(
+            offer_id=1048748734813,
+            seller_login_id="店铺登录名",
+            seller_member_id="店铺 memberId",
+        )
     )
     ratings = client.trade.mtoprateservice.get_ratings(
         OfferRatingsQuery(offer_id=566344866605)

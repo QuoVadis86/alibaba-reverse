@@ -37,6 +37,16 @@ class ShopRelationQuery(BaseModel):
     shop_login_id: str = Field(min_length=1)
 
 
+class OfferRateCardInfoQuery(BaseModel):
+    """商品评价卡片汇总接口的商品和卖家信息。"""
+
+    model_config = ConfigDict(frozen=True, populate_by_name=True, extra="forbid")
+
+    offer_id: PositiveInt = Field(alias="offerId")
+    seller_login_id: str = Field(alias="sellerLoginId", min_length=1)
+    seller_member_id: str = Field(alias="sellerMemberId", min_length=1)
+
+
 class OfferDetailMtopService:
     """详情服务端点下按 serviceName 分发的接口。"""
 
@@ -87,6 +97,20 @@ class OfferDetailMtopService:
             {
                 "serviceName": "shopRelationFnService",
                 "shopLoginId": query.shop_login_id,
+            }
+        )
+
+    def get_rate_card_info(
+        self,
+        query: OfferRateCardInfoQuery,
+    ) -> MtopResponse[JsonValue]:
+        """获取商品详情页评价卡片聚合信息。"""
+        return self._call(
+            {
+                "serviceName": "pcOdRateCardInfoMergeService",
+                "offerId": query.offer_id,
+                "sellerLoginId": query.seller_login_id,
+                "sellerMemberId": query.seller_member_id,
             }
         )
 
