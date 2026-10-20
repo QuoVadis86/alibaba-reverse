@@ -1,13 +1,13 @@
 # 1688
 
-本目录整理 1688 MTOP 接口分析资料，并提供 Python SDK。SDK 按业务域拆分接口，统一封装请求签名、令牌获取和响应状态；入参使用模型校验，尚未确认字段结构的业务响应保留为 JSON。
+本目录整理 1688 MTOP 接口分析资料，并提供 Python SDK。`services/` 按 MTOP API 路径组织：同一 API 的具体方法集中在同一个文件中；入参使用模型校验，尚未确认字段结构的业务响应保留为 JSON。
 
 ## 目录
 
-- [`mtop_sdk/`](mtop_sdk/)：SDK 源码，业务服务按领域和接口拆分。
+- [`mtop_sdk/`](mtop_sdk/)：SDK 源码。
 - [`docs/`](docs/)：签名算法和接口说明。
 - [`samples/`](samples/)：经脱敏和审查的示例数据。
-- [`pyproject.toml`](pyproject.toml)：项目依赖、打包配置和 CLI 入口。
+- [`pyproject.toml`](pyproject.toml)：依赖、打包配置和 CLI 入口。
 
 ## 安装
 
@@ -35,33 +35,40 @@ from mtop_sdk.models.search import TextSearchQuery
 with create_http_client() as http:
     client = MtopClient(http)
 
-    detail = client.offer.detail.get(566344866605)
-    print(detail.data.offer_detail if detail.data else detail.ret)
-
-    logistics = client.offer.logistics.get(
+    detail = client.laputa.miniod.get(566344866605)
+    logistics = client.mmga.offerdetail.get_logistics(
         OfferLogisticsQuery(offer_id=566344866605, seller_id=123456789)
     )
-    print(logistics.data)
-
-    ratings = client.reviews.list.get(OfferRatingsQuery(offer_id=566344866605))
-    results = client.search.text.get(TextSearchQuery(keywords="收纳盒"))
+    ratings = client.trade.service.mtoprateservice.get_ratings(
+        OfferRatingsQuery(offer_id=566344866605)
+    )
+    results = client.relationrecommend.wirelessrecommend.search_text(
+        TextSearchQuery(keywords="收纳盒")
+    )
 ```
 
-所有 MTOP 接口返回 `MtopResponse[T]`，通过 `success`、`ret`、`data` 读取状态和业务数据，通过 `raw` 查看完整响应。商品详情将稳定的 `offerDetail`、`dataModel` 等外层整理为 `OfferDetailData`；商品字段和其他接口的动态响应暂保留 JSON，不臆造未观测到的字段。
+所有 MTOP 接口返回 `MtopResponse[T]`，通过 `success`、`ret`、`data` 读取状态和业务数据，通过 `raw` 查看完整响应。商品详情将稳定的 `offerDetail`、`dataModel` 等外层整理为 `OfferDetailData`；动态商品字段和其他接口的响应暂保留为 JSON。
 
-## 接口分组
+## 接口路径和代码组织
 
-| 调用入口 | 接口 |
-| --- | --- |
-| `client.offer` | SKU、商品详情、详情页配置、物流时效、详情页推荐 |
-| `client.reviews` | 商品评价、DSR 评分 |
-| `client.shop` | 店铺卡片、店铺头部、认证信息、当前会话的店铺关注关系 |
-| `client.shipping` | 运费、履约配送方案 |
-| `client.search` | 关键词搜索、筛选配置、图片上传和以图搜图 |
-| `client.user.simple` | 当前登录用户基本信息 |
+服务模块按照去掉 `mtop.` 后的 API 路径组织。例如 `mtop.1688.mmga.offerdetail.service` 对应 `services/mmga/offerdetail.py`，该文件包含详情配置、物流、商品推荐和店铺关系方法。
 
-每个具体接口独立放在 `mtop_sdk/services/<领域>/<接口>.py`；对应入参模型放在 `mtop_sdk/models/`。详情物流入参模型位于 `models/offer/logistics.py`，搜索模型位于 `models/search.py`。
+```text
+services/
+├── mmga/offerdetail.py                         # mtop.1688.mmga.offerdetail.service
+├── laputa/miniod.py                            # mtop.1688.laputa.miniod
+├── wosc/queryofferskuselectormodel.py          # mtop.1688.wosc.queryOfferSkuSelectorModel
+├── moga/pc/shopcard.py                         # mtop.1688.moga.pc.shopcard
+├── trade/service/mtoprateservice.py            # 评价列表和 DSR
+├── freightinfoservice.py                       # 运费
+├── alibaba/carriagecenter/fulfillmentsolution.py
+├── alibaba/alisite/cbu/server/moduleasyncservice.py
+├── relationrecommend/wirelessrecommend.py      # 关键词和图片搜索
+└── user/usersimple.py
+```
+
+`models/` 按业务数据组织，与 MTOP 服务路径分开。物流入参在 `models/offer/logistics.py`，搜索入参在 `models/search.py`。
 
 ## 使用边界
 
-客户端不处理登录、验证码或风控挑战。部分接口要求有效登录态；实际业务响应也可能随账号、商品和服务端版本变化。请在获授权的范围内使用，并遵守目标平台规则及适用法律。
+客户端不处理登录、验证码或风控挑战。部分接口要求有效登录态；业务响应也可能随账号、商品和服务端版本变化。请在获授权的范围内使用，并遵守目标平台规则及适用法律。
