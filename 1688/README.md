@@ -39,7 +39,7 @@ with create_http_client() as http:
     logistics = client.mmga.offerdetail.get_logistics(
         OfferLogisticsQuery(offer_id=566344866605, seller_id=123456789)
     )
-    ratings = client.trade.service.mtoprateservice.get_ratings(
+    ratings = client.trade.mtoprateservice.get_ratings(
         OfferRatingsQuery(offer_id=566344866605)
     )
     results = client.relationrecommend.wirelessrecommend.search_text(
@@ -59,7 +59,7 @@ services/
 ├── laputa/miniod.py                            # mtop.1688.laputa.miniod
 ├── wosc/queryofferskuselectormodel.py          # mtop.1688.wosc.queryOfferSkuSelectorModel
 ├── moga/pc/shopcard.py                         # mtop.1688.moga.pc.shopcard
-├── trade/service/mtoprateservice.py            # 评价列表和 DSR
+├── trade/mtoprateservice.py                    # 评价列表和 DSR
 ├── freightinfoservice.py                       # 运费
 ├── alibaba/carriagecenter/fulfillmentsolution.py
 ├── alibaba/alisite/cbu/server/moduleasyncservice.py
