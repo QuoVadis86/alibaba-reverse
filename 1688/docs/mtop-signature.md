@@ -28,7 +28,7 @@ sign = compute_sign(
 )
 ```
 
-实际导入时，将 `products/1688/tools/` 加入 `PYTHONPATH`，或从该文件所在目录导入 `mtop_sign`。
+实际导入时，将 `1688/tools/` 加入 `PYTHONPATH`，或从该文件所在目录导入 `mtop_sign`。
 
 ## 边界
 
