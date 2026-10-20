@@ -129,6 +129,7 @@ class WirelessRecommendService:
                     "params": json.dumps(params, ensure_ascii=False, separators=(",", ":")),
                 },
                 extra_params={
+                    "jsv": "2.7.2",
                     "jsonpIncPrefix": "reqTppId_32517_getCompanyList",
                     "callback": "mtopjsonpreqTppId_32517_getCompanyList1",
                 },

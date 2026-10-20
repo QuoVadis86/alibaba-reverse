@@ -75,7 +75,24 @@ class MtopTransport:
 
     def request(self, request: MtopRequest) -> MtopResponse[JsonValue]:
         """确保有令牌后发送一个已组装的业务请求。"""
+        self._ensure_cna()
         return self._send(request, self._ensure_token(request))
+
+    def _ensure_cna(self) -> None:
+        """没有 cna 时从阿里统计端点申请，并复制到 1688 会话 Cookie。"""
+        if self._http.cookies.get("cna", domain=".1688.com") is not None:
+            return
+
+        response = self._http.get(
+            "https://log.mmstat.com/eg.js",
+            params={"t": str(int(time.time() * 1000))},
+            timeout=TIMEOUT,
+        )
+        response.raise_for_status()
+        cna = response.cookies.get("cna")
+        if cna:
+            # 统计端点的 Cookie 域不匹配 1688 API，按参考客户端做跨子域会话复用。
+            self._http.cookies.set("cna", cna, domain=".1688.com", path="/")
 
     def _load_cookie(self, cookie_string: str | None) -> Token | None:
         """导入可选 Cookie，并读取其中的 MTOP 令牌。"""
@@ -132,6 +149,7 @@ class MtopTransport:
         self,
         request: MtopRequest,
         token: Token | None,
+        allow_x5sec_retry: bool = True,
     ) -> MtopResponse[JsonValue]:
         """签名并发送 GET 或 POST 请求。"""
         data = json.dumps(request.data, ensure_ascii=False, separators=(",", ":"))
@@ -195,7 +213,41 @@ class MtopTransport:
 
         self._capture_token(response)
         response.raise_for_status()
-        return self._parse_response(response.text)
+        result = self._parse_response(response.text)
+        challenge_url = self._x5sec_challenge_url(result)
+        if challenge_url is None or not allow_x5sec_retry:
+            return result
+
+        x5sec = self._load_x5sec(challenge_url)
+        if x5sec is None:
+            return result
+
+        self._http.cookies.set("x5sec", x5sec, domain=".1688.com", path="/")
+        return self._send(request, token, allow_x5sec_retry=False)
+
+    @staticmethod
+    def _x5sec_challenge_url(response: MtopResponse[JsonValue]) -> str | None:
+        """只识别带处罚页 URL 的用户验证失败响应。"""
+        if "FAIL_SYS_USER_VALIDATE" not in response.ret:
+            return None
+
+        match response.data:
+            case dict(data):
+                url = data.get("url")
+                if isinstance(url, str) and "x5secdata=" in url and "_____tmd_____" in url:
+                    return url
+                return None
+            case str() | int() | float() | bool() | list() | None:
+                return None
+            case unreachable:
+                assert_never(unreachable)
+
+    @staticmethod
+    def _load_x5sec(challenge_url: str) -> str | None:
+        """加载挑战验证后的 x5sec；挑战页解析逻辑暂留 TODO。"""
+        # TODO: 根据 challenge_url 实现授权的验证流程并获取 x5sec。
+        _ = challenge_url
+        return None
 
     def _capture_token(self, response: requests.Response) -> None:
         """从响应头保存服务端下发的 Cookie 和 MTOP 令牌。"""
