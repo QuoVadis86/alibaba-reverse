@@ -13,7 +13,7 @@ import httpx2
 from pydantic import TypeAdapter, ValidationError
 
 from mtop_sdk.exceptions import MtopError
-from mtop_sdk.models import JsonObject, MtopResponse
+from mtop_sdk.models.common import JsonObject, MtopResponse
 from mtop_sdk.sign import AppKey, MtopSignInput, RequestData, TimestampMs, Token, compute_sign
 
 APP_KEY: Final = AppKey("12574478")

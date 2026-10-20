@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Final
 
-from mtop_sdk.models import MtopResponse
+from mtop_sdk.models.common import MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 SKU_API: Final = "mtop.1688.wosc.queryOfferSkuSelectorModel"

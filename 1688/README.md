@@ -48,7 +48,11 @@ mtop_sdk/
 ├── client.py                 # SDK 客户端门面
 ├── transport.py              # MTOP 请求、响应和 token 引导
 ├── sign.py                   # 签名算法
-├── models.py                 # 入参和统一响应模型
+├── models/
+│   ├── common.py             # 通用 JSON 类型和 MTOP 响应封装
+│   └── offer/
+│       └── detail/
+│           └── logistics.py  # 物流时效接口入参
 ├── exceptions.py             # SDK 异常
 ├── cli.py                    # 命令行实现
 └── services/

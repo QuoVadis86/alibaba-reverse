@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from mtop_sdk.models import MtopResponse
+from mtop_sdk.models.common import MtopResponse
 from mtop_sdk.services.offer.detail.common import DETAIL_API, DETAIL_HEADERS
 from mtop_sdk.transport import MtopRequest, MtopTransport
 

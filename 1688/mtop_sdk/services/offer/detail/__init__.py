@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from mtop_sdk.models import MtopResponse, OfferLogisticsQuery
+from mtop_sdk.models.common import MtopResponse
+from mtop_sdk.models.offer.detail.logistics import OfferLogisticsQuery
 from mtop_sdk.services.offer.detail.config import OfferDetailConfigService
 from mtop_sdk.services.offer.detail.logistics import OfferLogisticsService
 from mtop_sdk.transport import MtopTransport
