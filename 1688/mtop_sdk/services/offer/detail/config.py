@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from mtop_sdk.models.common import MtopResponse
+from mtop_sdk.models.common import JsonValue, MtopResponse
 from mtop_sdk.services.offer.detail.common import DETAIL_API, DETAIL_HEADERS
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
@@ -13,7 +13,7 @@ class OfferDetailConfigService:
     def __init__(self, transport: MtopTransport) -> None:
         self._transport = transport
 
-    def get(self, ab_test_key: str) -> MtopResponse:
+    def get(self, ab_test_key: str) -> MtopResponse[JsonValue]:
         """根据 AB 测试键获取详情页配置。"""
         request = MtopRequest(
             api=DETAIL_API,

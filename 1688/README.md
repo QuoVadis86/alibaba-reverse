@@ -1,73 +1,67 @@
 # 1688
 
-本目录整理 1688 接口分析资料，并提供可安装、可导入的 MTOP Python SDK。目前包含签名算法，以及商品 SKU、详情 AB 配置和物流时效接口。
+本目录整理 1688 MTOP 接口分析资料，并提供 Python SDK。SDK 按业务域拆分接口，统一封装请求签名、令牌获取和响应状态；入参使用模型校验，尚未确认字段结构的业务响应保留为 JSON。
 
 ## 目录
 
-- [`mtop_sdk/`](mtop_sdk/)：SDK 源码。传输、签名、模型和异常处理放在包根目录，业务接口按服务和接口拆分。
-- [`docs/`](docs/)：算法说明和分析记录。
-- [`samples/`](samples/)：存放经过脱敏和审查的最小样例；目前没有原始流量样本。
-- [`pyproject.toml`](pyproject.toml)：Python 项目元数据、依赖、打包配置和 CLI 入口。
+- [`mtop_sdk/`](mtop_sdk/)：SDK 源码，业务服务按领域和接口拆分。
+- [`docs/`](docs/)：签名算法和接口说明。
+- [`samples/`](samples/)：经脱敏和审查的示例数据。
+- [`pyproject.toml`](pyproject.toml)：项目依赖、打包配置和 CLI 入口。
 
-## 安装和命令行
+## 安装
 
-需要安装 [uv](https://docs.astral.sh/uv/)。在仓库根目录运行：
-
-```bash
-uv run --project 1688 mtop-1688 566344866833
-```
-
-没有已有 Cookie 时，客户端会先使用 `undefined` 参与签名发起匿名引导请求，再从响应的 `Set-Cookie` 头读取 `_m_h5_tk`，然后请求 SKU 信息。也可以通过 `MTOP_COOKIE` 提供已授权的浏览器 Cookie；不要把 Cookie 写入仓库或命令历史。当前实现一次请求一个商品，不做批量请求、不处理验证码，也不会打印 Cookie 或令牌。
-
-## Python SDK
-
-在其他 Python 项目中安装本地 SDK：
+需要 Python 3.12 或更新版本以及 [uv](https://docs.astral.sh/uv/)：
 
 ```bash
 python -m pip install -e ./1688
 ```
 
-然后调用对应服务方法：
+也可以从仓库根目录直接运行 CLI 查询 SKU：
+
+```bash
+uv run --project 1688 mtop-1688 566344866833
+```
+
+没有已有 Cookie 时，客户端会用 `undefined` 参与签名发起令牌引导请求，再从响应头读取 `_m_h5_tk`。也可以通过 `MTOP_COOKIE` 提供已授权的 Cookie。请勿把 Cookie 或令牌提交到仓库。
+
+## Python SDK
 
 ```python
-from mtop_sdk import MtopClient, create_http_client
+from mtop_sdk import MtopClient, OfferLogisticsQuery, create_http_client
+from mtop_sdk.models.offer.ratings import OfferRatingsQuery
+from mtop_sdk.models.search import TextSearchQuery
 
 with create_http_client() as http:
-    result = MtopClient(http).offer.sku.get("566344866833")
-    sku_data = result.data
+    client = MtopClient(http)
+
+    detail = client.offer.detail.get(566344866605)
+    print(detail.data.offer_detail if detail.data else detail.ret)
+
+    logistics = client.offer.logistics.get(
+        OfferLogisticsQuery(offer_id=566344866605, seller_id=123456789)
+    )
+    print(logistics.data)
+
+    ratings = client.reviews.list.get(OfferRatingsQuery(offer_id=566344866605))
+    results = client.search.text.get(TextSearchQuery(keywords="收纳盒"))
 ```
 
-所有接口方法返回统一的 `MtopResponse`，可通过 `result.success`、`result.ret` 和 `result.data` 读取状态及业务数据；完整原始响应可从 `result.raw` 获取。
+所有 MTOP 接口返回 `MtopResponse[T]`，通过 `success`、`ret`、`data` 读取状态和业务数据，通过 `raw` 查看完整响应。商品详情将稳定的 `offerDetail`、`dataModel` 等外层整理为 `OfferDetailData`；商品字段和其他接口的动态响应暂保留 JSON，不臆造未观测到的字段。
 
-## 接口和代码组织
+## 接口分组
 
-服务按业务域组织，具体接口各占独立模块，新增接口时无需继续扩展一个大文件：
+| 调用入口 | 接口 |
+| --- | --- |
+| `client.offer` | SKU、商品详情、详情页配置、物流时效、详情页推荐 |
+| `client.reviews` | 商品评价、DSR 评分 |
+| `client.shop` | 店铺卡片、店铺头部、认证信息、当前会话的店铺关注关系 |
+| `client.shipping` | 运费、履约配送方案 |
+| `client.search` | 关键词搜索、筛选配置、图片上传和以图搜图 |
+| `client.user.simple` | 当前登录用户基本信息 |
 
-```text
-mtop_sdk/
-├── client.py                 # SDK 客户端门面
-├── transport.py              # MTOP 请求、响应和 token 引导
-├── sign.py                   # 签名算法
-├── models/
-│   ├── common.py             # 通用 JSON 类型和 MTOP 响应封装
-│   └── offer/
-│       └── detail/
-│           └── logistics.py  # 物流时效接口入参
-├── exceptions.py             # SDK 异常
-├── cli.py                    # 命令行实现
-└── services/
-    └── offer/
-        ├── sku.py            # 商品 SKU
-        └── detail/
-            ├── common.py     # 详情接口共用配置
-            ├── config.py     # 详情 AB 配置接口
-            └── logistics.py  # 物流时效接口
-```
+每个具体接口独立放在 `mtop_sdk/services/<领域>/<接口>.py`；对应入参模型放在 `mtop_sdk/models/`。详情物流入参模型位于 `models/offer/logistics.py`，搜索模型位于 `models/search.py`。
 
-当前调用方法：
+## 使用边界
 
-- `client.offer.sku.get(offer_id)`
-- `client.offer.detail.get_config(ab_test_key)`
-- `client.offer.detail.get_logistics(query)`
-
-物流入参使用 `OfferLogisticsQuery` 模型，字段应填写获授权详情页请求中的真实值。商品标题、图片和描述目前来自详情页 SSR 数据，尚未封装。
+客户端不处理登录、验证码或风控挑战。部分接口要求有效登录态；实际业务响应也可能随账号、商品和服务端版本变化。请在获授权的范围内使用，并遵守目标平台规则及适用法律。

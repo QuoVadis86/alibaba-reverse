@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Final
 
-from mtop_sdk.models.common import MtopResponse
+from mtop_sdk.models.common import JsonValue, MtopResponse
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 SKU_API: Final = "mtop.1688.wosc.queryOfferSkuSelectorModel"
@@ -16,7 +16,7 @@ class OfferSkuService:
     def __init__(self, transport: MtopTransport) -> None:
         self._transport = transport
 
-    def get(self, offer_id: str) -> MtopResponse:
+    def get(self, offer_id: str) -> MtopResponse[JsonValue]:
         """查询一个商品的 SKU 信息。"""
         request = MtopRequest(
             api=SKU_API,

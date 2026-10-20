@@ -13,7 +13,7 @@ import httpx2
 from pydantic import TypeAdapter, ValidationError
 
 from mtop_sdk.exceptions import MtopError
-from mtop_sdk.models.common import JsonObject, MtopResponse
+from mtop_sdk.models.common import JsonObject, JsonValue, MtopResponse
 from mtop_sdk.sign import AppKey, MtopSignInput, RequestData, TimestampMs, Token, compute_sign
 
 APP_KEY: Final = AppKey("12574478")
@@ -68,7 +68,7 @@ class MtopTransport:
         self._http = http
         self._token = self._load_cookie(cookie_string)
 
-    def request(self, request: MtopRequest) -> MtopResponse:
+    def request(self, request: MtopRequest) -> MtopResponse[JsonValue]:
         """确保有令牌后发送一个已组装的业务请求。"""
         return self._send(request, self._ensure_token())
 
@@ -109,7 +109,11 @@ class MtopTransport:
             raise MtopError("引导请求未在 Set-Cookie 响应头中返回 _m_h5_tk")
         return self._token
 
-    def _send(self, request: MtopRequest, token: Token | None) -> MtopResponse:
+    def _send(
+        self,
+        request: MtopRequest,
+        token: Token | None,
+    ) -> MtopResponse[JsonValue]:
         """签名并发送 GET 或 POST 请求。"""
         data = json.dumps(request.data, ensure_ascii=False, separators=(",", ":"))
         timestamp = TimestampMs(str(int(time.time() * 1000)))
@@ -172,7 +176,7 @@ class MtopTransport:
             self._token = self._token_from_cookie(cookie_value)
 
     @staticmethod
-    def _parse_response(response_text: str) -> MtopResponse:
+    def _parse_response(response_text: str) -> MtopResponse[JsonValue]:
         """去掉 JSONP 包装，校验响应并提取 MTOP 状态与业务数据。"""
         payload = response_text.strip()
         if payload.startswith("mtopjsonp"):
@@ -195,4 +199,4 @@ class MtopTransport:
             ret = tuple(ret_value)
         else:
             raise MtopError("MTOP 响应中的 ret 字段格式不正确")
-        return MtopResponse(ret=ret, data=raw.get("data"), raw=raw)
+        return MtopResponse[JsonValue](ret=ret, data=raw.get("data"), raw=raw)

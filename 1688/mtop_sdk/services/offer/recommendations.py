@@ -1,29 +1,26 @@
-"""商品物流时效接口。"""
+"""商品详情页推荐商品接口。"""
 
-from __future__ import annotations
-
-from mtop_sdk.models.common import MtopResponse
-from mtop_sdk.models.offer.detail.logistics import OfferLogisticsQuery
+from mtop_sdk.models.common import JsonValue, MtopResponse
 from mtop_sdk.services.offer.detail.common import DETAIL_API, DETAIL_HEADERS
 from mtop_sdk.transport import MtopRequest, MtopTransport
 
 
-class OfferLogisticsService:
-    """查询商品物流时效。"""
+class OfferRecommendationsService:
+    """获取商品详情页中的相关商品推荐。"""
 
     def __init__(self, transport: MtopTransport) -> None:
         self._transport = transport
 
-    def get(self, query: OfferLogisticsQuery) -> MtopResponse:
-        """根据商品和收发货信息查询物流时效。"""
+    def get(self, offer_id: int) -> MtopResponse[JsonValue]:
+        """按商品 ID 查询主要推荐、相似商品等推荐数据。"""
         request = MtopRequest(
             api=DETAIL_API,
             version="1.0",
             method="POST",
             data={
                 "mmgaRequest": {
-                    "serviceName": "offerLogisticsService",
-                    **query.model_dump(by_alias=True),
+                    "serviceName": "offerRecommendService",
+                    "offerId": offer_id,
                 }
             },
             headers=DETAIL_HEADERS,
