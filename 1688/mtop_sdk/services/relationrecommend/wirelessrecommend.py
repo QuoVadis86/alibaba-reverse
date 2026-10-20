@@ -6,9 +6,9 @@ import base64
 import json
 from pathlib import Path
 from typing import Final, assert_never
-from urllib.parse import urlsplit
+from urllib.parse import quote_from_bytes, urlsplit
 
-import httpx2
+import requests
 from pydantic import BaseModel, ConfigDict, Field, PositiveInt
 
 from mtop_sdk.exceptions import MtopError
@@ -37,6 +37,19 @@ class SearchConfigQuery(BaseModel):
     keywords: str = Field(min_length=1)
 
 
+class CompanySearchQuery(BaseModel):
+    """企业搜索条件；page_id 从企业搜索页面初始化数据中读取。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    keywords: str = Field(min_length=1)
+    page_id: str = Field(min_length=1)
+    page: PositiveInt = 1
+    page_size: PositiveInt = 20
+    spm: str = "a26352.24780423.searchbox.0"
+    session_id: str = ""
+
+
 class ImageSearchQuery(BaseModel):
     """基于远程图片地址的相似商品搜索条件。"""
 
@@ -58,9 +71,9 @@ class ImageIdSearchQuery(BaseModel):
 
 
 class WirelessRecommendService:
-    """关键词、搜索筛选配置和以图搜图接口。"""
+    """提供商品搜索、企业搜索、搜索筛选配置和以图搜图接口。"""
 
-    def __init__(self, transport: MtopTransport, http: httpx2.Client) -> None:
+    def __init__(self, transport: MtopTransport, http: requests.Session) -> None:
         self._transport = transport
         self._http = http
 
@@ -89,6 +102,37 @@ class WirelessRecommendService:
                 "verticalProductFlag": "pcmarket",
                 "charset": "GBK",
             }
+        )
+
+    def get_company_list(self, query: CompanySearchQuery) -> MtopResponse[JsonValue]:
+        """按关键词查询 1688 企业/工厂列表及其分页结果。"""
+        encoded_keywords = quote_from_bytes(query.keywords.encode("gbk"))
+        params = {
+            "beginPage": query.page,
+            "pageSize": query.page_size,
+            "method": "getCompanyList",
+            "pageId": query.page_id,
+            "verticalProductFlag": "pcfactory",
+            "searchScene": "pcCompanySearch",
+            "charset": "GBK",
+            "spm": query.spm,
+            "keywords": encoded_keywords,
+            "sessionId": query.session_id,
+        }
+        return self._transport.request(
+            MtopRequest(
+                api=API,
+                version="2.0",
+                method="GET",
+                data={
+                    "appId": 32517,
+                    "params": json.dumps(params, ensure_ascii=False, separators=(",", ":")),
+                },
+                extra_params={
+                    "jsonpIncPrefix": "reqTppId_32517_getCompanyList",
+                    "callback": "mtopjsonpreqTppId_32517_getCompanyList1",
+                },
+            )
         )
 
     def upload_image(self, image_source: str) -> str:
@@ -173,7 +217,7 @@ class WirelessRecommendService:
         """从 HTTP(S) URL 或本地路径读取待上传图片。"""
         parsed = urlsplit(source)
         if parsed.scheme in {"http", "https"} and parsed.netloc:
-            response = self._http.get(source)
+            response = self._http.get(source, timeout=(5.0, 30.0))
             response.raise_for_status()
             return response.content
         return Path(source).read_bytes()

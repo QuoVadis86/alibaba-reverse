@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-import httpx2
+import requests
 import typer
 
 from mtop_sdk import MtopClient, create_http_client
@@ -21,7 +21,7 @@ def main(
             raise MtopError("商品 ID 必须是数字")
         with create_http_client() as http:
             result = MtopClient(http, cookie).wosc.queryofferskuselectormodel.get(offer_id)
-    except (httpx2.HTTPError, MtopError) as error:
+    except (requests.RequestException, MtopError) as error:
         typer.echo(f"查询失败：{error}", err=True)
         raise typer.Exit(code=1) from error
 

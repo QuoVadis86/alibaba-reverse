@@ -39,10 +39,18 @@ class MiniodService:
                 version="1.0",
                 method="POST",
                 data={
-                    "sk": "",
+                    "sk": "string",
                     "offerId": offer_id,
                     "parametersMap": json.dumps({"fromPC": True}, separators=(",", ":")),
                 },
+                extra_params={
+                    "jsv": None,
+                    "api": None,
+                    "type": "originaljson",
+                    "timeout": "20000",
+                    "callback": None,
+                },
+                include_data_in_query=True,
             )
         )
         if not response.success:

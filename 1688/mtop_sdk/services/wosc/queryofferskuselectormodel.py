@@ -21,7 +21,13 @@ class OfferSkuService:
                 api=API,
                 version="1.0",
                 method="POST",
-                headers={"Referer": "https://detail.1688.com/"},
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/155.0.0.0 Safari/537.36"
+                    ),
+                },
                 data={
                     "offerId": offer_id,
                     "useCase": "1688detail",
@@ -30,6 +36,8 @@ class OfferSkuService:
                 },
                 extra_params={
                     "jsv": "2.7.2",
+                    # URL 路径转小写，但 api 查询参数保留接口名的驼峰形式。
+                    "api": API,
                     "type": "originaljson",
                     "timeout": "20000",
                     "dataType": "jsonp",

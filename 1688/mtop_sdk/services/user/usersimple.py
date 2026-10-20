@@ -15,5 +15,5 @@ class UserSimpleService:
         self._transport = transport
 
     def get(self) -> MtopResponse[JsonValue]:
-        """需要有效的登录会话。"""
+        """获取当前登录用户的基本资料；调用需要有效的登录会话。"""
         return self._transport.request(MtopRequest(api=API, version="1.0", data={}))
