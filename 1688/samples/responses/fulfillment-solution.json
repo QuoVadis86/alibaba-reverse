@@ -1,0 +1,28 @@
+{
+  "captured_from": "实际 SDK 请求响应；请求样例仅保留业务入参，不包含 Cookie 请求头或动态签名。",
+  "captured_date": "2026-10-20",
+  "examples": [
+    {
+      "name": "fulfillment_solution",
+      "api": "mtop.alibaba.carriagecenter.fulfillmentsolution.query4offer",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "offerId": 1025692729044,
+          "amount": 1,
+          "addressCode": "440300"
+        }
+      },
+      "response": {
+        "api": "mtop.alibaba.carriagecenter.fulfillmentsolution.query4offer",
+        "data": {},
+        "ret": [
+          "FAIL_SYS_SESSION_EXPIRED::Session过期"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    }
+  ]
+}

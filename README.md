@@ -5,6 +5,9 @@
 ## 产品目录
 
 - [1688](1688/README.md)：MTOP 签名算法、token 引导和商品接口客户端。
+- [淘宝](taobao/README.md)：接口目录已预留，待实现。
+- [天猫](tmall/README.md)：接口目录已预留，待实现。
+- [阿里巴巴国际站](alibaba-international/README.md)：接口目录已预留，待实现。
 
 ## 研究范围
 
@@ -14,7 +17,7 @@
 
 ## GitHub Topics
 
-`alibaba` · `reverse-engineering` · `api-analysis` · `protocol-analysis` · `security-research`
+`alibaba` · `reverse-engineering` · `api-analysis` · `protocol-analysis` · `1688` · `1688-api` · `1688-sdk` · `1688-python-sdk` · `alibaba-1688` · `mtop` · `mtop-api` · `python-sdk` · `api-client` · `ecommerce`
 
 ## 许可与使用
 

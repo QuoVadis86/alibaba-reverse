@@ -1,0 +1,1102 @@
+{
+  "captured_from": "实际 SDK 请求响应；请求样例仅保留业务入参，不包含 Cookie 请求头或动态签名。",
+  "captured_date": "2026-10-20",
+  "examples": [
+    {
+      "name": "sku_selector",
+      "api": "mtop.1688.wosc.queryOfferSkuSelectorModel",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "offerId": "1025692729044",
+          "useCase": "1688detail",
+          "bizScene": "pcod",
+          "urlParam": "actionType=dxOrder&sk=consign"
+        }
+      },
+      "response": {
+        "api": "mtop.1688.wosc.queryofferskuselectormodel",
+        "data": {
+          "debugContext": {},
+          "skuSelectorBizModel": {
+            "extraInfo": {
+              "addCartInfo": {
+                "activityUrl": ""
+              },
+              "needSkuHide": false,
+              "freightInfo": {
+                "unitWeight": 0,
+                "freeEndAmount": -1,
+                "hideDeliveryTime": false,
+                "skuFeatures": {
+                  "6036326669966": {
+                    "cbu_hot_type": "skuprice_v1",
+                    "cbu_hot_sale_type": "热销款"
+                  }
+                },
+                "officialLogistics": false,
+                "sellerUserId": 2219198359129,
+                "sendDivisionCode": "411023",
+                "buyerProtectionScene": "fenxiao",
+                "templateId": 1,
+                "queryFlag": false,
+                "sendAddressCode": "640705030",
+                "offerId": 1025692729044,
+                "skuWeight": {
+                  "6036326669966": 0.095,
+                  "6036326669967": 0.095,
+                  "6036326669974": 0.095,
+                  "6036326669975": 0.095,
+                  "6036326669972": 0.095,
+                  "6036326669973": 0.095,
+                  "6036326669970": 0.095,
+                  "6036326669971": 0.095,
+                  "6036326669968": 0.095,
+                  "6036326669969": 0.095,
+                  "6036326669980": 0.095,
+                  "6036326669981": 0.095,
+                  "6036326669978": 0.095,
+                  "6036326669979": 0.095,
+                  "6036326669976": 0.095,
+                  "6036326669977": 0.095
+                }
+              }
+            },
+            "onePieceFreePostage": false,
+            "orderFlow": "fenxiaonew",
+            "originalSkuInfoMap": {
+              "SDDBundle&gt;22inch（55CM)": {
+                "canBookCount": 999,
+                "discountPrice": "445.00",
+                "price": "445.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669973,
+                "specAttrs": "SDDBundle&gt;22inch（55CM)",
+                "specId": "03fc020c265e26e727253c0ba5af7a74"
+              },
+              "5*5lace&gt;12inch（30CM)": {
+                "canBookCount": 999,
+                "discountPrice": "128.00",
+                "price": "128.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669976,
+                "specAttrs": "5*5lace&gt;12inch（30CM)",
+                "specId": "af8efa013fb10890ac1ac78a432b1554"
+              },
+              "5*5lace&gt;8inch（20CM)": {
+                "canBookCount": 998,
+                "discountPrice": "109.00",
+                "price": "109.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669974,
+                "specAttrs": "5*5lace&gt;8inch（20CM)",
+                "specId": "d8f4ca624bdbb0375003954eeb92a3dc"
+              },
+              "SDDBundle&gt;14inch（35CM)": {
+                "canBookCount": 998,
+                "discountPrice": "220.00",
+                "price": "220.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669969,
+                "specAttrs": "SDDBundle&gt;14inch（35CM)",
+                "specId": "7666147f65bc18b819d4d7f3d26a55a6"
+              },
+              "5*5lace&gt;20inch（50CM)": {
+                "canBookCount": 999,
+                "discountPrice": "197.00",
+                "price": "197.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669980,
+                "specAttrs": "5*5lace&gt;20inch（50CM)",
+                "specId": "a15ef3bfc8c8092f6a987742f7f34c1e"
+              },
+              "SDDBundle&gt;16inch（40CM)": {
+                "canBookCount": 998,
+                "discountPrice": "250.00",
+                "price": "250.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669970,
+                "specAttrs": "SDDBundle&gt;16inch（40CM)",
+                "specId": "297bc836b860024902fa737b3c4e2b20"
+              },
+              "SDDBundle&gt;10inch（25CM)": {
+                "canBookCount": 991,
+                "discountPrice": "165.00",
+                "price": "165.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669967,
+                "specAttrs": "SDDBundle&gt;10inch（25CM)",
+                "specId": "8a39c70b41b93bd872cdbd6074b4f608"
+              },
+              "5*5lace&gt;10inch（25CM)": {
+                "canBookCount": 994,
+                "discountPrice": "120.00",
+                "price": "120.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669975,
+                "specAttrs": "5*5lace&gt;10inch（25CM)",
+                "specId": "6dd0434ccc814971ff8990fbc778aa04"
+              },
+              "5*5lace&gt;16inch（40CM)": {
+                "canBookCount": 999,
+                "discountPrice": "154.00",
+                "price": "154.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669978,
+                "specAttrs": "5*5lace&gt;16inch（40CM)",
+                "specId": "ba0c7de7fb9e1e3b0e4a8cac6ebdf007"
+              },
+              "SDDBundle&gt;12inch（30CM)": {
+                "canBookCount": 998,
+                "discountPrice": "190.00",
+                "price": "190.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669968,
+                "specAttrs": "SDDBundle&gt;12inch（30CM)",
+                "specId": "68e1e8ff42912d67febbb1b6c7371bdf"
+              },
+              "SDDBundle&gt;20inch（50CM)": {
+                "canBookCount": 999,
+                "discountPrice": "355.00",
+                "price": "355.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669972,
+                "specAttrs": "SDDBundle&gt;20inch（50CM)",
+                "specId": "208db76b1e0527b43de3c9a1bd5bd74e"
+              },
+              "SDDBundle&gt;8inch（20CM)": {
+                "canBookCount": 989,
+                "discountPrice": "128.00",
+                "price": "128.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669966,
+                "specAttrs": "SDDBundle&gt;8inch（20CM)",
+                "specId": "7905dc709e35798f4f7289d733bc2ff9"
+              },
+              "5*5lace&gt;14inch（35CM)": {
+                "canBookCount": 999,
+                "discountPrice": "141.00",
+                "price": "141.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669977,
+                "specAttrs": "5*5lace&gt;14inch（35CM)",
+                "specId": "e1ad512925593e20963ab28c711a3bd3"
+              },
+              "5*5lace&gt;18inch（45CM)": {
+                "canBookCount": 999,
+                "discountPrice": "171.00",
+                "price": "171.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669979,
+                "specAttrs": "5*5lace&gt;18inch（45CM)",
+                "specId": "4b83093697e74e9a761a70bdb1263136"
+              },
+              "5*5lace&gt;22inch（55CM)": {
+                "canBookCount": 999,
+                "discountPrice": "220.00",
+                "price": "220.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669981,
+                "specAttrs": "5*5lace&gt;22inch（55CM)",
+                "specId": "00fd56e28fbc8e985eb20e51e4205288"
+              },
+              "SDDBundle&gt;18inch（45CM)": {
+                "canBookCount": 998,
+                "discountPrice": "285.00",
+                "price": "285.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669971,
+                "specAttrs": "SDDBundle&gt;18inch（45CM)",
+                "specId": "8101b5110ba0a46ee385679ee98dfb92"
+              }
+            },
+            "skuInfoMap": {
+              "SDDBundle&gt;22inch（55CM)": {
+                "canBookCount": 999,
+                "discountPrice": "445.00",
+                "price": "445.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669973,
+                "specAttrs": "SDDBundle&gt;22inch（55CM)",
+                "specId": "03fc020c265e26e727253c0ba5af7a74"
+              },
+              "5*5lace&gt;12inch（30CM)": {
+                "canBookCount": 999,
+                "discountPrice": "128.00",
+                "price": "128.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669976,
+                "specAttrs": "5*5lace&gt;12inch（30CM)",
+                "specId": "af8efa013fb10890ac1ac78a432b1554"
+              },
+              "5*5lace&gt;8inch（20CM)": {
+                "canBookCount": 998,
+                "discountPrice": "109.00",
+                "price": "109.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669974,
+                "specAttrs": "5*5lace&gt;8inch（20CM)",
+                "specId": "d8f4ca624bdbb0375003954eeb92a3dc"
+              },
+              "SDDBundle&gt;14inch（35CM)": {
+                "canBookCount": 998,
+                "discountPrice": "220.00",
+                "price": "220.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669969,
+                "specAttrs": "SDDBundle&gt;14inch（35CM)",
+                "specId": "7666147f65bc18b819d4d7f3d26a55a6"
+              },
+              "5*5lace&gt;20inch（50CM)": {
+                "canBookCount": 999,
+                "discountPrice": "197.00",
+                "price": "197.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669980,
+                "specAttrs": "5*5lace&gt;20inch（50CM)",
+                "specId": "a15ef3bfc8c8092f6a987742f7f34c1e"
+              },
+              "SDDBundle&gt;16inch（40CM)": {
+                "canBookCount": 998,
+                "discountPrice": "250.00",
+                "price": "250.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669970,
+                "specAttrs": "SDDBundle&gt;16inch（40CM)",
+                "specId": "297bc836b860024902fa737b3c4e2b20"
+              },
+              "SDDBundle&gt;10inch（25CM)": {
+                "canBookCount": 991,
+                "discountPrice": "165.00",
+                "price": "165.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669967,
+                "specAttrs": "SDDBundle&gt;10inch（25CM)",
+                "specId": "8a39c70b41b93bd872cdbd6074b4f608"
+              },
+              "5*5lace&gt;10inch（25CM)": {
+                "canBookCount": 994,
+                "discountPrice": "120.00",
+                "price": "120.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669975,
+                "specAttrs": "5*5lace&gt;10inch（25CM)",
+                "specId": "6dd0434ccc814971ff8990fbc778aa04"
+              },
+              "5*5lace&gt;16inch（40CM)": {
+                "canBookCount": 999,
+                "discountPrice": "154.00",
+                "price": "154.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669978,
+                "specAttrs": "5*5lace&gt;16inch（40CM)",
+                "specId": "ba0c7de7fb9e1e3b0e4a8cac6ebdf007"
+              },
+              "SDDBundle&gt;12inch（30CM)": {
+                "canBookCount": 998,
+                "discountPrice": "190.00",
+                "price": "190.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669968,
+                "specAttrs": "SDDBundle&gt;12inch（30CM)",
+                "specId": "68e1e8ff42912d67febbb1b6c7371bdf"
+              },
+              "SDDBundle&gt;20inch（50CM)": {
+                "canBookCount": 999,
+                "discountPrice": "355.00",
+                "price": "355.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669972,
+                "specAttrs": "SDDBundle&gt;20inch（50CM)",
+                "specId": "208db76b1e0527b43de3c9a1bd5bd74e"
+              },
+              "SDDBundle&gt;8inch（20CM)": {
+                "canBookCount": 989,
+                "discountPrice": "128.00",
+                "price": "128.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669966,
+                "specAttrs": "SDDBundle&gt;8inch（20CM)",
+                "specId": "7905dc709e35798f4f7289d733bc2ff9"
+              },
+              "5*5lace&gt;14inch（35CM)": {
+                "canBookCount": 999,
+                "discountPrice": "141.00",
+                "price": "141.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669977,
+                "specAttrs": "5*5lace&gt;14inch（35CM)",
+                "specId": "e1ad512925593e20963ab28c711a3bd3"
+              },
+              "5*5lace&gt;18inch（45CM)": {
+                "canBookCount": 999,
+                "discountPrice": "171.00",
+                "price": "171.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669979,
+                "specAttrs": "5*5lace&gt;18inch（45CM)",
+                "specId": "4b83093697e74e9a761a70bdb1263136"
+              },
+              "5*5lace&gt;22inch（55CM)": {
+                "canBookCount": 999,
+                "discountPrice": "220.00",
+                "price": "220.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669981,
+                "specAttrs": "5*5lace&gt;22inch（55CM)",
+                "specId": "00fd56e28fbc8e985eb20e51e4205288"
+              },
+              "SDDBundle&gt;18inch（45CM)": {
+                "canBookCount": 998,
+                "discountPrice": "285.00",
+                "price": "285.00",
+                "priceAmount": 1,
+                "promotionSku": false,
+                "saleCount": 0,
+                "skuId": 6036326669971,
+                "specAttrs": "SDDBundle&gt;18inch（45CM)",
+                "specId": "8101b5110ba0a46ee385679ee98dfb92"
+              }
+            },
+            "skuPriceScale": "￥109.00-￥445.00",
+            "skuPriceType": "skuPrice",
+            "skuProps": [
+              {
+                "fid": 3216,
+                "prop": "颜色",
+                "value": [
+                  {
+                    "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01kzFrZL2HJ8oDdNVy2_!!2219198359129-0-cib.jpg",
+                    "name": "SDDBundle"
+                  },
+                  {
+                    "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01B6s5ML2HJ8oDtBbKN_!!2219198359129-0-cib.jpg",
+                    "name": "5*5lace"
+                  }
+                ]
+              },
+              {
+                "fid": 7554,
+                "prop": "假发长度",
+                "value": [
+                  {
+                    "name": "8inch（20CM)"
+                  },
+                  {
+                    "name": "10inch（25CM)"
+                  },
+                  {
+                    "name": "12inch（30CM)"
+                  },
+                  {
+                    "name": "14inch（35CM)"
+                  },
+                  {
+                    "name": "16inch（40CM)"
+                  },
+                  {
+                    "name": "18inch（45CM)"
+                  },
+                  {
+                    "name": "20inch（50CM)"
+                  },
+                  {
+                    "name": "22inch（55CM)"
+                  }
+                ]
+              }
+            ],
+            "skuSelectorModel": {
+              "activityUrl": "",
+              "channelType": "fx",
+              "extraInfo": {
+                "abTestInfo": {
+                  "abTestValueInfo": {
+                    "zeus_gyp_onhand_price": "1",
+                    "page_zgc_dimension": "0",
+                    "page_yanxuan_qualityCert": "Y",
+                    "page_add_custom_service": "1"
+                  },
+                  "exposeClickInfo": {},
+                  "pvTrackInfo": {
+                    "AbIds": "2515414#2517407#2518968"
+                  }
+                },
+                "offerModelSign": {
+                  "isBuyerProtection": true,
+                  "isHTQQOffer": true,
+                  "isSkuTradeSupported": true,
+                  "isSearchOffer": true,
+                  "isKjOrdinaryOffer": true,
+                  "isSupportMix": true,
+                  "isSupplyStockOffer": true,
+                  "isAeJit": true,
+                  "isCndOffer": true,
+                  "isAlipaySupported": true,
+                  "isGpfOffer": true,
+                  "isGovCouponOfferInOD": false,
+                  "hasSearchPicture": true,
+                  "hasWhitePicInOffer": true,
+                  "isSupportStock": true,
+                  "hasOrder": true,
+                  "fx48hPickupAssr": true,
+                  "isAegisTrade": true,
+                  "isHtqqItem": true,
+                  "hasSendGoodsAddress": true
+                },
+                "skuFeatures": {
+                  "6036326669966": {
+                    "cbu_hot_type": "skuprice_v1",
+                    "cbu_hot_sale_type": "热销款"
+                  }
+                },
+                "sellerUserId": 2219198359129
+              },
+              "freightInfo": {
+                "deliveryFee": "FREE",
+                "deliveryFulfillmentSolution": {
+                  "offerId": 1025692729044
+                },
+                "freeDeliverFee": true,
+                "freeEndAmount": -1,
+                "location": "河南省许昌市",
+                "locationCode": "640705030",
+                "locationDivisionCode": "411023",
+                "logisticsText": "",
+                "marketingFreePostage": false,
+                "officialLogistics": false,
+                "skuWeight": {
+                  "6036326669966": 0.095,
+                  "6036326669967": 0.095,
+                  "6036326669974": 0.095,
+                  "6036326669975": 0.095,
+                  "6036326669972": 0.095,
+                  "6036326669973": 0.095,
+                  "6036326669970": 0.095,
+                  "6036326669971": 0.095,
+                  "6036326669968": 0.095,
+                  "6036326669969": 0.095,
+                  "6036326669980": 0.095,
+                  "6036326669981": 0.095,
+                  "6036326669978": 0.095,
+                  "6036326669979": 0.095,
+                  "6036326669976": 0.095,
+                  "6036326669977": 0.095
+                },
+                "subTemplateId": 1,
+                "templateRemark": "平台指导运费",
+                "unitWeight": 0
+              },
+              "mainImageList": [
+                {
+                  "fullPathImageURI": "https://cbu01.alicdn.com/img/ibank/O1CN01MiqhEf2HJ8oDtDYC9_!!2219198359129-0-cib.jpg",
+                  "imageURI": "img/ibank/O1CN01MiqhEf2HJ8oDtDYC9_!!2219198359129-0-cib.jpg"
+                },
+                {
+                  "fullPathImageURI": "https://cbu01.alicdn.com/img/ibank/O1CN01CQcBvn2HJ8oDtBjii_!!2219198359129-0-cib.jpg",
+                  "imageURI": "img/ibank/O1CN01CQcBvn2HJ8oDtBjii_!!2219198359129-0-cib.jpg"
+                },
+                {
+                  "fullPathImageURI": "https://cbu01.alicdn.com/img/ibank/O1CN01QOvoS12HJ8oDtlo6s_!!2219198359129-0-cib.jpg",
+                  "imageURI": "img/ibank/O1CN01QOvoS12HJ8oDtlo6s_!!2219198359129-0-cib.jpg"
+                },
+                {
+                  "fullPathImageURI": "https://cbu01.alicdn.com/img/ibank/O1CN01fLmY4D2HJ8oDtjzuM_!!2219198359129-0-cib.jpg",
+                  "imageURI": "img/ibank/O1CN01fLmY4D2HJ8oDtjzuM_!!2219198359129-0-cib.jpg"
+                },
+                {
+                  "fullPathImageURI": "https://cbu01.alicdn.com/img/ibank/O1CN01dtefI12HJ8oCrF68m_!!2219198359129-0-cib.jpg",
+                  "imageURI": "img/ibank/O1CN01dtefI12HJ8oCrF68m_!!2219198359129-0-cib.jpg"
+                }
+              ],
+              "offerId": 1025692729044,
+              "promotionModel": {
+                "aggregateNewPromotionInfo": [
+                  {
+                    "features": {
+                      "calSkuCartFromMkc": "false"
+                    },
+                    "groupType": "DEFAULT_GROUP"
+                  }
+                ],
+                "aggregatePromotionInfo": [],
+                "bigPromotionInfo": {
+                  "bigPromotionCountdown": -1,
+                  "bigPromotionStatus": "NONE",
+                  "burstBeginTime": -1,
+                  "burstEndTime": -1,
+                  "preheatTime": -1,
+                  "promotionResources": {}
+                },
+                "endTime": 0,
+                "hotTime": 0,
+                "promotionExtendInfo": {
+                  "offerDetailUrgeBarModel": "null"
+                },
+                "promotionExtends": {
+                  "majorMemberInfo": {},
+                  "wholesalePriceQualified": true
+                },
+                "promotionSign": {
+                  "cross2buy": false,
+                  "freePostage": false,
+                  "freshmanActivity": false,
+                  "fxOfficialTimeLimitActivity": false,
+                  "fxSellerTimeLimitActivity": false,
+                  "hasBigPromotion": false,
+                  "hasMarketPromotion": false,
+                  "hasPurcharseMark": false,
+                  "hpAdditionalDiscount": false,
+                  "limitedTimePromotion": false,
+                  "promotionRemoteCal": false,
+                  "shareWithGift": false,
+                  "signs": {
+                    "isHpAdditionalDiscount": false,
+                    "hasBigPromotion": false,
+                    "isFreshmanActivity": false,
+                    "promotionRemoteCal": false,
+                    "skuFixPromotion": false,
+                    "isFreePostage": false,
+                    "isShareWithGift": false,
+                    "isFxSellerTimeLimitActivity": false,
+                    "isLimitedTimePromotion": false,
+                    "isDisPricePromotion": false,
+                    "isFxOfficialTimeLimitActivity": false,
+                    "hasPurcharseMark": false,
+                    "isFixedPricePromotion": false
+                  },
+                  "skuFixPromotion": false
+                },
+                "startTime": 0
+              },
+              "sceneType": "default",
+              "sellerLoginId": "许昌夏迪假发工厂店",
+              "skuPropsList": [
+                {
+                  "fid": 3216,
+                  "prop": "颜色",
+                  "value": [
+                    {
+                      "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01kzFrZL2HJ8oDdNVy2_!!2219198359129-0-cib.jpg",
+                      "name": "SDDBundle"
+                    },
+                    {
+                      "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01B6s5ML2HJ8oDtBbKN_!!2219198359129-0-cib.jpg",
+                      "name": "5*5lace"
+                    }
+                  ]
+                },
+                {
+                  "fid": 7554,
+                  "prop": "假发长度",
+                  "value": [
+                    {
+                      "name": "8inch（20CM)"
+                    },
+                    {
+                      "name": "10inch（25CM)"
+                    },
+                    {
+                      "name": "12inch（30CM)"
+                    },
+                    {
+                      "name": "14inch（35CM)"
+                    },
+                    {
+                      "name": "16inch（40CM)"
+                    },
+                    {
+                      "name": "18inch（45CM)"
+                    },
+                    {
+                      "name": "20inch（50CM)"
+                    },
+                    {
+                      "name": "22inch（55CM)"
+                    }
+                  ]
+                }
+              ],
+              "tradeModel": {
+                "beginAmount": 1,
+                "canBookedAmount": 15956,
+                "hasPromotion": false,
+                "maxPrice": "445.00",
+                "minPrice": "109.00",
+                "mixModel": {
+                  "mixNumber": 1,
+                  "mixOneForSale": true,
+                  "supportMix": true
+                },
+                "offerIDatacenterSellInfo": {
+                  "发丝材质": "真人发丝",
+                  "刘海类型": "可齐可斜",
+                  "风格": "自然",
+                  "品牌类型": "国货品牌",
+                  "适用肤色": "任何肤色",
+                  "适用脸型": "任何脸型",
+                  "sellPointModel": "{\"id\":35,\"name\":\"专业化CPV(15)\",\"show\":\"发丝材质_真人发丝_algo,刘海类型_可齐可斜_algo,风格_自然_algo,品牌类型_国货品牌_algo,适用肤色_任何肤色_algo,适用脸型_任何脸型_custom\",\"type\":\"test_idatacenter_sell\"}"
+                },
+                "offerId": 1025692729044,
+                "offerPriceModel": {
+                  "currentPrices": [
+                    {
+                      "beginAmount": 1,
+                      "price": "109.00"
+                    },
+                    {
+                      "beginAmount": 1,
+                      "price": "445.00"
+                    }
+                  ],
+                  "onePiecePriceExp": false,
+                  "priceDisplayType": "skuPrice"
+                },
+                "priceDisplay": "109.00-445.00",
+                "saleCount": 15,
+                "skuMap": [
+                  {
+                    "canBookCount": 999,
+                    "discountPrice": "445.00",
+                    "price": "445.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669973,
+                    "specAttrs": "SDDBundle&gt;22inch（55CM)",
+                    "specId": "03fc020c265e26e727253c0ba5af7a74"
+                  },
+                  {
+                    "canBookCount": 999,
+                    "discountPrice": "154.00",
+                    "price": "154.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669978,
+                    "specAttrs": "5*5lace&gt;16inch（40CM)",
+                    "specId": "ba0c7de7fb9e1e3b0e4a8cac6ebdf007"
+                  },
+                  {
+                    "canBookCount": 991,
+                    "discountPrice": "165.00",
+                    "price": "165.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669967,
+                    "specAttrs": "SDDBundle&gt;10inch（25CM)",
+                    "specId": "8a39c70b41b93bd872cdbd6074b4f608"
+                  },
+                  {
+                    "canBookCount": 999,
+                    "discountPrice": "128.00",
+                    "price": "128.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669976,
+                    "specAttrs": "5*5lace&gt;12inch（30CM)",
+                    "specId": "af8efa013fb10890ac1ac78a432b1554"
+                  },
+                  {
+                    "canBookCount": 999,
+                    "discountPrice": "220.00",
+                    "price": "220.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669981,
+                    "specAttrs": "5*5lace&gt;22inch（55CM)",
+                    "specId": "00fd56e28fbc8e985eb20e51e4205288"
+                  },
+                  {
+                    "canBookCount": 998,
+                    "discountPrice": "250.00",
+                    "price": "250.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669970,
+                    "specAttrs": "SDDBundle&gt;16inch（40CM)",
+                    "specId": "297bc836b860024902fa737b3c4e2b20"
+                  },
+                  {
+                    "canBookCount": 998,
+                    "discountPrice": "109.00",
+                    "price": "109.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669974,
+                    "specAttrs": "5*5lace&gt;8inch（20CM)",
+                    "specId": "d8f4ca624bdbb0375003954eeb92a3dc"
+                  },
+                  {
+                    "canBookCount": 998,
+                    "discountPrice": "220.00",
+                    "price": "220.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669969,
+                    "specAttrs": "SDDBundle&gt;14inch（35CM)",
+                    "specId": "7666147f65bc18b819d4d7f3d26a55a6"
+                  },
+                  {
+                    "canBookCount": 999,
+                    "discountPrice": "141.00",
+                    "price": "141.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669977,
+                    "specAttrs": "5*5lace&gt;14inch（35CM)",
+                    "specId": "e1ad512925593e20963ab28c711a3bd3"
+                  },
+                  {
+                    "canBookCount": 999,
+                    "discountPrice": "171.00",
+                    "price": "171.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669979,
+                    "specAttrs": "5*5lace&gt;18inch（45CM)",
+                    "specId": "4b83093697e74e9a761a70bdb1263136"
+                  },
+                  {
+                    "canBookCount": 999,
+                    "discountPrice": "355.00",
+                    "price": "355.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669972,
+                    "specAttrs": "SDDBundle&gt;20inch（50CM)",
+                    "specId": "208db76b1e0527b43de3c9a1bd5bd74e"
+                  },
+                  {
+                    "canBookCount": 998,
+                    "discountPrice": "285.00",
+                    "price": "285.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669971,
+                    "specAttrs": "SDDBundle&gt;18inch（45CM)",
+                    "specId": "8101b5110ba0a46ee385679ee98dfb92"
+                  },
+                  {
+                    "canBookCount": 998,
+                    "discountPrice": "190.00",
+                    "price": "190.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669968,
+                    "specAttrs": "SDDBundle&gt;12inch（30CM)",
+                    "specId": "68e1e8ff42912d67febbb1b6c7371bdf"
+                  },
+                  {
+                    "canBookCount": 989,
+                    "discountPrice": "128.00",
+                    "price": "128.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669966,
+                    "specAttrs": "SDDBundle&gt;8inch（20CM)",
+                    "specId": "7905dc709e35798f4f7289d733bc2ff9"
+                  },
+                  {
+                    "canBookCount": 994,
+                    "discountPrice": "120.00",
+                    "price": "120.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669975,
+                    "specAttrs": "5*5lace&gt;10inch（25CM)",
+                    "specId": "6dd0434ccc814971ff8990fbc778aa04"
+                  },
+                  {
+                    "canBookCount": 999,
+                    "discountPrice": "197.00",
+                    "price": "197.00",
+                    "priceAmount": 1,
+                    "promotionSku": false,
+                    "saleCount": 0,
+                    "skuId": 6036326669980,
+                    "specAttrs": "5*5lace&gt;20inch（50CM)",
+                    "specId": "a15ef3bfc8c8092f6a987742f7f34c1e"
+                  }
+                ],
+                "skuTradeSupported": true,
+                "supportOnePieceRetail": false,
+                "supportWirelessOnly": false,
+                "tradeWithoutPromotion": {
+                  "canBookedAmountOriginal": 15956,
+                  "offerBeginAmount": 1,
+                  "offerIsSkuTradeSupported": true,
+                  "offerMaxPrice": "445.00",
+                  "offerMinPrice": "109.00",
+                  "offerPriceDisplay": "109.00-445.00",
+                  "skuMapOriginal": [
+                    {
+                      "canBookCount": 999,
+                      "discountPrice": "445.00",
+                      "price": "445.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669973,
+                      "specAttrs": "SDDBundle&gt;22inch（55CM)",
+                      "specId": "03fc020c265e26e727253c0ba5af7a74"
+                    },
+                    {
+                      "canBookCount": 999,
+                      "discountPrice": "154.00",
+                      "price": "154.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669978,
+                      "specAttrs": "5*5lace&gt;16inch（40CM)",
+                      "specId": "ba0c7de7fb9e1e3b0e4a8cac6ebdf007"
+                    },
+                    {
+                      "canBookCount": 991,
+                      "discountPrice": "165.00",
+                      "price": "165.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669967,
+                      "specAttrs": "SDDBundle&gt;10inch（25CM)",
+                      "specId": "8a39c70b41b93bd872cdbd6074b4f608"
+                    },
+                    {
+                      "canBookCount": 999,
+                      "discountPrice": "128.00",
+                      "price": "128.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669976,
+                      "specAttrs": "5*5lace&gt;12inch（30CM)",
+                      "specId": "af8efa013fb10890ac1ac78a432b1554"
+                    },
+                    {
+                      "canBookCount": 999,
+                      "discountPrice": "220.00",
+                      "price": "220.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669981,
+                      "specAttrs": "5*5lace&gt;22inch（55CM)",
+                      "specId": "00fd56e28fbc8e985eb20e51e4205288"
+                    },
+                    {
+                      "canBookCount": 998,
+                      "discountPrice": "250.00",
+                      "price": "250.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669970,
+                      "specAttrs": "SDDBundle&gt;16inch（40CM)",
+                      "specId": "297bc836b860024902fa737b3c4e2b20"
+                    },
+                    {
+                      "canBookCount": 998,
+                      "discountPrice": "109.00",
+                      "price": "109.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669974,
+                      "specAttrs": "5*5lace&gt;8inch（20CM)",
+                      "specId": "d8f4ca624bdbb0375003954eeb92a3dc"
+                    },
+                    {
+                      "canBookCount": 998,
+                      "discountPrice": "220.00",
+                      "price": "220.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669969,
+                      "specAttrs": "SDDBundle&gt;14inch（35CM)",
+                      "specId": "7666147f65bc18b819d4d7f3d26a55a6"
+                    },
+                    {
+                      "canBookCount": 999,
+                      "discountPrice": "141.00",
+                      "price": "141.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669977,
+                      "specAttrs": "5*5lace&gt;14inch（35CM)",
+                      "specId": "e1ad512925593e20963ab28c711a3bd3"
+                    },
+                    {
+                      "canBookCount": 999,
+                      "discountPrice": "171.00",
+                      "price": "171.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669979,
+                      "specAttrs": "5*5lace&gt;18inch（45CM)",
+                      "specId": "4b83093697e74e9a761a70bdb1263136"
+                    },
+                    {
+                      "canBookCount": 999,
+                      "discountPrice": "355.00",
+                      "price": "355.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669972,
+                      "specAttrs": "SDDBundle&gt;20inch（50CM)",
+                      "specId": "208db76b1e0527b43de3c9a1bd5bd74e"
+                    },
+                    {
+                      "canBookCount": 998,
+                      "discountPrice": "285.00",
+                      "price": "285.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669971,
+                      "specAttrs": "SDDBundle&gt;18inch（45CM)",
+                      "specId": "8101b5110ba0a46ee385679ee98dfb92"
+                    },
+                    {
+                      "canBookCount": 998,
+                      "discountPrice": "190.00",
+                      "price": "190.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669968,
+                      "specAttrs": "SDDBundle&gt;12inch（30CM)",
+                      "specId": "68e1e8ff42912d67febbb1b6c7371bdf"
+                    },
+                    {
+                      "canBookCount": 989,
+                      "discountPrice": "128.00",
+                      "price": "128.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669966,
+                      "specAttrs": "SDDBundle&gt;8inch（20CM)",
+                      "specId": "7905dc709e35798f4f7289d733bc2ff9"
+                    },
+                    {
+                      "canBookCount": 994,
+                      "discountPrice": "120.00",
+                      "price": "120.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669975,
+                      "specAttrs": "5*5lace&gt;10inch（25CM)",
+                      "specId": "6dd0434ccc814971ff8990fbc778aa04"
+                    },
+                    {
+                      "canBookCount": 999,
+                      "discountPrice": "197.00",
+                      "price": "197.00",
+                      "priceAmount": 1,
+                      "promotionSku": false,
+                      "saleCount": 0,
+                      "skuId": 6036326669980,
+                      "specAttrs": "5*5lace&gt;20inch（50CM)",
+                      "specId": "a15ef3bfc8c8092f6a987742f7f34c1e"
+                    }
+                  ]
+                },
+                "unit": "盒"
+              },
+              "verticalType": "default"
+            },
+            "skuSourceType": "default"
+          }
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,230 @@
+{
+  "captured_from": "实际 SDK 请求响应；请求样例仅保留业务入参，不包含 Cookie 请求头或动态签名。",
+  "captured_date": "2026-10-20",
+  "examples": [
+    {
+      "name": "shop_header",
+      "api": "mtop.alibaba.alisite.cbu.server.ModuleAsyncService",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "componentKey": "wp_pc_common_header",
+          "params": {
+            "memberId": "b2b-2222311704593bd41a"
+          }
+        }
+      },
+      "response": {
+        "api": "mtop.alibaba.alisite.cbu.server.moduleasyncservice",
+        "data": {
+          "factoryInfo": {
+            "shopTag": [
+              {
+                "textFont": "11",
+                "text": "ISO 9000认证"
+              },
+              {
+                "textFont": "11",
+                "text": "CCC认证"
+              },
+              {
+                "textFont": "11",
+                "text": "可开专票"
+              },
+              {
+                "textFont": "11",
+                "text": "清加工"
+              }
+            ],
+            "slsj": {
+              "title": "普通TP",
+              "value": "暂无数据"
+            },
+            "propertyList": [
+              {
+                "title": "所在地",
+                "value": "广州市"
+              },
+              {
+                "title": "成立时间",
+                "value": "暂无数据"
+              },
+              {
+                "title": "生产设备",
+                "value": "6台"
+              }
+            ],
+            "shopProperty": {
+              "seeShop": "了解工厂",
+              "linkUrl": "https://sale.1688.com/factory/card.html?wh_pha=true&__existtitle__=1&__recSource__=win_port&memberId=b2b-2222311704593bd41a",
+              "pcLinkUrl": "https://show.1688.com/shili/factory/shop.html?__pageId__=99183&cms_id=99183&facMemId=b2b-2222311704593bd41a",
+              "title": "工厂信息"
+            }
+          },
+          "isFaved": "false",
+          "imall": "false",
+          "rateLogoTargetUrl": "http://vip.1688.com/club/my_medal.htm",
+          "tpLogo": "//cbu01.alicdn.com/cms/upload/2016/790/696/2696097_1254399316.png",
+          "companyName": "广州润大建材厂",
+          "bizTypeName": "生产厂家",
+          "isShili": "false",
+          "appData": {
+            "qrCode": "https://winport.m.1688.com/page/index.html?newRender=true&memberId=b2b-2222311704593bd41a&upstreamSource=winport",
+            "customerStarUrl": "https://show.1688.com/shop/common/j4lvat28.html?__pageId__=102619&cms_id=102619",
+            "hasFavGift": "false",
+            "serviceList": [
+              {
+                "score": "3.0",
+                "serviceKey": "cst_group_value_new",
+                "class": "com.alibaba.cbu.winport.wireless.service.model.ServicePointsDataModel$ServiceStar"
+              },
+              {
+                "score": "3.7",
+                "serviceKey": "lgt_group_value_new",
+                "class": "com.alibaba.cbu.winport.wireless.service.model.ServicePointsDataModel$ServiceStar"
+              },
+              {
+                "score": "5.0",
+                "serviceKey": "dspt_group_value",
+                "class": "com.alibaba.cbu.winport.wireless.service.model.ServicePointsDataModel$ServiceStar"
+              },
+              {
+                "score": "3.3",
+                "serviceKey": "goods_group_value",
+                "class": "com.alibaba.cbu.winport.wireless.service.model.ServicePointsDataModel$ServiceStar"
+              },
+              {
+                "score": "4.3",
+                "serviceKey": "rdf_group_value_new",
+                "class": "com.alibaba.cbu.winport.wireless.service.model.ServicePointsDataModel$ServiceStar"
+              }
+            ],
+            "isIndustryBrand": "false",
+            "customerStar": "4.5"
+          },
+          "customerLogo": "false",
+          "superFactory": "false",
+          "retentionRate": "0.18",
+          "isYuanTouFlagship": "false",
+          "establishedYear": "1776096000000",
+          "class": "com.alibaba.cbu.winport.wireless.api.etl.model.WirelessWinprotInfoModelVO",
+          "tpYear": "1",
+          "memberId": "b2b-2222311704593bd41a",
+          "amount": "10,000.00",
+          "companyIcons": [
+            {
+              "link": "//page.1688.com/buyerprotection/buyer.html",
+              "icon": "//cbu01.alicdn.com/cms/upload/2015/797/334/2433797_1490276829.png",
+              "title": "买家保障",
+              "class": "com.alibaba.cbu.winport.wireless.api.etl.model.BpsInfoModel"
+            }
+          ],
+          "rateLogoUrl": "https://img.alicdn.com/imgextra/i4/O1CN01PTeVOc1oYatudXmMd_!!6000000005237-2-tps-102-48.png",
+          "address": "广东省 广州市",
+          "cloudMarket": "false",
+          "companyId": "0",
+          "isTp": "true",
+          "lindormDataModel": {
+            "serviceStarList": [
+              {
+                "score": "3.0",
+                "serviceKey": "cst_group_value_new",
+                "class": "com.alibaba.cbu.winport.wireless.api.etl.model.SellerTradeInfoModel$ServiceStar"
+              },
+              {
+                "score": "3.7",
+                "serviceKey": "lgt_group_value_new",
+                "class": "com.alibaba.cbu.winport.wireless.api.etl.model.SellerTradeInfoModel$ServiceStar"
+              },
+              {
+                "score": "5.0",
+                "serviceKey": "dspt_group_value",
+                "class": "com.alibaba.cbu.winport.wireless.api.etl.model.SellerTradeInfoModel$ServiceStar"
+              },
+              {
+                "score": "3.3",
+                "serviceKey": "goods_group_value",
+                "class": "com.alibaba.cbu.winport.wireless.api.etl.model.SellerTradeInfoModel$ServiceStar"
+              },
+              {
+                "score": "4.3",
+                "serviceKey": "rdf_group_value_new",
+                "class": "com.alibaba.cbu.winport.wireless.api.etl.model.SellerTradeInfoModel$ServiceStar"
+              }
+            ],
+            "customerStarUrl": "https://show.1688.com/shop/common/j4lvat28.html?__pageId__=102619&cms_id=102619",
+            "customerStar": "4.5",
+            "class": "com.alibaba.cbu.winport.wireless.api.etl.model.SellerTradeInfoModel"
+          },
+          "hasWinport": "false",
+          "categoryId": "0",
+          "beFavedCount": "763"
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    },
+    {
+      "name": "shop_certification",
+      "api": "mtop.alibaba.alisite.cbu.server.ModuleAsyncService",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "componentKey": "wp_pc_certification",
+          "params": {
+            "memberId": "b2b-2222311704593bd41a"
+          }
+        }
+      },
+      "response": {
+        "api": "mtop.alibaba.alisite.cbu.server.moduleasyncservice",
+        "data": {
+          "memberId": "b2b-2222311704593bd41a"
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    },
+    {
+      "name": "shop_offer_list",
+      "api": "mtop.alibaba.alisite.cbu.server.ModuleAsyncService",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "componentKey": "Wp_pc_common_offerlist",
+          "params": {
+            "memberId": "b2b-2222311704593bd41a",
+            "appdata": {
+              "sortType": "wangpu_score",
+              "sellerRecommendFilter": false,
+              "mixFilter": false,
+              "tradenumFilter": false,
+              "quantityBegin": null,
+              "keywords": "板凳",
+              "pageNum": 1,
+              "count": 30
+            }
+          }
+        }
+      },
+      "response": {
+        "ret": [
+          "FAIL_SYS_USER_VALIDATE",
+          "RGV587_ERROR::SM::哎哟喂,被挤爆啦,请稍后重试"
+        ],
+        "data": {
+          "url": "<挑战 URL 已脱敏>"
+        }
+      }
+    }
+  ]
+}

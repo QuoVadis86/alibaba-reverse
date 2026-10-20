@@ -1,0 +1,74 @@
+{
+  "captured_from": "实际 SDK 请求响应；请求样例仅保留业务入参，不包含 Cookie 请求头或动态签名。",
+  "captured_date": "2026-10-20",
+  "examples": [
+    {
+      "name": "shop_card",
+      "api": "mtop.1688.moga.pc.shopcard",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "offerId": 1025692729044,
+          "userId": 0,
+          "offerMemberTags": [],
+          "sellerUserId": 2222311704593,
+          "sellerMemberId": "b2b-2222311704593bd41a",
+          "topCategoryId": 15,
+          "winportUrl": "https://shop2222311704593.1688.com",
+          "sellerWinportUrlMap": {
+            "indexUrl": "https://shop2222311704593.1688.com/page/index.html",
+            "contactinfoUrl": "https://shop2222311704593.1688.com/page/contactinfo.html",
+            "creditdetailUrl": "https://shop2222311704593.1688.com/page/creditdetail.html",
+            "offerlistUrl": "https://shop2222311704593.1688.com/page/index.html",
+            "shopdynamicUrl": "https://shop2222311704593.1688.com/page/shopdynamic.html",
+            "defaultUrl": "https://shop2222311704593.1688.com"
+          },
+          "sellerIdentity": "cht"
+        }
+      },
+      "response": {
+        "api": "mtop.1688.moga.pc.shopcard",
+        "data": {
+          "model": {
+            "crossBorderSellerPointSource": "domestic",
+            "isJointOperation": "false",
+            "mainCategoryName": "客厅家具",
+            "shopButton": {
+              "attentionRelation": "false",
+              "fuzzyFavCount": "763粉丝",
+              "type": "ATTENTION"
+            },
+            "shopData": [
+              {
+                "dataKey": "店铺回头率",
+                "dataValue": "18%"
+              },
+              {
+                "dataKey": "店铺服务分",
+                "dataValue": "4.5",
+                "unit": "分"
+              },
+              {
+                "dataKey": "综合履约率",
+                "dataValue": "95%"
+              },
+              {
+                "dataKey": "店铺好评率",
+                "dataValue": "97.7%"
+              }
+            ],
+            "shopName": "广州润大建材厂",
+            "shopUrl": "https://shop2222311704593.1688.com",
+            "tpYear": "1"
+          }
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    }
+  ]
+}

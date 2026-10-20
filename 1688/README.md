@@ -8,6 +8,7 @@
 - [Cookie、令牌与验证挑战](#cookie令牌与验证挑战)
 - [Python SDK 使用](#python-sdk)
 - [接口索引与目录结构](#接口路径和代码组织)
+- [真实请求与响应样例](samples/README.md)
 - [使用边界](#使用边界)
 
 ## 目录

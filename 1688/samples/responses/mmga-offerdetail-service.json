@@ -1,0 +1,706 @@
+{
+  "captured_from": "实际 SDK 请求响应；请求样例仅保留业务入参，不包含 Cookie 请求头或动态签名。",
+  "captured_date": "2026-10-20",
+  "examples": [
+    {
+      "name": "detail_ab_config",
+      "api": "mtop.1688.mmga.offerdetail.service",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "mmgaRequest": {
+            "serviceName": "offerDetailPCABService",
+            "abTestKey": "pcod"
+          }
+        }
+      },
+      "response": {
+        "api": "mtop.1688.mmga.offerdetail.service",
+        "data": {
+          "data": {},
+          "resultCode": "ok"
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    },
+    {
+      "name": "offer_logistics",
+      "api": "mtop.1688.mmga.offerdetail.service",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "mmgaRequest": {
+            "serviceName": "offerLogisticsService",
+            "invokeSource": "pc",
+            "channelType": "dsc",
+            "offerDeliveryTime": 0,
+            "offerId": 1025692729044,
+            "toAddressCode": "440300",
+            "fromAddressId": "",
+            "sellerId": 2222311704593,
+            "protectionInfos": "[]",
+            "buyerProtectionModel": "[]"
+          }
+        }
+      },
+      "response": {
+        "api": "mtop.1688.mmga.offerdetail.service",
+        "data": {
+          "data": {
+            "deliveryLimitTimeModel": {
+              "expectSendHour": "37",
+              "offerId": "1025692729044",
+              "class": "com.alibaba.shared.carriage.delivery.model.DeliveryLimitTimeQueryResult",
+              "attrs": {
+                "offerUnit": "件"
+              },
+              "limitTimeDesc": "",
+              "expectTimeDesc": ""
+            },
+            "limitTimeDesc": "",
+            "expectTimeDesc": ""
+          },
+          "resultCode": "ok"
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    },
+    {
+      "name": "offer_recommendations",
+      "api": "mtop.1688.mmga.offerdetail.service",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "mmgaRequest": {
+            "serviceName": "offerRecommendService",
+            "offerId": 1025692729044
+          }
+        }
+      },
+      "response": {
+        "api": "mtop.1688.mmga.offerdetail.service",
+        "data": {
+          "data": {
+            "result": {
+              "majorRecommendOfferInfos": [
+                {
+                  "saleAmount": "10",
+                  "publishTime": "1739068801000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [
+                    "包邮"
+                  ],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "12A Double Drawn真人发假发Jerry Curly跨境Human Hair BOB非洲",
+                  "unit": "盒",
+                  "price": "390.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN019jVykm2HJ8iUGz789_!!2219198359129-0-cib.jpg",
+                  "offerId": "885239130888",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "75",
+                  "publishTime": "1739068682000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [
+                    "包邮"
+                  ],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "13*4蕾丝真人发假发批发自然黑大波浪头套亚马逊热卖欧美外贸BODY",
+                  "unit": "个",
+                  "price": "230.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01ubEwmr2HJ8it6gQTA_!!2219198359129-0-cib.jpg",
+                  "offerId": "884996447917",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "44",
+                  "publishTime": "1739069002000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [
+                    "包邮"
+                  ],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "13*4亚马逊热卖欧美全头套假发真人发丝自然黑长直发厂家直销直发",
+                  "unit": "件",
+                  "price": "175.61",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01K3iNMo2HJ8itMGBMS_!!2219198359129-0-cib.jpg",
+                  "offerId": "885238250992",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "15",
+                  "publishTime": "1739068844000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [
+                    "包邮"
+                  ],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "假发前蕾丝真人假发头套13*4straight 假发全头发型human跨境棕色",
+                  "unit": "盒",
+                  "price": "197.58",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01LxFf7U2HJ8iVNNQ6X_!!2219198359129-0-cib.jpg",
+                  "offerId": "885636433547",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "19",
+                  "publishTime": "1739410658000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "13*4蕾丝真人发假发deepwave头套跨境欧美黑色长卷发厂家现货",
+                  "unit": "盒",
+                  "price": "224.58",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01ci91zV2HJ8iXvpJDq_!!2219198359129-0-cib.jpg",
+                  "offerId": "886926738529",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "9",
+                  "publishTime": "1739408784000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "13*4HD lace100% human hair真人发蕾丝头套长直发跨境专卖wigs",
+                  "unit": "盒",
+                  "price": "272.13",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN013vpWUm2HJ8iWcW2CW_!!2219198359129-0-cib.jpg",
+                  "offerId": "886650791688",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "10",
+                  "publishTime": "1739496696000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "13*4蕾丝真人发假发头套长卷发小卷亚马逊跨境热卖 jreey curl",
+                  "unit": "盒",
+                  "price": "226.39",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01hPTJK82HJ8iSOk9bi_!!2219198359129-0-cib.jpg",
+                  "offerId": "888151012287",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "4",
+                  "publishTime": "1739579322000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "40inch长发厂家直销超长头套亚马逊跨境专卖human hair",
+                  "unit": "个",
+                  "price": "2755.25",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01PyTETL2HJ8iaiPCdF_!!2219198359129-0-cib.jpg",
+                  "offerId": "887610659324",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "181",
+                  "publishTime": "1740186356000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "true",
+                  "bigPromotion": "false",
+                  "title": "Deep waver真人发Human hair深波亚马逊跨境爆款真人发假发蕾丝头",
+                  "unit": "盒",
+                  "price": "240.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01atH7nn2HJ8it8AT8V_!!2219198359129-0-cib.jpg",
+                  "offerId": "890729479755",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "16",
+                  "publishTime": "1739069072000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [
+                    "包邮"
+                  ],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "真人发假发全头发型 13*4 前蕾丝头套跨境欧美批发棕色时尚大波浪",
+                  "unit": "个",
+                  "price": "268.07",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01b4zFhr2HJ8iUJRWqq_!!2219198359129-0-cib.jpg",
+                  "offerId": "885979208660",
+                  "publishWithin7days": "false"
+                }
+              ],
+              "relationRecommendOfferInfos": [
+                {
+                  "saleAmount": "14",
+                  "publishTime": "1761531282000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "13*4高清蕾丝真人发假发HDlacehuman hair黑色骨直发Straightbone",
+                  "unit": "盒",
+                  "price": "350.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN013vpWUm2HJ8iWcW2CW_!!2219198359129-0-cib.jpg",
+                  "offerId": "988911410778",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "14",
+                  "publishTime": "1762996674000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "Gluelesswigs无胶真人发假发头套 Human Hair Wigs Bone Straight",
+                  "unit": "PCS",
+                  "price": "210.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01SSvxq12HJ8mxEL96W_!!2219198359129-0-cib.jpg",
+                  "offerId": "992590207246",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "112",
+                  "publishTime": "1762563196000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "true",
+                  "bigPromotion": "false",
+                  "title": "12A13*4骨直发BOBwighuman hair  bone Straight hairVietnam sdd",
+                  "unit": "件",
+                  "price": "180.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01EXBCkI2HJ8mxHGxDc_!!2219198359129-0-cib.jpg",
+                  "offerId": "992693889617",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "7",
+                  "publishTime": "1763000796000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "5*5HDlace Jerry's curly hair 小卷卷发真人发头发假发SDD wig",
+                  "unit": "盒",
+                  "price": "420.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01mh0GYS2HJ8mxHXaxM_!!2219198359129-0-cib.jpg",
+                  "offerId": "993180246766",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "16",
+                  "publishTime": "1758245224000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "13*4Lace wig huaman hair 高密度蕾丝真人发假发外贸头套",
+                  "unit": "盒",
+                  "price": "290.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN010pD2L92HJ8m9yxma2_!!2219198359129-0-cib.jpg",
+                  "offerId": "977875918119",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "53",
+                  "publishTime": "1765946585000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "Double Drawn Human hairr 真人发假发300%densitypixiecurly卷发",
+                  "unit": "盒",
+                  "price": "380.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01EUSgvV2HJ8nRoKGXW_!!2219198359129-0-cib.jpg",
+                  "offerId": "1004202201780",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "88",
+                  "publishTime": "1758515627000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "Curly pixie cut frontal wigs human hair 前蕾丝真人假发头套",
+                  "unit": "盒",
+                  "price": "123.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN010r0IJR2HJ8mCMaAcz_!!2219198359129-0-cib.jpg",
+                  "offerId": "979516533771",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "39",
+                  "publishTime": "1766032158000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "Deep wave100%human hair  深波真人发蕾丝假发头套跨境爆款",
+                  "unit": "PCS",
+                  "price": "320.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01GzoCPT2HJ8nRJNiQT_!!2219198359129-0-cib.jpg",
+                  "offerId": "1005280432721",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "69",
+                  "publishTime": "1760670118000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "Burmese Curly SDD Human Hair真人发蕾丝假发缅甸卷发300Density",
+                  "unit": "盒",
+                  "price": "325.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN01E4XZsc2HJ8mYLxaNg_!!2219198359129-0-cib.jpg",
+                  "offerId": "986120750438",
+                  "publishWithin7days": "false"
+                },
+                {
+                  "saleAmount": "21",
+                  "publishTime": "1772071339000",
+                  "cornerIcon": "",
+                  "promotionBenefitInfos": [],
+                  "bestOffer": "false",
+                  "bigPromotion": "false",
+                  "title": "12A Body Wave LaceFrontWigs Human Hair真人发大波浪假发头套",
+                  "unit": "盒",
+                  "price": "320.0",
+                  "imageUrl": "https://cbu01.alicdn.com/img/ibank/O1CN015E9DxR2HJ8oDJISeg_!!2219198359129-0-cib.jpg",
+                  "offerId": "1023692483140",
+                  "publishWithin7days": "false"
+                }
+              ],
+              "shopSimilarRecommendOfferInfos": [],
+              "relatedSaleCountStr": "已累计采购400+件"
+            },
+            "success": "true",
+            "resultCode": "0",
+            "class": "com.alibaba.china.offer.detail.shared.mobile.model.OfferDetailMobileModel",
+            "msgCode": "0"
+          },
+          "resultCode": "ok"
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    },
+    {
+      "name": "shop_relation",
+      "api": "mtop.1688.mmga.offerdetail.service",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "mmgaRequest": {
+            "serviceName": "shopRelationFnService",
+            "shopLoginId": "广州润大建材厂"
+          }
+        }
+      },
+      "response": {
+        "api": "mtop.1688.mmga.offerdetail.service",
+        "data": {
+          "data": {
+            "hasAttentionNew": "false"
+          },
+          "resultCode": "ok"
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    },
+    {
+      "name": "rate_card",
+      "api": "mtop.1688.mmga.offerdetail.service",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "mmgaRequest": {
+            "serviceName": "pcOdRateCardInfoMergeService",
+            "offerId": 1048748734813,
+            "sellerLoginId": "广州润大建材厂",
+            "sellerMemberId": "b2b-2222311704593bd41a"
+          }
+        }
+      },
+      "response": {
+        "api": "mtop.1688.mmga.offerdetail.service",
+        "data": {
+          "data": {
+            "result": {
+              "offerRateInfo": {
+                "headers": {},
+                "rateIdsStr": "1304349706057,40021037576",
+                "trackInfo": {
+                  "spmd": "a262eq.8239380\\/detail_od_evaluate_new",
+                  "expoData": "offerId@1048748734813^hasTbRate@true^tbSourceRateCnt@2500^bucketId@670648^showGuideInfo@false^rateIdsStr@1304349706057,40021037576",
+                  "uiTrackInfo": [
+                    {
+                      "args": {
+                        "showGuideInfo": "false",
+                        "spmd": "a262eq.8239380\\/detail_od_evaluate_new",
+                        "rateIdsStr": "1304349706057,40021037576",
+                        "arg1_none_prefix": "1",
+                        "tbSourceRateCnt": "2500",
+                        "ipvId": "2150423a17049391722267051ecd4b",
+                        "hasTbRate": "true",
+                        "offerId": "1048748734813",
+                        "bucketId": "670648"
+                      }
+                    }
+                  ]
+                },
+                "success": "true",
+                "model": {
+                  "commentList": [
+                    {
+                      "buyerLevel": "L2",
+                      "content": "快递超快，椅子结实舒服，坐在上面很放松，非常喜欢！",
+                      "gmtPublished": "1781067323000",
+                      "plusUser": "false",
+                      "quantity": 1,
+                      "rateId": "40084908956",
+                      "raterUserNick": "匿名购买",
+                      "specInfo": "颜色#3B标准款【单个坐垫】#3A尺寸#3B【加厚升级款】",
+                      "systemRemark": "false",
+                      "unit": "把"
+                    },
+                    {
+                      "images": [
+                        "https://img.alicdn.com/imgextra/i2/O1CN01wBjK4t1Sk7km2lg2k_!!4611686018427387804-0-rate.jpg",
+                        "https://img.alicdn.com/imgextra/i4/O1CN01eaXEqF1Sk7kkZbmBR_!!4611686018427387804-0-rate.jpg",
+                        "https://img.alicdn.com/imgextra/i2/O1CN01tfUi6M1Sk7kkVOXaI_!!4611686018427387804-0-rate.jpg"
+                      ],
+                      "raterUserNick": "t**0",
+                      "unit": "件",
+                      "quantity": "1",
+                      "gmtPublished": "1778153127000",
+                      "specInfo": "",
+                      "imgCnt": "3",
+                      "content": "藤编摇椅真的绝了！质感超棒，坐感舒服，摇起来稳又静音，跟原木风家居适配度拉满✨ 每天下班躺上去摇一摇，疲惫感直接消失，小户型也能轻松打造治愈角落！",
+                      "rateId": "1304349706057"
+                    },
+                    {
+                      "images": [],
+                      "quantity": "1",
+                      "plusUser": "false",
+                      "content": "客服很耐心，推荐的这款藤椅超值，坐着很舒服，性价比高，强烈推荐！",
+                      "rateId": "40021037576",
+                      "raterUserNick": "在**9",
+                      "unit": "把",
+                      "gmtPublished": "1780678779000",
+                      "specInfo": "颜色#3B标准款【单个坐垫】#3A尺寸#3B【加厚升级款】",
+                      "imgCnt": "0",
+                      "starLevel": "3",
+                      "systemRemark": "false",
+                      "buyerLevel": "L3"
+                    }
+                  ],
+                  "showGuideInfo": "false",
+                  "ratePics": [
+                    {
+                      "picUrl": "https://cbu01.alicdn.com/i4/O1CN01awhhp41qAu5YDfl8L_!!4611686018427384368-0-rate.jpg",
+                      "source": "tb",
+                      "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂&rateId=1310241120021",
+                      "class": "com.alibaba.shared.rate.service.rate.model.OfferDetailFirstPageRateModel$PhotoModel",
+                      "rateId": "1310241120021"
+                    },
+                    {
+                      "picUrl": "https://cbu01.alicdn.com/i4/O1CN01MLO9jM1DnaWLxTn8q_!!4611686018427387541-0-rate.jpg",
+                      "source": "tb",
+                      "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂&rateId=1307861270920",
+                      "class": "com.alibaba.shared.rate.service.rate.model.OfferDetailFirstPageRateModel$PhotoModel",
+                      "rateId": "1307861270920"
+                    },
+                    {
+                      "picUrl": "https://cbu01.alicdn.com/i1/O1CN01MyGXIS1EWvjFahe7e_!!4611686018427385352-0-rate.jpg",
+                      "source": "tb",
+                      "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂&rateId=1306648430551",
+                      "class": "com.alibaba.shared.rate.service.rate.model.OfferDetailFirstPageRateModel$PhotoModel",
+                      "rateId": "1306648430551"
+                    },
+                    {
+                      "picUrl": "https://cbu01.alicdn.com/i2/O1CN012CpLSH1sYq0ZLoIDc_!!4611686018427384163-0-tbbala.jpg",
+                      "source": "tb",
+                      "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂&rateId=1306254707202",
+                      "class": "com.alibaba.shared.rate.service.rate.model.OfferDetailFirstPageRateModel$PhotoModel",
+                      "rateId": "1306254707202"
+                    }
+                  ],
+                  "hasTbRate": "true",
+                  "tbRateCnt": "2500",
+                  "imprList": [
+                    {
+                      "name": "坐着很舒服",
+                      "count": "3",
+                      "type": "impr"
+                    },
+                    {
+                      "name": "性价比高",
+                      "count": "2",
+                      "type": "impr"
+                    }
+                  ],
+                  "bucketId": "670648",
+                  "rateAverageStarLevel": 4.6,
+                  "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂",
+                  "judgeNewVersion": "false",
+                  "commentTotalNum": "2500+"
+                },
+                "httpStatusCode": "200"
+              },
+              "rateIdsStr": "1304349706057,40021037576",
+              "product_comments": "true",
+              "trackInfo": {
+                "spmd": "a262eq.8239380\\/detail_od_evaluate_new",
+                "expoData": "offerId@1048748734813^hasTbRate@true^tbSourceRateCnt@2500^bucketId@670648^showGuideInfo@false^rateIdsStr@1304349706057,40021037576",
+                "uiTrackInfo": [
+                  {
+                    "args": {
+                      "showGuideInfo": "false",
+                      "spmd": "a262eq.8239380\\/detail_od_evaluate_new",
+                      "rateIdsStr": "1304349706057,40021037576",
+                      "arg1_none_prefix": "1",
+                      "tbSourceRateCnt": "2500",
+                      "ipvId": "2150423a17049391722267051ecd4b",
+                      "hasTbRate": "true",
+                      "offerId": "1048748734813",
+                      "bucketId": "670648"
+                    }
+                  }
+                ]
+              },
+              "peopleEvaluation": "人评价",
+              "titleName": "商品评价",
+              "newOfferRateInfo": {
+                "headers": {},
+                "success": "true",
+                "model": {
+                  "ratePics": [
+                    {
+                      "picUrl": "https://cbu01.alicdn.com/i4/O1CN01awhhp41qAu5YDfl8L_!!4611686018427384368-0-rate.jpg",
+                      "source": "tb",
+                      "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂&rateId=1310241120021",
+                      "class": "com.alibaba.shared.rate.service.rate.model.OfferDetailFirstPageRateModel$PhotoModel",
+                      "rateId": "1310241120021"
+                    },
+                    {
+                      "picUrl": "https://cbu01.alicdn.com/i4/O1CN01MLO9jM1DnaWLxTn8q_!!4611686018427387541-0-rate.jpg",
+                      "source": "tb",
+                      "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂&rateId=1307861270920",
+                      "class": "com.alibaba.shared.rate.service.rate.model.OfferDetailFirstPageRateModel$PhotoModel",
+                      "rateId": "1307861270920"
+                    },
+                    {
+                      "picUrl": "https://cbu01.alicdn.com/i1/O1CN01MyGXIS1EWvjFahe7e_!!4611686018427385352-0-rate.jpg",
+                      "source": "tb",
+                      "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂&rateId=1306648430551",
+                      "class": "com.alibaba.shared.rate.service.rate.model.OfferDetailFirstPageRateModel$PhotoModel",
+                      "rateId": "1306648430551"
+                    },
+                    {
+                      "picUrl": "https://cbu01.alicdn.com/i2/O1CN012CpLSH1sYq0ZLoIDc_!!4611686018427384163-0-tbbala.jpg",
+                      "source": "tb",
+                      "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂&rateId=1306254707202",
+                      "class": "com.alibaba.shared.rate.service.rate.model.OfferDetailFirstPageRateModel$PhotoModel",
+                      "rateId": "1306254707202"
+                    }
+                  ],
+                  "validRateModel": {
+                    "quantity": 1,
+                    "isNym": "true",
+                    "ratedUserNick": "广**厂",
+                    "posterUserInfo": {
+                      "memberIdentityAttrModel": {
+                        "tmIcon": "0",
+                        "tbBS": "s",
+                        "avIcon": "0",
+                        "tpIcon": "0",
+                        "ovIcon": "0",
+                        "plusUser": "false",
+                        "tips": {
+                          "membertip": "在线采购金额等级，展示采购商在线采购实力"
+                        },
+                        "rateBuyerGoodNum": "10",
+                        "medalIcon": "0",
+                        "common": "0",
+                        "pnaIcon": "0",
+                        "rateSum": "0",
+                        "rateBuyerSum": "10",
+                        "cnaIcon": "0",
+                        "memberIcon": "https://cbu01.alicdn.com/cms/upload/member/club/buy_4_star.gif",
+                        "enterpriseTP": "false",
+                        "personTP": "false",
+                        "rateBuyerNum": "10",
+                        "class": "com.alibaba.shared.rate.service.member.model.MemberIdentityAttrModel",
+                        "rateSellerNum": "0",
+                        "rateSellerGoodNum": "0",
+                        "tbIcon": "1",
+                        "buyerLevel": "L2",
+                        "gsIcon": "0"
+                      },
+                      "portraitUrl": "/img/ibank/2020/428/378/22185873824_536529798.jpg",
+                      "class": "com.alibaba.shared.rate.service.rate.model.RateModelUserInfo"
+                    },
+                    "isSystemRemark": "false",
+                    "source": "0",
+                    "gmtCreate": "1781067323000",
+                    "plusUser": "false",
+                    "content": "快递超快，椅子结实舒服，坐在上面很放松，非常喜欢！",
+                    "itemId": "1048748734813",
+                    "raterUserNick": "匿名购买",
+                    "unit": "把",
+                    "gmtPublished": "1781067323000",
+                    "regularCustomer": "false",
+                    "specInfo": "颜色#3B标准款【单个坐垫】#3A尺寸#3B【加厚升级款】",
+                    "id": "40084908956",
+                    "starLevel": "5",
+                    "systemRemark": "false",
+                    "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂&rateId=40084908956",
+                    "class": "com.alibaba.shared.rate.service.rate.model.MtopRateModel",
+                    "status": "PUBLISHED"
+                  },
+                  "detailLink": "https://air.1688.com/pages/od/offer-evaluate/dh3apq8qi/index.html?tdScene=offer-evaluate&offerId=1048748734813&sellerLoginId=广州润大建材厂",
+                  "class": "com.alibaba.shared.rate.service.rate.model.OfferDetailFirstPageRateModel"
+                },
+                "class": "com.alibaba.shared.service.common.result.MtopResult",
+                "httpStatusCode": "200"
+              },
+              "invalidEvaluation": "暂无有效评价"
+            }
+          },
+          "resultCode": "ok"
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    }
+  ]
+}

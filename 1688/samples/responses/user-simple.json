@@ -1,0 +1,23 @@
+{
+  "captured_from": "实际 SDK 请求响应；请求样例仅保留业务入参，不包含 Cookie 请求头或动态签名。",
+  "captured_date": "2026-10-20",
+  "examples": [
+    {
+      "name": "current_user",
+      "api": "mtop.user.getUserSimple",
+      "version": "1.0",
+      "http_method": "GET",
+      "request": {
+        "data": {}
+      },
+      "response": {
+        "api": "mtop.user.getUserSimple",
+        "v": "1.0",
+        "ret": [
+          "FAIL_SYS_SESSION_EXPIRED::SESSION失效"
+        ],
+        "data": {}
+      }
+    }
+  ]
+}

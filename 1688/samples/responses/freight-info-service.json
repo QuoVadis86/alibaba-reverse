@@ -1,0 +1,33 @@
+{
+  "captured_from": "实际 SDK 请求响应；请求样例仅保留业务入参，不包含 Cookie 请求头或动态签名。",
+  "captured_date": "2026-10-20",
+  "examples": [
+    {
+      "name": "freight_info",
+      "api": "mtop.1688.freightInfoService.getFreightInfoWithScene",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "offerId": 1025692729044,
+          "sellerUserId": 2222311704593,
+          "sendAddressCode": "440106",
+          "receiveAddressCode": "440300",
+          "freeEndAmount": -1,
+          "pageScene": "dsc",
+          "skuCalParams": "[{\"skuId\":\"6036326669966\",\"number\":1}]",
+          "extendMap": "{\"officialLogistics\":false,\"unitWeight\":0,\"skuWeight\":\"{\\\"6036326669966\\\":1}\",\"sellerLoginId\":\"广州润大建材厂\",\"templateId\":10693676,\"amount\":1}"
+        }
+      },
+      "response": {
+        "api": "mtop.1688.freightinfoservice.getfreightinfowithscene",
+        "v": "1.0",
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "data": {},
+        "traceId": "<请求级标识已脱敏>"
+      }
+    }
+  ]
+}

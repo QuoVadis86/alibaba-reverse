@@ -1,0 +1,56 @@
+{
+  "captured_from": "实际 SDK 请求响应；请求样例仅保留业务入参，不包含 Cookie 请求头或动态签名。",
+  "captured_date": "2026-10-20",
+  "examples": [
+    {
+      "name": "product_ratings",
+      "api": "mtop.1688.trade.service.MtopRateService.queryItemRatedListV2",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "offerId": 1025692729044,
+          "beginPage": 1,
+          "pageSize": 20,
+          "starLevel": "all"
+        }
+      },
+      "response": {
+        "api": "mtop.1688.trade.service.mtoprateservice.queryitemratedlistv2",
+        "data": {
+          "headers": {},
+          "httpStatusCode": "200"
+        },
+        "ret": [
+          "FAIL_BIZ_INVALID_PARAM::null"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    },
+    {
+      "name": "offer_dsr",
+      "api": "mtop.1688.trade.service.MtopRateService.queryDsrRateDataV2",
+      "version": "1.0",
+      "http_method": "POST",
+      "request": {
+        "data": {
+          "offerId": 1025692729044,
+          "scene": "dsc"
+        }
+      },
+      "response": {
+        "api": "mtop.1688.trade.service.mtoprateservice.querydsrratedatav2",
+        "data": {
+          "headers": {},
+          "httpStatusCode": "200"
+        },
+        "ret": [
+          "SUCCESS::调用成功"
+        ],
+        "traceId": "<请求级标识已脱敏>",
+        "v": "1.0"
+      }
+    }
+  ]
+}
