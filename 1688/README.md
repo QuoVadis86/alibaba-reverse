@@ -33,4 +33,6 @@ with create_http_client() as http:
     response = MtopClient(http).get_offer_sku("566344866833")
 ```
 
-详情服务也可通过该客户端调用。`offerDetailPCABService` 的 `abTestKey`，以及 `offerLogisticsService` 的商品、收货地和发货地等参数，都需要从获授权的详情页请求上下文中提供；客户端不会猜测这些动态值。商品标题、图片和描述目前来自详情页 SSR 数据，尚未封装。
+SDK 方法接收业务参数并负责组装 MTOP 请求：`get_offer_detail_config(ab_test_key)` 查询详情 AB 配置，`get_offer_logistics(query)` 查询物流时效。响应统一为 `MtopResponse`，通过 `result.success`、`result.ret` 和 `result.data` 读取状态与业务数据；完整原始响应可从 `result.raw` 获取。`OfferLogisticsQuery` 字段应使用获授权详情页请求中的真实值。
+
+商品标题、图片和描述目前来自详情页 SSR 数据，尚未封装。

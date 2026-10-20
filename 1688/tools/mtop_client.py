@@ -39,6 +39,7 @@ from mtop_sign import (
     Token,
     compute_sign,
 )
+from mtop_models import JsonObject, MtopResponse, OfferLogisticsQuery
 
 # 接口参数来自本地 MTOP 请求记录；实际服务端版本可能变化。
 APP_KEY: Final = AppKey("12574478")
@@ -49,11 +50,6 @@ TOKEN_BOOTSTRAP_API: Final = "mtop.cbu.pc.smart.engine.api.abtest.execute"
 SKU_API: Final = "mtop.1688.wosc.queryOfferSkuSelectorModel"
 OFFER_DETAIL_API: Final = "mtop.1688.mmga.offerdetail.service"
 
-# 用递归类型描述 JSON，避免把服务端响应当作无类型数据处理。
-type JsonValue = (
-    str | int | float | bool | None | list[JsonValue] | dict[str, JsonValue]
-)
-type JsonObject = dict[str, JsonValue]
 JSON_OBJECT_ADAPTER: Final = TypeAdapter(JsonObject)
 
 LIMITS: Final = httpx2.Limits(
@@ -68,8 +64,8 @@ SOCKET_OPTIONS: Final[list[tuple[int, int, int]]] = [
 
 
 @dataclass(frozen=True, slots=True)
-class MtopRequest:
-    """描述一个 MTOP 请求。"""
+class _MtopRequest:
+    """描述一个内部 MTOP 请求。"""
 
     api: str
     version: str
@@ -131,7 +127,7 @@ class MtopClient:
         if self._token is not None:
             return self._token
 
-        bootstrap = MtopRequest(
+        bootstrap = _MtopRequest(
             api=TOKEN_BOOTSTRAP_API,
             version="1.0",
             data={
@@ -144,9 +140,9 @@ class MtopClient:
             raise MtopError("引导请求未在 Set-Cookie 响应头中返回 _m_h5_tk")
         return self._token
 
-    def get_offer_sku(self, offer_id: str) -> JsonObject:
+    def get_offer_sku(self, offer_id: str) -> MtopResponse:
         """查询一个商品的 SKU 规格、价格和库存信息。"""
-        request = MtopRequest(
+        request = _MtopRequest(
             api=SKU_API,
             version="1.0",
             method="POST",
@@ -157,28 +153,43 @@ class MtopClient:
                 "urlParam": "actionType=dxOrder&sk=consign",
             },
         )
-        return self.request(request)
+        return self._request(request)
 
-    def request_offer_detail_service(
-        self,
-        service_name: Literal["offerDetailPCABService", "offerLogisticsService"],
-        service_data: JsonObject,
-    ) -> JsonObject:
-        """调用详情服务中的 AB 配置或物流时效子服务。"""
-        mmga_request = {**service_data, "serviceName": service_name}
-        request = MtopRequest(
+    def get_offer_detail_config(self, ab_test_key: str) -> MtopResponse:
+        """获取商品详情页的 AB 配置。"""
+        request = _MtopRequest(
             api=OFFER_DETAIL_API,
             version="1.0",
             method="POST",
-            data={"mmgaRequest": mmga_request},
+            data={
+                "mmgaRequest": {
+                    "serviceName": "offerDetailPCABService",
+                    "abTestKey": ab_test_key,
+                }
+            },
         )
-        return self.request(request)
+        return self._request(request)
 
-    def request(self, request: MtopRequest) -> JsonObject:
-        """对请求参数签名并发送请求，返回 MTOP JSON 响应。"""
+    def get_offer_logistics(self, query: OfferLogisticsQuery) -> MtopResponse:
+        """查询商品物流时效，参数使用 OfferLogisticsQuery 提供。"""
+        request = _MtopRequest(
+            api=OFFER_DETAIL_API,
+            version="1.0",
+            method="POST",
+            data={
+                "mmgaRequest": {
+                    "serviceName": "offerLogisticsService",
+                    **query.model_dump(by_alias=True),
+                }
+            },
+        )
+        return self._request(request)
+
+    def _request(self, request: _MtopRequest) -> MtopResponse:
+        """内部请求入口：确保令牌后发送业务请求。"""
         return self._send(request, self._ensure_token())
 
-    def _send(self, request: MtopRequest, token: Token | None) -> JsonObject:
+    def _send(self, request: _MtopRequest, token: Token | None) -> MtopResponse:
         """组装参数、计算签名，并发送 GET 或 POST 请求。"""
         data = json.dumps(request.data, ensure_ascii=False, separators=(",", ":"))
         params = {
@@ -247,8 +258,8 @@ class MtopClient:
             self._token = self._token_from_cookie(cookie_value)
 
     @staticmethod
-    def _parse_response(response_text: str) -> JsonObject:
-        """去掉 JSONP 包装并校验响应是 JSON 对象。"""
+    def _parse_response(response_text: str) -> MtopResponse:
+        """去掉 JSONP 包装，校验 MTOP 响应并构造统一响应对象。"""
         payload = response_text.strip()
         if payload.startswith("mtopjsonp"):
             start = payload.find("(")
@@ -258,9 +269,21 @@ class MtopClient:
             payload = payload[start + 1 : end]
 
         try:
-            return JSON_OBJECT_ADAPTER.validate_json(payload)
+            raw = JSON_OBJECT_ADAPTER.validate_json(payload)
         except ValidationError as error:
             raise MtopError("MTOP 返回的内容不是有效 JSON 对象") from error
+
+        ret_value = raw.get("ret")
+        if ret_value is None:
+            ret: tuple[str, ...] = ()
+        elif isinstance(ret_value, str):
+            ret = (ret_value,)
+        elif isinstance(ret_value, list) and all(isinstance(code, str) for code in ret_value):
+            ret = tuple(ret_value)
+        else:
+            raise MtopError("MTOP 响应中的 ret 字段格式不正确")
+
+        return MtopResponse(ret=ret, data=raw.get("data"), raw=raw)
 
 
 def main(
@@ -277,7 +300,7 @@ def main(
         typer.echo(f"查询失败：{error}", err=True)
         raise typer.Exit(code=1) from error
 
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

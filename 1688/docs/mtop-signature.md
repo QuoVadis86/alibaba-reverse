@@ -44,24 +44,25 @@ uv run 1688/tools/mtop_client.py 566344866833
 
 ```python
 from mtop_client import MtopClient, create_http_client
+from mtop_models import OfferLogisticsQuery
 
 with create_http_client() as http:
     client = MtopClient(http)
-    response = client.request_offer_detail_service(
-        "offerLogisticsService",
-        {
-            "offerId": "566344866833",
-            "toAddressCode": "从详情页请求中读取",
-            "fromAddressId": "从详情页请求中读取",
-            "sellerId": "从详情页请求中读取",
-            "protectionInfos": {},
-            "buyerProtectionModel": {},
-            "offerDeliveryTime": {},
-        },
+    response = client.get_offer_logistics(
+        OfferLogisticsQuery(
+            offer_id="566344866833",
+            to_address_code="从详情页请求中读取",
+            from_address_id="从详情页请求中读取",
+            seller_id="从详情页请求中读取",
+            protection_infos={},
+            buyer_protection_model={},
+            offer_delivery_time={},
+        )
     )
+    print(response.data)
 ```
 
-示例中的文本是说明占位符，调用时须换成授权会话中采集到的真实值。`offerDetailPCABService` 需要的 `abTestKey` 也是动态值。响应保留 MTOP 原始 JSON 对象，业务错误通过 `ret` 字段查看。
+示例中的文本是说明占位符，调用时须换成授权会话中采集到的真实值。详情 AB 配置使用 `client.get_offer_detail_config(ab_test_key)`。接口方法返回统一的 `MtopResponse`：`success` 表示 MTOP 是否成功，`ret` 保存服务端状态码，`data` 是业务响应数据，`raw` 保留完整原始响应。
 
 完整标题、图片和描述主要由详情页 SSR 内容提供，当前未接入 HTML 解析；运费计算接口 `mtop.alibaba.carriagecenter.fulfillmentsolution.query4offer` 需要登录态，暂未封装。客户端不处理登录、验证码或风控挑战。
 
