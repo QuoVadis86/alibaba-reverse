@@ -6,6 +6,7 @@
 
 - [安装与运行环境](#安装)
 - [Cookie、令牌与验证挑战](#cookie令牌与验证挑战)
+- [滑块校验请求与响应](docs/x5sec-challenge.md)
 - [Python SDK 使用](#python-sdk)
 - [接口索引与目录结构](#接口路径和代码组织)
 - [真实请求与响应样例](samples/README.md)
@@ -58,6 +59,9 @@ UV_PROJECT_ENVIRONMENT="$PWD/.venv" uv sync --project 1688 --python "$PYTHON_BIN
 没有已有 Cookie 时，客户端会先从阿里统计端点初始化 `cna`，再对目标接口用 `undefined` 签名发送空请求，并从响应头读取 `_m_h5_tk`；后续接口会复用该令牌。若目标接口不下发令牌，再尝试通用引导接口。
 
 传输层能够识别带挑战 URL 的 `FAIL_SYS_USER_VALIDATE` 响应，并预留了 `x5sec` 加载入口；若加载器返回 Cookie 值，会设置 `x5sec` 并重试一次。目前加载器的具体实现仍为 TODO，SDK 不会自动完成验证码或风控挑战。命令行可通过 `MTOP_COOKIE` 环境变量提供已获授权的 Cookie，Python 客户端也可在 `MtopClient(http, cookie_string)` 中传入。请勿把 Cookie 或令牌提交到仓库。
+
+滑块校验请求参数、来源、响应正文和 `bx-x5sec` 响应头见 [`docs/x5sec-challenge.md`](docs/x5sec-challenge.md)。对应的 JS 样本保存在 [`docs/reference/`](docs/reference/)，已确认的明文字段可用 [`mtop_sdk/slide_params.py`](mtop_sdk/slide_params.py) 构造。
+FY 模块的调用链及 Python 移植进度见 [`docs/fy-module-analysis.md`](docs/fy-module-analysis.md)。
 
 ## Python SDK
 
