@@ -14,18 +14,23 @@ RequestData = NewType("RequestData", str)
 
 @dataclass(frozen=True, slots=True)
 class MtopSignInput:
-    """MTOP 签名所需的原始字符串参数。"""
+    """MTOP 签名所需的原始字符串参数；无令牌时传入 None。"""
 
-    token: Token
+    token: Token | None
     timestamp_ms: TimestampMs
     app_key: AppKey
     data: RequestData
 
 
 def compute_sign(inputs: MtopSignInput) -> str:
-    """按 MTOP 兼容格式返回小写十六进制 MD5 签名。"""
+    """按 MTOP 的 JavaScript 字符串规则返回小写十六进制 MD5 签名。
+
+    JavaScript 将 undefined 拼入字符串时会得到字面文本 ``undefined``；
+    因此无 token 的引导请求不能省略 token，也不能把它当成空字符串。
+    """
+    token_text = "undefined" if inputs.token is None else inputs.token
     signing_text = (
-        f"{inputs.token}&{inputs.timestamp_ms}&{inputs.app_key}&{inputs.data}"
+        f"{token_text}&{inputs.timestamp_ms}&{inputs.app_key}&{inputs.data}"
     )
     return hashlib.md5(
         signing_text.encode("utf-8"), usedforsecurity=False

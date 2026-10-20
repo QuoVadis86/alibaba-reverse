@@ -16,15 +16,15 @@
 #      chmod +x 1688/tools/mtop_client.py && ./1688/tools/mtop_client.py 566344866833
 # ──────────────────
 
-"""通过 1688 MTOP 接口查询单个商品的 SKU 信息。"""
+"""通过 1688 MTOP 接口查询商品信息，并在需要时自动获取签名令牌。"""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import socket
 import time
 from dataclasses import dataclass
+from http.cookies import SimpleCookie
 from typing import Final, Literal, assert_never
 
 import httpx2
@@ -45,6 +45,7 @@ APP_KEY: Final = AppKey("12574478")
 JSV: Final = "2.7.4"
 GATEWAY: Final = "https://h5api.m.1688.com/h5"
 TOKEN_COOKIE: Final = "_m_h5_tk"
+TOKEN_BOOTSTRAP_API: Final = "mtop.cbu.pc.smart.engine.api.abtest.execute"
 SKU_API: Final = "mtop.1688.wosc.queryOfferSkuSelectorModel"
 OFFER_DETAIL_API: Final = "mtop.1688.mmga.offerdetail.service"
 
@@ -97,27 +98,51 @@ def create_http_client() -> httpx2.Client:
 
 
 class MtopClient:
-    """使用浏览器 Cookie 调用 MTOP 接口。"""
+    """使用已有 Cookie 或无 token 引导请求调用 MTOP 接口。"""
 
-    def __init__(self, http: httpx2.Client, cookie_string: str) -> None:
+    def __init__(self, http: httpx2.Client, cookie_string: str | None = None) -> None:
         self._http = http
         self._token = self._load_cookie(cookie_string)
 
-    def _load_cookie(self, cookie_string: str) -> Token:
-        """导入浏览器 Cookie，并提取签名所需的令牌。"""
-        for item in cookie_string.split(";"):
-            name, separator, value = item.strip().partition("=")
-            if separator and name:
-                self._http.cookies.set(name, value.strip(), domain=".1688.com")
+    def _load_cookie(self, cookie_string: str | None) -> Token | None:
+        """导入可选的浏览器 Cookie；没有令牌时留待引导请求获取。"""
+        if cookie_string:
+            for item in cookie_string.split(";"):
+                name, separator, value = item.strip().partition("=")
+                if separator and name:
+                    self._http.cookies.set(name, value.strip(), domain=".1688.com")
 
         cookie_value = self._http.cookies.get(TOKEN_COOKIE, domain=".1688.com")
         if cookie_value is None:
-            raise MtopError("Cookie 中缺少 _m_h5_tk；请传入已授权的浏览器会话 Cookie")
+            return None
 
+        return self._token_from_cookie(cookie_value)
+
+    @staticmethod
+    def _token_from_cookie(cookie_value: str) -> Token:
+        """取 _m_h5_tk 中过期时间前的签名令牌。"""
         token_value, separator, _ = cookie_value.partition("_")
         if not separator or not token_value:
             raise MtopError("_m_h5_tk Cookie 格式不正确")
         return Token(token_value)
+
+    def _ensure_token(self) -> Token:
+        """无 token 时发起引导请求，从 Set-Cookie 响应头取得令牌。"""
+        if self._token is not None:
+            return self._token
+
+        bootstrap = MtopRequest(
+            api=TOKEN_BOOTSTRAP_API,
+            version="1.0",
+            data={
+                "abtestCode": "20907",
+                "extraParams": json.dumps({"from": "pcHome"}, separators=(",", ":")),
+            },
+        )
+        self._send(bootstrap, token=None)
+        if self._token is None:
+            raise MtopError("引导请求未在 Set-Cookie 响应头中返回 _m_h5_tk")
+        return self._token
 
     def get_offer_sku(self, offer_id: str) -> JsonObject:
         """查询一个商品的 SKU 规格、价格和库存信息。"""
@@ -151,7 +176,7 @@ class MtopClient:
 
     def request(self, request: MtopRequest) -> JsonObject:
         """对请求参数签名并发送请求，返回 MTOP JSON 响应。"""
-        return self._send(request, self._token)
+        return self._send(request, self._ensure_token())
 
     def _send(self, request: MtopRequest, token: Token | None) -> JsonObject:
         """组装参数、计算签名，并发送 GET 或 POST 请求。"""
@@ -167,18 +192,17 @@ class MtopClient:
             "data": data,
         }
 
-        # 签名和请求都使用同一份原始 JSON 字符串。
-        if token is not None:
-            timestamp = TimestampMs(str(int(time.time() * 1000)))
-            params["t"] = timestamp
-            params["sign"] = compute_sign(
-                MtopSignInput(
-                    token=token,
-                    timestamp_ms=timestamp,
-                    app_key=APP_KEY,
-                    data=RequestData(data),
-                )
+        # 无 token 时传入 None；签名模块会按 JavaScript 规则写入 "undefined"。
+        timestamp = TimestampMs(str(int(time.time() * 1000)))
+        params["t"] = timestamp
+        params["sign"] = compute_sign(
+            MtopSignInput(
+                token=token,
+                timestamp_ms=timestamp,
+                app_key=APP_KEY,
+                data=RequestData(data),
             )
+        )
 
         url = f"{GATEWAY}/{request.api.lower()}/{request.version.lower()}/"
         match request.method:
@@ -196,8 +220,31 @@ class MtopClient:
             case unreachable:
                 assert_never(unreachable)
 
+        self._capture_token(response)
         response.raise_for_status()
         return self._parse_response(response.text)
+
+    def _capture_token(self, response: httpx2.Response) -> None:
+        """从 Set-Cookie 响应头提取新 token，并存入客户端 Cookie jar。"""
+        for header in response.headers.get_list("set-cookie"):
+            cookies = SimpleCookie()
+            cookies.load(header)
+            for morsel in cookies.values():
+                domain = morsel["domain"] or ".1688.com"
+                path = morsel["path"] or "/"
+                self._http.cookies.set(
+                    morsel.key,
+                    morsel.value,
+                    domain=domain,
+                    path=path,
+                )
+                if morsel.key == TOKEN_COOKIE:
+                    self._token = self._token_from_cookie(morsel.value)
+
+        # HTTPX 通常已把 Set-Cookie 写入 Cookie jar，保留 jar 读取作为兼容兜底。
+        cookie_value = self._http.cookies.get(TOKEN_COOKIE, domain=".1688.com")
+        if cookie_value is not None:
+            self._token = self._token_from_cookie(cookie_value)
 
     @staticmethod
     def _parse_response(response_text: str) -> JsonObject:
@@ -218,9 +265,9 @@ class MtopClient:
 
 def main(
     offer_id: str,
-    cookie: str = typer.Option(..., envvar="MTOP_COOKIE", hide_input=True),
+    cookie: str | None = typer.Option(None, envvar="MTOP_COOKIE", hide_input=True),
 ) -> None:
-    """查询商品 SKU 并将响应以格式化 JSON 输出。"""
+    """查询商品 SKU；未提供 Cookie 时会先自动申请 MTOP 令牌。"""
     try:
         if not offer_id.isdecimal():
             raise MtopError("商品 ID 必须是数字")

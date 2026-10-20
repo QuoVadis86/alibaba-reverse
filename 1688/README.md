@@ -16,24 +16,21 @@
 
 ## 调用 SKU 接口
 
-需要安装 [uv](https://docs.astral.sh/uv/)，并先在当前终端的 `MTOP_COOKIE` 环境变量中设置已获授权的 1688 浏览器 Cookie，再运行：
+需要安装 [uv](https://docs.astral.sh/uv/)，然后运行：
 
 ```bash
-export MTOP_COOKIE
 uv run 1688/tools/mtop_client.py 566344866833
 ```
 
-脚本从 Cookie 中读取 `_m_h5_tk` 令牌，签名后请求一个商品的 SKU 信息，并输出 JSON。Cookie 只从环境变量读取，不要把它写进仓库或命令历史。当前实现一次请求一个商品，不做批量请求、不处理验证码，也不会打印 Cookie 或令牌。
+没有已有 Cookie 时，脚本会先使用 `undefined` 参与签名发起匿名引导请求，再从响应的 `Set-Cookie` 头读取 `_m_h5_tk`，然后请求 SKU 信息。也可以通过 `MTOP_COOKIE` 提供已授权的浏览器 Cookie；不要把 Cookie 写入仓库或命令历史。当前实现一次请求一个商品，不做批量请求、不处理验证码，也不会打印 Cookie 或令牌。
 
-已安装脚本依赖的 Python 项目也可以导入客户端；把 `1688/tools/` 加入 `PYTHONPATH` 后：
+已安装脚本依赖的 Python 项目也可以导入客户端；把 `1688/tools/` 加入 `PYTHONPATH` 后调用 SKU 接口。若不需要浏览器 Cookie，可省略构造函数的第二个参数：
 
 ```python
-import os
-
 from mtop_client import MtopClient, create_http_client
 
 with create_http_client() as http:
-    response = MtopClient(http, os.environ["MTOP_COOKIE"]).get_offer_sku("566344866833")
+    response = MtopClient(http).get_offer_sku("566344866833")
 ```
 
 详情服务也可通过该客户端调用。`offerDetailPCABService` 的 `abTestKey`，以及 `offerLogisticsService` 的商品、收货地和发货地等参数，都需要从获授权的详情页请求上下文中提供；客户端不会猜测这些动态值。商品标题、图片和描述目前来自详情页 SSR 数据，尚未封装。
