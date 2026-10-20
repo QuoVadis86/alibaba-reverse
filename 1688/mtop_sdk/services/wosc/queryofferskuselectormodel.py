@@ -21,6 +21,7 @@ class OfferSkuService:
                 api=API,
                 version="1.0",
                 method="POST",
+                headers={"Referer": "https://detail.1688.com/"},
                 data={
                     "offerId": offer_id,
                     "useCase": "1688detail",
