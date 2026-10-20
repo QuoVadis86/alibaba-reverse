@@ -27,5 +27,12 @@ class OfferSkuService:
                     "bizScene": "pcod",
                     "urlParam": "actionType=dxOrder&sk=consign",
                 },
+                extra_params={
+                    "jsv": "2.7.2",
+                    "type": "originaljson",
+                    "timeout": "20000",
+                    "dataType": "jsonp",
+                    "callback": None,
+                },
             )
         )
