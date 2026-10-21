@@ -14,9 +14,12 @@
 
 ## 目录
 
-- [`mtop_sdk/`](mtop_sdk/)：SDK 源码。
+- [`api/`](api/)：客户端、传输层、响应模型和命令行入口。
+- [`core/`](core/)：MTOP 签名与 x5sec 参数生成算法。
+- [`services/`](services/)：按 MTOP 接口路径组织的业务服务。
 - [`docs/`](docs/)：签名算法和接口说明。
 - [`samples/`](samples/)：经脱敏和审查的示例数据。
+- [`tools/`](tools/)：挑战链接采集等可复用脚本。
 - [`pyproject.toml`](pyproject.toml)：依赖、打包配置和 CLI 入口。
 
 ## 安装
@@ -60,18 +63,19 @@ UV_PROJECT_ENVIRONMENT="$PWD/.venv" uv sync --project 1688 --python "$PYTHON_BIN
 
 传输层能够识别带挑战 URL 的 `FAIL_SYS_USER_VALIDATE` 响应，并预留了 `x5sec` 加载入口；若加载器返回 Cookie 值，会设置 `x5sec` 并重试一次。目前加载器的具体实现仍为 TODO，SDK 不会自动完成验证码或风控挑战。命令行可通过 `MTOP_COOKIE` 环境变量提供已获授权的 Cookie，Python 客户端也可在 `MtopClient(http, cookie_string)` 中传入。请勿把 Cookie 或令牌提交到仓库。
 
-滑块校验请求参数、来源、响应正文和 `bx-x5sec` 响应头见 [`docs/x5sec-challenge.md`](docs/x5sec-challenge.md)。对应的 JS 样本保存在 [`docs/reference/`](docs/reference/)，已确认的明文字段可用 [`mtop_sdk/slide_params.py`](mtop_sdk/slide_params.py) 构造。
+滑块校验请求参数、来源、响应正文和 `bx-x5sec` 响应头见 [`docs/x5sec-challenge.md`](docs/x5sec-challenge.md)。对应的 JS 样本保存在 [`docs/reference/`](docs/reference/)，已确认的明文字段可用 [`core/x5sec/slide_params.py`](core/x5sec/slide_params.py) 构造。
 FY 模块的调用链及 Python 移植进度见 [`docs/fy-module-analysis.md`](docs/fy-module-analysis.md)。
+`captchacapslidev2` 分支及剩余验证工作见 [`docs/x5sec-scratch-2026-10-20.md`](docs/x5sec-scratch-2026-10-20.md)；已取得完整成功请求，并确认查询字段与纯 Python 实现一致，处罚页 VM 的 `ppSign` 与同输入浏览器输出逐字节一致。FY、nonce、ET 仍未对齐，SDK 暂不能独立完成挑战。
 
 ## Python SDK
 
 ```python
-from mtop_sdk import MtopClient, OfferLogisticsQuery, create_http_client
-from mtop_sdk.services.mmga.offerdetail import OfferRateCardInfoQuery
-from mtop_sdk.services.freightinfoservice import FreightInfoQuery
-from mtop_sdk.services.alibaba.alisite.cbu.server.moduleasyncservice import ShopOfferListQuery
-from mtop_sdk.services.trade.mtoprateservice import OfferRatingsQuery
-from mtop_sdk.services.relationrecommend.wirelessrecommend import (
+from api import MtopClient, OfferLogisticsQuery, create_http_client
+from services.mmga.offerdetail import OfferRateCardInfoQuery
+from services.freightinfoservice import FreightInfoQuery
+from services.alibaba.alisite.cbu.server.moduleasyncservice import ShopOfferListQuery
+from services.trade.mtoprateservice import OfferRatingsQuery
+from services.relationrecommend.wirelessrecommend import (
     CompanySearchQuery,
     TextSearchQuery,
 )
@@ -159,7 +163,7 @@ services/
 └── user/usersimple.py
 ```
 
-各 API 的入参和响应模型与接口实现放在同一服务模块中，例如物流模型在 `services/mmga/offerdetail.py`，商品评价模型在 `services/trade/mtoprateservice.py`。跨接口共用的 JSON 类型和 `MtopResponse` 位于 `mtop_sdk/response.py`。`client.offer_detail` 是易读的商品详情业务入口，与 `client.laputa.miniod` 指向同一个服务对象；后者保留 MTOP API 路径结构，便于对照接口名。
+各 API 的入参和响应模型与接口实现放在同一服务模块中，例如物流模型在 `services/mmga/offerdetail.py`，商品评价模型在 `services/trade/mtoprateservice.py`。跨接口共用的 JSON 类型和 `MtopResponse` 位于 `api/response.py`。`client.offer_detail` 是易读的商品详情业务入口，与 `client.laputa.miniod` 指向同一个服务对象；后者保留 MTOP API 路径结构，便于对照接口名。
 
 ## 使用边界
 

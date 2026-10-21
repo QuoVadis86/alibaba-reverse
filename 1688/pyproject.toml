@@ -15,8 +15,11 @@ dependencies = [
 ]
 
 [project.scripts]
-mtop-1688 = "mtop_sdk.cli:run"
+mtop-1688 = "api.cli:run"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["mtop_sdk*"]
+include = ["api*", "core*", "services*"]
+
+[tool.setuptools.package-data]
+"core.x5sec" = ["assets/*", "runtime/*.cjs"]

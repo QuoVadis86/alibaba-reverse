@@ -28,8 +28,10 @@
 
 ## Python 移植状态
 
-页面和 NC 层的参数组装已由 [`slide_params.py`](../mtop_sdk/slide_params.py) 复现。使用同次请求的动态值和 DOM 几何值离线对照，`ncSessionID`、`slidedata` 和完整查询串均与抓包逐字节相同。
+页面和 NC 层的参数组装已由 [`slide_params.py`](../core/x5sec/slide_params.py) 复现。使用同次请求的动态值和 DOM 几何值离线对照，`ncSessionID`、`slidedata` 和完整查询串均与抓包逐字节相同。
 
 FY 内部生成逻辑尚未移植。`index1.js` 约 583 KB，AST 中有 214 个 `switch` 和约 5.7 万次动态属性访问；明文源码中没有 `getFYToken`、`getUidToken` 或 `startRecord` 标识符。原始文件可被 Babel 解析，但通用 AST 流水线的首次标准化产物出现重复声明错误；即使修复该步骤，也仍需还原虚拟机指令与输入状态。当前没有足够证据写出可验证的纯 Python 令牌生成器。
+
+后续在 [当前滑动分支](x5sec-scratch-2026-10-20.md)中已用 Python 调用本地 JS 运行时产出 `234!` 开头的 FY 值，并定位到 `umidToken` 的网络下发端点。这提供了可运行的降级路径，但尚未把 FY 虚拟机移植为纯 Python，也没有证明该值可通过本分支的服务端验证。
 
 下一步需要先确定 FY 导出方法对应的字节码入口，再取得输入快照：初始化配置、浏览器环境字段、拖动事件序列，以及输出前的原始 payload。只有输入和编码前数据能够与同一请求对齐，才适合移植编码或加密部分。

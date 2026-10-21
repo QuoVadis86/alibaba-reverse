@@ -20,7 +20,7 @@ sign = lowercase_hex(MD5(UTF8(token + "&" + timestamp + "&" + appKey + "&" + dat
 安装 SDK 后，可直接导入签名模块：
 
 ```python
-from mtop_sdk.sign import AppKey, MtopSignInput, RequestData, TimestampMs, compute_sign
+from core.mtop_sign import AppKey, MtopSignInput, RequestData, TimestampMs, compute_sign
 
 sign = compute_sign(
     MtopSignInput(
@@ -36,7 +36,7 @@ sign = compute_sign(
 
 ## 接入商品接口
 
-`mtop_sdk/transport.py` 复用上述签名实现。没有已有 Cookie 时，传输层先对匿名引导接口使用 `token=None`（即签名串里的字面值 `undefined`），从响应头的 `Set-Cookie` 取得 `_m_h5_tk`，再发送目标请求。已有授权会话也可通过 `MTOP_COOKIE` 环境变量传入。CLI 命令示例：
+`api/transport.py` 复用上述签名实现。没有已有 Cookie 时，传输层先对匿名引导接口使用 `token=None`（即签名串里的字面值 `undefined`），从响应头的 `Set-Cookie` 取得 `_m_h5_tk`，再发送目标请求。已有授权会话也可通过 `MTOP_COOKIE` 环境变量传入。CLI 命令示例：
 
 ```bash
 uv run --project 1688 mtop-1688 566344866833
@@ -45,7 +45,7 @@ uv run --project 1688 mtop-1688 566344866833
 不提供环境变量时会自动执行匿名引导。Cookie 是可选的；如需传入，请通过安全方式设置 `MTOP_COOKIE`，不要提交到仓库或写进命令历史。服务模块按 MTOP API 路径存放。例如 `mtop.1688.mmga.offerdetail.service` 对应 `services/mmga/offerdetail.py`，物流、推荐、详情配置和店铺关系方法都在该文件中。商品详情使用 `mtop.1688.laputa.miniod`；物流等详情页子服务通过 POST 调用，并附带 `_bx-login: new` 请求头：
 
 ```python
-from mtop_sdk import MtopClient, OfferLogisticsQuery, create_http_client
+from api import MtopClient, OfferLogisticsQuery, create_http_client
 
 with create_http_client() as http:
     client = MtopClient(http)

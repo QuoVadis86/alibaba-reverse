@@ -1,6 +1,8 @@
 .DS_Store
 __pycache__/
 .venv/
+.codegraph/
+.playwright-cli/
 *.py[cod]
 .env
 .env.*
