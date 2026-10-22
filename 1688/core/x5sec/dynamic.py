@@ -21,9 +21,10 @@ class PageProfile:
     x5secdata: str
     referrer: str = ""
     umid_token: str = ""
+    et_init_cookie: str = ""
 
     def as_runtime_input(self) -> dict[str, str]:
-        return {
+        profile = {
             "url": self.url,
             "userAgent": self.user_agent,
             "cookie": self.cookie,
@@ -33,6 +34,9 @@ class PageProfile:
             "referrer": self.referrer,
             "umidToken": self.umid_token,
         }
+        if self.et_init_cookie:
+            profile["etInitCookie"] = self.et_init_cookie
+        return profile
 
 
 @dataclass(frozen=True, slots=True)
