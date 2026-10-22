@@ -1,60 +1,54 @@
-# x5sec 动态参数复验与版本更新手册
+# x5sec 动态参数复验记录
 
-本手册记录 `captchacapslidev2` 分支的可重复验证方法。目标是让下一次脚本更新时，能够从浏览器实际提交的请求重新找到写出点，定位第一个差异，再恢复本地同输入计算。浏览器交互统一使用 Playwright。滑块故意拖错即可；参数是否算对以同一道题的浏览器与本地完整字符串逐字节相等为准。
+本文记录已有授权采集样本的离线复验结果和可复用的排查结论。当前步骤只围绕同一份样本比较浏览器记录与本地输出，不把向线上验证接口提交参数作为算法测试。
 
-## 当前结论与边界
+## 当前状态（2026-10-22）
 
-| 参数 | 当前证据 | 实现边界 |
+| 参数 | 最新样本结果 | 尚未证明 |
 | --- | --- | --- |
-| `ppSign` / `bx-pp` | 新题中归档 VM、WASM 与浏览器同输入逐字节一致，实际请求头也核对过 | Python 调用归档 JS/WASM，动态轨迹仍需同题输入 |
-| `bx-et` | 三道新题中本地与浏览器目标调用的完整字符串和编码前载荷一致 | 依赖初始化状态和调用时环境回放 |
-| nonce / `_rand` | 两道新题的最终滑动阶段均为 160 字符且逐字节一致 | 依赖 Worker、Canvas、事件与时钟等同题输入 |
-| FY / `ua` | 两道新题的拖动前基线和拖动后结果均逐字节一致；已用 52 条事件的错误拖动独立复验 | Python 调用归档 JS VM，字体、时间、调用栈等仍取自浏览器采样 |
+| FY / ua | 拖动前基线 1524 字符、拖动目标调用 2064 字符，逐字节相等 | 所有挑战均能一致；无需浏览器采样生成时间、字体宽度和部分调用栈 |
+| nonce / _rand | 160 字符逐字节相等；SVG 原文、摘要输入检查点相等 | 无浏览器采样生成目标调用所需的 Error.stack |
+| bx-et | 469 字符逐字节相等 | 多次调用的前置状态可以独立重建 |
+| ppSign / bx-pp | 与浏览器记录逐字节相等 | 纯 Python 生成器已完成 |
 
-这些结果证明**同题、同输入的算法路径**。它们不证明能独立产生正确滑块距离、不依赖浏览器采样生成全部环境值，或已经完成纯 Python 移植。不要把验证接口的 `code=0` 当成算法还原的必要条件，也不要把“长度相同”当成逐字节一致。
+样本的 FY 目标调用重放了 201 条事件；完整捕获包含 232 条事件。nonce 的本地回放使用了 4 条浏览器记录的调用栈。当前运行时会调用归档 JavaScript 或 WASM，因此逐字节相等不等于纯 Python 移植完成。
 
-## 代码与资料入口
+### 页面失败提示与本地结果
 
-| 用途 | 位置 |
-| --- | --- |
-| 获取指定类型挑战 | [`tools/get_challenge.py`](../tools/get_challenge.py) |
-| Playwright 采集与三参数重放 | [`tools/capture_dynamic.py`](../tools/capture_dynamic.py)、[`tools/dynamic_capture.js`](../tools/dynamic_capture.js) |
-| FY 同题差异报告 | [`tools/diff_fy_trace.py`](../tools/diff_fy_trace.py) |
-| nonce 与环境差异报告 | [`tools/diff_nonce_trace.py`](../tools/diff_nonce_trace.py)、[`tools/diff_environment.py`](../tools/diff_environment.py) |
-| 本地浏览器环境和归档 JS 执行 | [`core/x5sec/runtime/js_runtime.cjs`](../core/x5sec/runtime/js_runtime.cjs) |
-| ET、nonce 的可复用插桩片段 | [`tools/probes/`](../tools/probes/) |
-| 归档脚本与原始参考 | [`core/x5sec/assets/`](../core/x5sec/assets/)、[`docs/reference/`](reference/) |
-| 请求组装与处罚页参数 | [`core/x5sec/scratch_params.py`](../core/x5sec/scratch_params.py)、[`core/x5sec/pp.py`](../core/x5sec/pp.py) |
+最新样本中，浏览器请求被采集流程拦截并收到模拟失败结果，所以页面显示失败提示是预期现象。采集快照是在模拟响应记录完成前生成的，因此捕获文件的 verifyResponses 为空；这不表示拦截失败。
 
-`core/x5sec/assets/et_f.js` 对应参考目录中 `et_f-1.83.8.js.raw.txt` 的原始内容（工作文件去掉末尾换行）；不要拿另一份经过处理的同名版本替换后还认为字节码位置不变。FY 归档脚本也是核对浏览器源内容后才用于重放。任何新版都先确认实际加载的 URL、内容哈希和大小，再判断是版本变化还是环境差异。
+参数比较均相等。另行发出的本地请求返回 HTTP 200、业务码 300，未获得 x5sec。这只能说明该请求没有得到 x5sec；不能单凭该业务码定位算法差异，也不改变同输入逐字节比较结果。本项目没有证据定义业务码 300 或 301 的具体原因。
 
-## 复验命令
+## FY 旧样本差异
 
-在仓库根目录执行：
+样本 x5_local_dynamic_1792640925 中，拖动目标 FY 浏览器输出为 2312 字符、本地为 2308 字符，首个差异位于索引 5。前三次序列化调用的字节相等，第四次浏览器与本地的序列化字节分别为 1730 和 1728 字节。
 
-```bash
-uv run --project 1688 python 1688/tools/diff_fy_trace.py captchacapslidev2 --summary
-uv run --project 1688 python 1688/tools/diff_fy_trace.py captchacapslidev2 --capture .playwright-cli/fy_trace_current.json --summary
-uv run --project 1688 python 1688/tools/diff_fy_trace.py captchacapslidev2 > .playwright-cli/fy_report.json
-```
+诊断性地把浏览器序列化字节注入本地后，后续 FY 输出相等。这只把问题缩小到本地序列化输入或其执行环境，没有还原那段字节，也没有证明该样本的独立 FY 计算正确。浏览器与本地的 document.addEventListener 快照存在差异，是待验证线索，不是已确认根因。2026-10-22 后续样本的四次序列化调用都相等，FY 最终输出也相等；旧样本的分叉条件仍未确定。
 
-第一条取得新题并由 Playwright 重放拖动；第二条复用同一份采样，只重跑本地代码；第三条保存含 VM 检查点的完整报告。`--summary` 只显示一致性、长度和事件数。采集与完整报告包含 Cookie、挑战令牌、参数和可能的页面数据，必须留在被忽略的 `.playwright-cli/`，不要提交。完成一次采集后，先复用它定位本地差异；修复后再取新题做独立复验。
+## nonce 排查记录
 
-## 从输出倒推的检查点
+旧样本曾因本地 SVG 渲染器不支持 CSS 命名颜色 darkmagenta，导致 Canvas 像素摘要输入无法复现。渲染器补充该颜色后，SVG 原文与浏览器记录一致，摘要轨迹及最终 nonce 也逐项相等。
 
-1. **最终写出**：记录 `/newslidevalidate` 的查询串、`bx-et`、`bx-pp`、FY `ua`、`umidToken`、nonce `_rand`，以及实际发送时的顺序。把“本地函数输出”与“请求真正使用的值”分别核对。
-2. **调用入口**：拖动开始前的 `FYModule.fyObj.startRecord()`、FY `getFYToken()` / `getUidToken()`，以及 ET、nonce、`ppSign` 的目标签名调用。保留前置调用和初始化顺序；只重放最终函数的显式参数会漏状态。
-3. **算法输入**：同一道题的配置、随机数、`Date` / `performance` 读数、Cookie 阶段、Canvas/WebGL、Worker 回调、DOM 属性和事件序列。轨迹保存在采集的 `events` 中，接口留给以后替换成自生成轨迹。
-4. **编码前状态**：先比 VM 路径、特征对象、原始字节或 JSON，再比最终字符串。首次分叉的位置比尾部加密结果更有用；不要把浏览器最终参数直接作为本地返回值。
+本地回放仍从样本读取 nonce 目标调用的 Error.stack。调用栈属于输入之一；不要把使用浏览器采样的结果描述为独立生成环境，也不要把诊断注入后的相等描述为纯算法复算。
 
-FY 的序列化前特征 11 是拖动记录数组，52 是调用栈文本，77 含页面时钟差值。此前 52 条事件已经到齐，但特征 11 的首条数据仍不同；追到鼠标移动路径读取 `document.body.scrollTop/scrollLeft`，浏览器返回 `0`，本地曾返回 `undefined`。按下事件里的时间读数相差数毫秒，会让虚拟机 `% 7` 选择不同值。当前工具从浏览器 **读取点** 采集日期和栈帧，作为环境输入重放；若新版再次分叉，应重新核对这些读取点，而不是硬填特征值。
+## 离线复验命令
 
-## 新版本的排查顺序
+只对本机已有采集文件运行以下命令：
 
-1. **先锁版本**：抓实际页面加载的脚本内容，与归档资产比较哈希、长度和加载顺序。插桩会改变脚本列号，不能拿插桩后的绝对列号当稳定标识。
-2. **固定同题输入**：采集一次错误拖动，记录初始化、前置 FY/UID 调用、拖动事件和目标签名。先跑拖动前基线，再跑拖动后结果。不同挑战的随机数、曲线和页面状态不能直接比较。
-3. **缩小首个分叉**：从完整报告按“最终输出 → 序列化输入 → 特征写入 → VM 分支 → 环境读取”回溯。环境快照相等只说明已采样的属性一致，不代表对象原型、调用副作用和未采样状态一致。
-4. **分开补环境与改算法**：浏览器原生对象的类型、原型、描述符、异常和时钟行为先按读取点补；只有两边输入及 VM 路径相同仍得不同中间值时，才怀疑脚本版本或算法实现。字体宽度、Canvas 像素和调用栈不能靠固定常量跨题复用。
-5. **两次验证**：修复后先对缓存采样逐字节相等，再采两道新题复验。报告长度、首次差异、轨迹事件数、资产是否一致；不要用滑块过关代替这一检查。
+~~~bash
+uv run --project 1688 python 1688/tools/verify_dynamic_capture.py .playwright-cli/<capture>_capture.json
+uv run --project 1688 python 1688/tools/diff_fy_trace.py captchacapslidev2 --capture .playwright-cli/<capture>_capture.json --summary
+uv run --project 1688 python 1688/tools/diff_nonce_trace.py .playwright-cli/<capture>_capture.json --summary
+~~~
 
-旧调查过程见 [`x5sec-scratch-2026-10-20.md`](x5sec-scratch-2026-10-20.md)。其中按日期记录的不一致结论是当时状态，当前状态以本手册和新采样报告为准。
+verify_dynamic_capture.py 输出参数长度、相等性和首个差异位置，不打印最终参数。diff_fy_trace.py 的 serializer-replay 选项仅用于定位序列化之后的差异，不可作为独立生成成功的证据。
+
+## 复验原则
+
+1. 只比较同一道题、同一调用点、同一份捕获数据；不同题目的随机数、时间、轨迹和页面状态不可混用。
+2. 先检查输出与编码前状态，再检查 VM 分支和环境读取；快照字段相等不代表对象行为、描述符和调用副作用相等。
+3. 记录每次验证的样本标识、输出长度、首个差异位置及注入项。区分真实本地计算与诊断替换。
+4. 单个样本的一致结果只说明该样本同输入回放一致，不代表普遍稳定，也不代表纯 Python 实现完成。
+5. 原始采集文件保留在被忽略的 .playwright-cli/ 目录；文件可能含 Cookie、挑战令牌及页面数据，不要提交。
+
+更早的阶段性分析保存在[历史调查记录](x5sec-scratch-2026-10-20.md)。其中的结论按当时样本和代码状态记录；与本页冲突时，以对应采集文件的离线复验结果为准。
