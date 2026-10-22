@@ -65,7 +65,7 @@ UV_PROJECT_ENVIRONMENT="$PWD/.venv" uv sync --project 1688 --python "$PYTHON_BIN
 
 滑块校验请求参数、来源、响应正文和 `bx-x5sec` 响应头见 [`docs/x5sec-challenge.md`](docs/x5sec-challenge.md)。对应的 JS 样本保存在 [`docs/reference/`](docs/reference/)，已确认的明文字段可用 [`core/x5sec/slide_params.py`](core/x5sec/slide_params.py) 构造。
 FY 模块的调用链及 Python 移植进度见 [`docs/fy-module-analysis.md`](docs/fy-module-analysis.md)。
-`captchacapslidev2` 分支及剩余验证工作见 [`docs/x5sec-scratch-2026-10-20.md`](docs/x5sec-scratch-2026-10-20.md)；已取得完整成功请求，并确认查询字段与纯 Python 实现一致，处罚页 VM 的 `ppSign` 与同输入浏览器输出逐字节一致。FY、nonce、ET 仍未对齐，SDK 暂不能独立完成挑战。
+`captchacapslidev2` 分支及复验方法见 [`docs/x5sec-reverse-playbook.md`](docs/x5sec-reverse-playbook.md)；`ppSign`、FY、nonce、ET 已在同题状态回放下与浏览器逐字节一致。当前仍依赖归档 JS/WASM 和浏览器采样的环境值，SDK 暂不能独立完成挑战。
 
 ## Python SDK
 
