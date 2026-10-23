@@ -1,5 +1,7 @@
 async (page) => {
   const challenge = CHALLENGE_PAYLOAD;
+  const manualDrag = MANUAL_DRAG_PAYLOAD;
+  const interceptVerify = INTERCEPT_VERIFY_PAYLOAD;
   const saveEtSource = SAVE_ET_SOURCE_PAYLOAD;
   const traceEtPc = TRACE_ET_PC_PAYLOAD;
   const traceNonceGt = TRACE_NONCE_GT_PAYLOAD;
@@ -14,6 +16,35 @@ async (page) => {
   const nonceDispatchProbe = NONCE_DISPATCH_PROBE_PAYLOAD;
   const nonceMemoryProbe = NONCE_MEMORY_PROBE_PAYLOAD;
   const nonceJnProbe = NONCE_JN_PROBE_PAYLOAD;
+  await page.addInitScript(() => {
+    const events = window.__x5Events = [];
+    for (const type of ['mousedown', 'mousemove', 'mouseup',
+      'touchstart', 'touchmove', 'touchend']) {
+      document.addEventListener(type, (event) => {
+        if (events.length >= 5000) return;
+        const pointer = event.touches?.[0] || event.changedTouches?.[0] || event;
+        const target = event.target;
+        const rect = target?.getBoundingClientRect();
+        const props = Object.fromEntries([
+          'offsetX', 'offsetY', 'layerX', 'layerY', 'movementX', 'movementY',
+          'pageX', 'pageY', 'x', 'y', 'which', 'detail',
+        ].map(name => [name, event[name]]));
+        events.push({ type, x: pointer.clientX, y: pointer.clientY,
+          screenX: pointer.screenX, screenY: pointer.screenY,
+          timeStamp: event.timeStamp, buttons: event.buttons, props,
+          target: { tag: target?.tagName, id: target?.id,
+            className: String(target?.className || ''), rect: rect?.toJSON() } });
+      }, true);
+    }
+  });
+  if (interceptVerify) {
+    await page.addInitScript(() => {
+      window.__ppVmInitCalls = [];
+      window.__ppVmTrack = [];
+      window.__ppVmCommand = '';
+      window.__ppVmCalls = [];
+    });
+  }
   if (probeFy) await page.addInitScript(() => {
     window.__fyEarlyCalls = [];
   });
@@ -46,6 +77,7 @@ async (page) => {
     window.__fyDgCalls = [];
     window.__fyDg13GateChecks = [];
     window.__fyFeatureWrites = [];
+    window.__fy28Context = [];
     window.__fy115Writes = [];
     window.__fy24Context = [];
     window.__fyMr22Steps = [];
@@ -257,6 +289,14 @@ async (page) => {
   await page.context().clearCookies();
   await page.context().addCookies(challenge.cookies);
   await page.unrouteAll();
+  if (interceptVerify) await page.route('**/_____tmd_____/punish?**', async (route) => {
+    const response = await route.fetch();
+    const body = await response.text();
+    const needle = 'for(i=r;;i++){var g=4*i';
+    if (!body.includes(needle)) throw new Error('处罚页 VM 版本不匹配');
+    const probe = 'for(i=r;;i++){if(i===5320&&typeof p[1]==="string")globalThis.__ppVmInitCalls.push(p[1]);if(i===4117&&globalThis.__ppVmCommand==="_$PS"&&globalThis.__ppVmTrack.length===0)globalThis.__ppVmTrack.push(String(f[4]));var g=4*i';
+    await route.fulfill({ response, body: body.replace(needle, probe) });
+  });
   if (TRACE_ET_VM) await page.addInitScript(() => {
     window.__etVmScTrace = [];
     window.__etVmState = { count: 0, hash: 2166136261, checkpoints: [] };
@@ -529,13 +569,14 @@ async (page) => {
           if(typeof n[name]!=="function")continue;
           const original=n[name];
           n[name]=function(...args){
-            const entry={name,args:args.map(value=>{try{return JSON.parse(JSON.stringify(value))}catch{return String(value)}}),beforeHook:!window.__x5InitDone,cookie:document.cookie,windowNames:Object.getOwnPropertyNames(window),resourceEntries:performance.getEntriesByType('resource').map(value=>value.toJSON()),memoryValues:performance.memory?{jsHeapSizeLimit:performance.memory.jsHeapSizeLimit,totalJSHeapSize:performance.memory.totalJSHeapSize,usedJSHeapSize:performance.memory.usedJSHeapSize}:null,
+            const entry={name,args:args.map(value=>{try{return JSON.parse(JSON.stringify(value))}catch{return String(value)}}),beforeHook:!window.__x5InitDone,eventIndex:window.__x5Events?.length??0,performanceNow:performance.now(),cookie:document.cookie,windowNames:Object.getOwnPropertyNames(window),resourceEntries:performance.getEntriesByType('resource').map(value=>value.toJSON()),memoryValues:performance.memory?{jsHeapSizeLimit:performance.memory.jsHeapSizeLimit,totalJSHeapSize:performance.memory.totalJSHeapSize,usedJSHeapSize:performance.memory.usedJSHeapSize}:null,
               environmentStart:Object.fromEntries(["canvas","webgl"].map(key=>[key,window.__x5Environment?.[key]?.length??0]))};
             const random=Math.random,now=Date.now,nativeDate=window.Date;
             entry.randomTape=[];entry.timeTape=[];entry.dateTape=[];
             Math.random=function(){const value=random();entry.randomTape.push(value);return value};
             Date.now=function(){const value=now();entry.timeTape.push(value);return value};
             window.Date=new Proxy(nativeDate,{construct(target,dateArgs,newTarget){const value=Reflect.construct(target,dateArgs,newTarget);if(dateArgs.length===0)entry.dateTape.push(value.getTime());return value}});
+            if(name==="startRecord"&&window.__fySerialEntryTrace){window.__fySerialEntryTrace=[];window.__fySerialVxSteps=[];window.__fyMr47Steps=[]}
             window.__fyEarlyCalls.push(entry);
             try{const output=original.apply(this,args);if(name==="getFYToken"||name==="getUidToken")entry.output=output;return output}
             finally{entry.environmentEnd=Object.fromEntries(["canvas","webgl"].map(key=>[key,window.__x5Environment?.[key]?.length??0]));Math.random=random;Date.now=now;window.Date=nativeDate}
@@ -719,7 +760,11 @@ async (page) => {
       const featureArrayNeedle = 'iC=[]';
       if (!body.includes(featureArrayNeedle)) throw new Error('FY feature array 探针位置不存在');
       body = body.replace(featureArrayNeedle,
-        'iC=new Proxy([],{set(t,k,v,r){if(["12","24","54","66","73","81","115","119","125","137","148","152","157"].includes(String(k)))globalThis.__fyFeatureWrites.push({index:String(k),type:typeof v,value:typeof v==="number"?v:null,valueSig:globalThis.__fyValueSig(v),jCount:globalThis.__fyJCalls.length,earlyCount:globalThis.__fyEarlyCalls?.length??0,time:performance.now(),stack:new Error().stack.split("\\n").slice(1,11)});if(k==="115"&&v&&typeof v==="object")v=new Proxy(v,{set(o,key,val,receiver){globalThis.__fy115Writes.push({key:String(key),valueSig:globalThis.__fyValueSig(val),earlyCount:globalThis.__fyEarlyCalls?.length??0,stack:new Error().stack.split("\\n").slice(1,6)});return Reflect.set(o,key,val,receiver)}});if(k==="11"&&Array.isArray(v))v=new Proxy(v,{set(o,key,val,receiver){if(key!=="length"&&globalThis.__fyFeatureWrites.filter(item=>item.index==="11_item").length<8)globalThis.__fyFeatureWrites.push({index:"11_item",itemIndex:String(key),valueDetail:globalThis.__fyDeepSig(val,true),stack:new Error().stack.split(String.fromCharCode(10)).slice(1,6)});return Reflect.set(o,key,val,receiver)}});return Reflect.set(t,k,v,r)}})');
+        'iC=new Proxy([],{set(t,k,v,r){globalThis.__fyFeatureArray=iC;if(["12","24","28","54","66","73","81","115","119","125","137","148","152","157"].includes(String(k)))globalThis.__fyFeatureWrites.push({index:String(k),type:typeof v,value:typeof v==="number"?v:null,valueSig:globalThis.__fyValueSig(v),jCount:globalThis.__fyJCalls.length,earlyCount:globalThis.__fyEarlyCalls?.length??0,time:performance.now(),stack:new Error().stack.split("\\n").slice(1,11)});if(k==="115"&&v&&typeof v==="object")v=new Proxy(v,{set(o,key,val,receiver){globalThis.__fy115Writes.push({key:String(key),valueSig:globalThis.__fyValueSig(val),earlyCount:globalThis.__fyEarlyCalls?.length??0,stack:new Error().stack.split("\\n").slice(1,6)});return Reflect.set(o,key,val,receiver)}});if(k==="11"&&Array.isArray(v))v=new Proxy(v,{set(o,key,val,receiver){if(key!=="length"&&globalThis.__fyFeatureWrites.filter(item=>item.index==="11_item").length<8)globalThis.__fyFeatureWrites.push({index:"11_item",itemIndex:String(key),valueDetail:globalThis.__fyDeepSig(val,true),stack:new Error().stack.split(String.fromCharCode(10)).slice(1,6)});return Reflect.set(o,key,val,receiver)}});return Reflect.set(t,k,v,r)}})');
+      const feature28Needle = 'd[p][I]=d[x]-1';
+      if (!body.includes(feature28Needle)) throw new Error('FY 特征 28 写入点不存在');
+      body = body.replace(feature28Needle,
+        'globalThis.__fy28Context.length<40&&globalThis.__fy28Context.push({I,key:k,x:d[x],isFeatureArray:d[i]===globalThis.__fyFeatureArray,time:performance.now()}),d[p][I]=d[x]-1');
       const feature24Needle = 'd[9][X]=1,d[k]=586';
       if (!body.includes(feature24Needle)) throw new Error('FY feature24 探针位置不存在');
       body = body.replace(feature24Needle,
@@ -727,7 +772,7 @@ async (page) => {
       const mrStepNeedle = 'for(d[k]=68;d[k]!==U;){var Kz=d[k]&o,yH,O=d[k]>>5&o;';
       if (!body.includes(mrStepNeedle)) throw new Error('FY mr 步进探针位置不存在');
       body = body.replace(mrStepNeedle,
-        `${mrStepNeedle}if(v===52&&globalThis.__fySerializing&&globalThis.__fyStyleVmInputs.length<1500)globalThis.__fyStyleVmInputs.push({kind:"mr52step",pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(key=>[key,globalThis.__fyValueSig(d[key])])});if(v===25&&globalThis.__fySerializing&&globalThis.__fyStyleVmInputs.length<900)globalThis.__fyStyleVmInputs.push({kind:"mr25step",pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(key=>[key,globalThis.__fyValueSig(d[key])])});if(v===16&&globalThis.__fySerializing&&globalThis.__fyMr16Steps.length<5000)globalThis.__fyMr16Steps.push({pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}),detail:globalThis.__fyMr16Steps.length<30?globalThis.__fyDeepSig(d,true):null,branchKey:d[k]===261?C[$][99]:null,branchValue:d[k]===261?globalThis.__fyValueSig(d[E]?.[C[$][99]]):null,branchOwn:d[k]===261?Object.prototype.hasOwnProperty.call(d[E],C[$][99]):null,nextKey:d[k]===613?C[$][b]:null,nextValue:d[k]===613?globalThis.__fyValueSig(d[E]?.[C[$][b]]):null,nextOwn:d[k]===613?Object.prototype.hasOwnProperty.call(d[E],C[$][b]):null,preKey:d[k]===613?C[$][89]:null,preValue:d[k]===613?globalThis.__fyValueSig(d[E]?.[C[$][89]]):null,preOwn:d[k]===613?Object.prototype.hasOwnProperty.call(d[E],C[$][89]):null});if(v===22&&globalThis.__fyMr22Steps.length<200)globalThis.__fyMr22Steps.push({pc:d[k],branch:Kz,opcode:O,MTag:Object.prototype.toString.call(M),MKeys:M&&typeof M==="object"?Object.getOwnPropertyNames(M).slice(0,8):null,M0Type:typeof M?.[0]});if(v===3&&globalThis.__fyMr3Steps.length<3000)globalThis.__fyMr3Steps.push({pc:d[k],branch:Kz,opcode:O});if(v===43&&globalThis.__fyMr43Steps.length<1000)globalThis.__fyMr43Steps.push({pc:d[k],branch:Kz,opcode:O,s,zTag:Object.prototype.toString.call(z),regSig:s==="deviceorientation"?Object.fromEntries(Object.keys(d).map(k=>[k,globalThis.__fyValueSig(d[k])])):null});if(v===56&&globalThis.__fyMr56Steps.length<500)globalThis.__fyMr56Steps.push({pc:d[k],branch:Kz,opcode:O,earlyCount:globalThis.__fyEarlyCalls?.length??0});if(v===47&&globalThis.__fyMr47Steps.length<5000)globalThis.__fyMr47Steps.push({pc:d[k],branch:Kz,opcode:O,eType:typeof d[E],eLength:d[E]?.length,eTag:Object.prototype.toString.call(d[E]),pType:typeof d[p],pLength:d[p]?.length,pTag:Object.prototype.toString.call(d[p]),d3Length:d[3]?.length,d9Length:d[9]?.length,earlyCount:globalThis.__fyEarlyCalls?.length??0});`);
+        `${mrStepNeedle}if(v===52&&globalThis.__fySerializing&&globalThis.__fyStyleVmInputs.length<1500)globalThis.__fyStyleVmInputs.push({kind:"mr52step",pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(key=>[key,globalThis.__fyValueSig(d[key])])});if(v===25&&globalThis.__fySerializing&&globalThis.__fyStyleVmInputs.length<900)globalThis.__fyStyleVmInputs.push({kind:"mr25step",pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(key=>[key,globalThis.__fyValueSig(d[key])])});if(v===16&&globalThis.__fySerializing&&globalThis.__fyMr16Steps.length<5000)globalThis.__fyMr16Steps.push({pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}),detail:globalThis.__fyMr16Steps.length<30?globalThis.__fyDeepSig(d,true):null,branchKey:d[k]===261?C[$][99]:null,branchValue:d[k]===261?globalThis.__fyValueSig(d[E]?.[C[$][99]]):null,branchOwn:d[k]===261?Object.prototype.hasOwnProperty.call(d[E],C[$][99]):null,nextKey:d[k]===613?C[$][b]:null,nextValue:d[k]===613?globalThis.__fyValueSig(d[E]?.[C[$][b]]):null,nextOwn:d[k]===613?Object.prototype.hasOwnProperty.call(d[E],C[$][b]):null,preKey:d[k]===613?C[$][89]:null,preValue:d[k]===613?globalThis.__fyValueSig(d[E]?.[C[$][89]]):null,preOwn:d[k]===613?Object.prototype.hasOwnProperty.call(d[E],C[$][89]):null});if(v===22&&globalThis.__fyMr22Steps.length<200)globalThis.__fyMr22Steps.push({pc:d[k],branch:Kz,opcode:O,MTag:Object.prototype.toString.call(M),MKeys:M&&typeof M==="object"?Object.getOwnPropertyNames(M).slice(0,8):null,M0Type:typeof M?.[0]});if(v===3&&globalThis.__fyMr3Steps.length<3000)globalThis.__fyMr3Steps.push({pc:d[k],branch:Kz,opcode:O});if(v===43&&globalThis.__fyMr43Steps.length<1000)globalThis.__fyMr43Steps.push({pc:d[k],branch:Kz,opcode:O,s,zTag:Object.prototype.toString.call(z),regSig:s==="deviceorientation"?Object.fromEntries(Object.keys(d).map(k=>[k,globalThis.__fyValueSig(d[k])])):null,reg13:s==="deviceorientation"&&d[k]===265&&typeof d[13]==="function"?{name:d[13].name,length:d[13].length,source:String(d[13]).slice(0,120)}:null});if(v===56&&globalThis.__fyMr56Steps.length<500)globalThis.__fyMr56Steps.push({pc:d[k],branch:Kz,opcode:O,earlyCount:globalThis.__fyEarlyCalls?.length??0});if(v===47&&globalThis.__fyMr47Steps.length<5000)globalThis.__fyMr47Steps.push({pc:d[k],branch:Kz,opcode:O,eType:typeof d[E],eLength:d[E]?.length,eTag:Object.prototype.toString.call(d[E]),pType:typeof d[p],pLength:d[p]?.length,pTag:Object.prototype.toString.call(d[p]),d3Length:d[3]?.length,d9Length:d[9]?.length,earlyCount:globalThis.__fyEarlyCalls?.length??0});`);
       const jEntryNeedle = 'function J(Z7){';
       if (!body.includes(jEntryNeedle)) throw new Error('FY J 入口探针位置不存在');
       body = body.replace(jEntryNeedle,
@@ -819,7 +864,7 @@ async (page) => {
       const serializerNeedle = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
       if (!body.includes(serializerNeedle)) throw new Error('FY serializer 探针位置不存在');
       body = body.replace(serializerNeedle,
-        '(function(){const args=[d[i],d[m],d[2],d[4],d[5]],t={argSig:args.map(globalThis.__fyValueSig),argArrays:[d[i],d[m]].map(v=>Array.isArray(v)?v.slice():null),mKeys:d[m]&&typeof d[m]==="object"?Object.keys(d[m]).slice(0,30):null,mProfile:Object.fromEntries(Object.keys(d[m]||{}).map(k=>[k,globalThis.__fyValueSig(d[m][k])])),featureProfile:Object.fromEntries(Object.keys(d[2]||{}).map(k=>[k,globalThis.__fyValueSig(d[2][k])])),windowKeys:Object.keys(window),featureDeep:Object.fromEntries(Object.keys(d[2]||{}).map(k=>[k,globalThis.__fyDeepSig(d[2][k])])),featureDetail:{11:globalThis.__fyDeepSig(d[2]?.[11],true),105:globalThis.__fyDeepSig(d[2]?.[105],true),152:globalThis.__fyDeepSig(d[2]?.[152],true)},feature52Raw:d[2]?.[52],feature77Raw:Array.isArray(d[2]?.[77])?d[2][77].slice():null,feature152Raw:Array.isArray(d[2]?.[152])?d[2][152].slice():null,feature115:Object.fromEntries(Object.entries(d[2]?.[115]||{}).map(([k,v])=>[k,globalThis.__fyValueSig(v)])),feature125:Array.isArray(d[2]?.[125])?d[2][125].map(globalThis.__fyValueSig):null,feature125Last:typeof d[2]?.[125]?.at?.(-1)==="string"?d[2][125].at(-1).slice(0,80):null};globalThis.__fySerializerCalls.push(t);globalThis.__fySerializing=true;try{d[p]=W(C[l],null,1,...args)}finally{globalThis.__fySerializing=false}if(!globalThis.__fyWindowDescriptorSnapshot)globalThis.__fyWindowDescriptorSnapshot=globalThis.__fyDescribeWindow();t.resultSig=globalThis.__fyValueSig(d[p]);t.resultBytes=Array.isArray(d[p])?Array.from(d[p]):null})(),d[i]=d[p]');
+        '(function(){const args=[d[i],d[m],d[2],d[4],d[5]],t={argSig:args.map(globalThis.__fyValueSig),argArrays:[d[i],d[m]].map(v=>Array.isArray(v)?v.slice():null),mKeys:d[m]&&typeof d[m]==="object"?Object.keys(d[m]).slice(0,30):null,mProfile:Object.fromEntries(Object.keys(d[m]||{}).map(k=>[k,globalThis.__fyValueSig(d[m][k])])),featureProfile:Object.fromEntries(Object.keys(d[2]||{}).map(k=>[k,globalThis.__fyValueSig(d[2][k])])),windowKeys:Object.keys(window),featureDeep:Object.fromEntries(Object.keys(d[2]||{}).map(k=>[k,globalThis.__fyDeepSig(d[2][k])])),featureDetail:{11:globalThis.__fyDeepSig(d[2]?.[11],true),105:globalThis.__fyDeepSig(d[2]?.[105],true),152:globalThis.__fyDeepSig(d[2]?.[152],true)},feature52Raw:d[2]?.[52],feature77Raw:Array.isArray(d[2]?.[77])?d[2][77].slice():null,feature152Raw:Array.isArray(d[2]?.[152])?d[2][152].slice():null,feature115:Object.fromEntries(Object.entries(d[2]?.[115]||{}).map(([k,v])=>[k,globalThis.__fyValueSig(v)])),feature125:Array.isArray(d[2]?.[125])?d[2][125].map(globalThis.__fyValueSig):null,feature125Raw:Array.isArray(d[2]?.[125])?d[2][125].slice():null,feature125Value21:d[2]?.[125]?.[21],feature125Last:typeof d[2]?.[125]?.at?.(-1)==="string"?d[2][125].at(-1).slice(0,80):null};globalThis.__fySerializerCalls.push(t);globalThis.__fySerializing=true;try{d[p]=W(C[l],null,1,...args)}finally{globalThis.__fySerializing=false}if(!globalThis.__fyWindowDescriptorSnapshot)globalThis.__fyWindowDescriptorSnapshot=globalThis.__fyDescribeWindow();t.resultSig=globalThis.__fyValueSig(d[p]);t.resultBytes=Array.isArray(d[p])?Array.from(d[p]):null})(),d[i]=d[p]');
       const resourceQueryNeedle = 'OA=d[8][d[m]](d[9]),d[8]=OA';
       if (!body.includes(resourceQueryNeedle)) throw new Error('FY resource query 探针位置不存在');
       body = body.replace(resourceQueryNeedle,
@@ -953,8 +998,37 @@ async (page) => {
       body.replace(loop, loop + etPcProbe).replace('M(4)', fingerprint) });
   });
   const verifyRequests = [];
+  const verifyResponses = [];
+  if (manualDrag) {
+    page.__dynamicSnapshots = [];
+    page.__dynamicVerifyResponses = verifyResponses;
+    await page.route('**/_____tmd_____/newslidevalidate?**', async (route) => {
+      try {
+        if ((!interceptVerify || !page.__dynamicCaptureTriggered) && page.__dynamicCollect) {
+          if (interceptVerify) page.__dynamicCaptureTriggered = true;
+          page.__dynamicSnapshots.push(await page.__dynamicCollect());
+        }
+      } finally {
+        if (interceptVerify) {
+          await route.fulfill({ status: 200, contentType: 'application/json',
+            body: JSON.stringify({ code: 300, result: { code: 300 }, success: true }) });
+          await page.evaluate(() => {
+            const slider = document.querySelector('.scratch-captcha-slider');
+            if (slider) slider.style.pointerEvents = 'none';
+          });
+        } else {
+          await route.continue();
+        }
+      }
+    });
+  }
   const dssResponses = [];
   page.on('response', (response) => {
+    if (response.url().includes('/_____tmd_____/newslidevalidate')) {
+      verifyResponses.push(response.json().then(async (body) => ({
+        body, x5secIssued: Boolean((await response.allHeaders())['bx-x5sec']),
+      })).catch(() => null));
+    }
     if (response.url().includes('.tdum.alibaba.com/dss.js')) {
       dssResponses.push(response.text().then(body => ({
         url: response.url(), status: response.status(), body,
@@ -964,7 +1038,7 @@ async (page) => {
   page.on('request', (request) => {
     if (request.url().includes('/_____tmd_____/newslidevalidate')) {
       verifyRequests.push(request.allHeaders().then((headers) => ({
-        url: request.url(), et: headers['bx-et'], pp: headers['bx-pp'],
+        url: request.url(), et: headers['bx-et'], pp: headers['bx-pp'], headers,
       })));
     }
   });
@@ -975,6 +1049,22 @@ async (page) => {
     typeof crypto.genRandomValues === 'function' &&
     document.getElementsByClassName('scratch-captcha-slider').length > 0);
   await page.waitForTimeout(3000);
+  if (interceptVerify) await page.evaluate(() => {
+    const original = crypto.randemUUID;
+    crypto.randemUUID = function (...args) {
+      window.__ppVmCommand = args[1];
+      const event = args[0] instanceof Event ? args[0] : null;
+      window.__ppVmCalls.push({ command: args[1], event: event && {
+        type: event.type, x: event.clientX, y: event.clientY,
+        timeStamp: event.timeStamp, buttons: event.buttons,
+        targetTag: event.target?.tagName,
+        targetClass: String(event.target?.className || ''),
+        targetRect: event.target?.getBoundingClientRect?.().toJSON(),
+        currentTargetTag: event.currentTarget?.tagName,
+      } });
+      return original.apply(this, args);
+    };
+  });
   const etBreakpoints = [];
   const etM23Returns = [];
   if (BREAK_ET) {
@@ -1063,7 +1153,7 @@ async (page) => {
   await page.evaluate(() => {
     window.__x5InitDone = true;
     const calls = window.__x5Calls = [];
-    const events = window.__x5Events = [];
+    const events = window.__x5Events;
     const copy = (value) => {
       try { return JSON.parse(JSON.stringify(value)); }
       catch { return String(value); }
@@ -1122,6 +1212,12 @@ async (page) => {
           window.__etJeLastLength = undefined;
         }
         if (label === 'et') window.__etVmActive = true;
+        const nonceTraceNames = label === 'nonce' ? [
+          '__nonceLtTrace', '__nonceMtTrace', '__nonceTtTrace',
+          '__nonceDispatchTrace', '__nonceJnTrace', '__nonceGtTrace',
+        ] : [];
+        const nonceTraceBefore = Object.fromEntries(nonceTraceNames.map(name => [name, window[name]]));
+        for (const name of nonceTraceNames) window[name] = [];
         const charAtValue = String.prototype.charAt.value;
         const random = Math.random;
         const now = Date.now;
@@ -1160,6 +1256,11 @@ async (page) => {
                 [name, window.__x5Environment[name].slice(fyEnvironmentBefore[name])])) : null });
           return output;
         } finally {
+          if (label === 'nonce') {
+            window.__nonceTargetTrace = Object.fromEntries(
+              nonceTraceNames.map(name => [name, window[name]]));
+            for (const name of nonceTraceNames) window[name] = nonceTraceBefore[name];
+          }
           if (label === 'et') {
             window.__etVmActive = false;
             if (Array.isArray(window.__etPcTrace)) {
@@ -1180,25 +1281,6 @@ async (page) => {
     hook(window.FYModule, 'getFYToken', 'fy');
     hook(window.crypto, 'genRandomValues', 'nonce');
     hook(window, 'etSign', 'et');
-    for (const type of ['mousedown', 'mousemove', 'mouseup',
-      'touchstart', 'touchmove', 'touchend']) {
-      document.addEventListener(type, (event) => {
-        if (events.length >= 5000) return;
-        const pointer = event.touches?.[0] || event.changedTouches?.[0] || event;
-        const target = event.target;
-        const rect = target?.getBoundingClientRect();
-        const props = Object.fromEntries([
-          'offsetX', 'offsetY', 'layerX', 'layerY', 'movementX', 'movementY',
-          'pageX', 'pageY', 'x', 'y', 'which', 'detail',
-        ].map(name => [name, event[name]]));
-        events.push({ type, x: pointer.clientX, y: pointer.clientY,
-          screenX: pointer.screenX, screenY: pointer.screenY,
-          timeStamp: event.timeStamp, buttons: event.buttons, props,
-          target: { tag: target?.tagName, id: target?.id,
-            className: String(target?.className || ''),
-            rect: rect?.toJSON() } });
-      }, true);
-    }
   });
   const profile = await page.evaluate(async () => ({
     url: location.href,
@@ -1255,6 +1337,15 @@ async (page) => {
     referrer: document.referrer,
     token: window._config_?.NCTOKENSTR,
     appKey: window._config_?.NCAPPKEY,
+    host: window._config_?.HOST,
+    path: window._config_?.PATH,
+    action: window._config_?.action,
+    pp: window._config_?.pp,
+    ppSign: window._config_?.ppSign,
+    ppt: window._config_?.ppt,
+    title: document.title,
+    sliderRect: document.querySelector('.scratch-captcha-slider')
+      ?.getBoundingClientRect().toJSON(),
     ppSignLength: typeof window._config_?.ppSign === 'string' ? window._config_.ppSign.length : null,
     ppModuleKeys: Object.keys(window._config_?.ppModule || {}).slice(0, 20),
     x5secdata: window._config_?.SECDATA,
@@ -1308,18 +1399,21 @@ async (page) => {
       environment: Object.fromEntries(['canvas', 'webgl'].map(name =>
         [name, window.__x5Environment[name].slice(before[name])])) };
   }) : null;
-  const box = await page.locator('.scratch-captcha-slider .button').boundingBox();
-  if (!box) throw new Error('滑块按钮不可用');
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2;
-  await page.mouse.move(x, y);
-  await page.mouse.down();
-  for (let step = 1; step <= 25; step++) {
-    await page.mouse.move(x + step * 10, y, { steps: 2 });
+  const collect = async () => {
+  if (!manualDrag) {
+    const box = await page.locator('.scratch-captcha-slider .button').boundingBox();
+    if (!box) throw new Error('滑块按钮不可用');
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    for (let step = 1; step <= 25; step++) {
+      await page.mouse.move(x + step * 10, y, { steps: 2 });
+    }
+    await page.screenshot({ path: '.playwright-cli/dynamic_middrag.png' });
+    await page.mouse.up();
+    await page.waitForTimeout(800);
   }
-  await page.screenshot({ path: '.playwright-cli/dynamic_middrag.png' });
-  await page.mouse.up();
-  await page.waitForTimeout(800);
   const postDrag = await page.evaluate(() => ({
     buttonClass: document.querySelector('.scratch-captcha-slider .button')?.className || null,
     sliderText: document.querySelector('.scratch-captcha-slider')?.innerText?.slice(0, 180) || null,
@@ -1334,6 +1428,7 @@ async (page) => {
   }
   const capture = {
     postDrag,
+    interceptedVerify: interceptVerify,
     fyProbe,
     fyInitCalls: probeFy ? await page.evaluate(() => window.__fyInitCalls || []) : null,
     fyEarlyCalls: probeFy ? await page.evaluate(() => window.__fyEarlyCalls || []) : null,
@@ -1386,6 +1481,7 @@ async (page) => {
     fyDgCalls: traceFyBranch ? await page.evaluate(() => window.__fyDgCalls || []) : null,
     fyDg13GateChecks: traceFyBranch ? await page.evaluate(() => window.__fyDg13GateChecks || []) : null,
     fyFeatureWrites: traceFyBranch ? await page.evaluate(() => window.__fyFeatureWrites || []) : null,
+    fy28Context: traceFyBranch ? await page.evaluate(() => window.__fy28Context || []) : null,
     fy115Writes: traceFyBranch ? await page.evaluate(() => window.__fy115Writes || []) : null,
     fy24Context: traceFyBranch ? await page.evaluate(() => window.__fy24Context || []) : null,
     fyMr22Steps: traceFyBranch ? await page.evaluate(() => window.__fyMr22Steps || []) : null,
@@ -1432,6 +1528,9 @@ async (page) => {
     etInitReadyState: await page.evaluate(() => window.__etInitReadyState || null),
     etSignSource: await page.evaluate(() => window.__etOriginalSource || null),
     page: profile,
+    ppVmInitCalls: interceptVerify ? await page.evaluate(() => window.__ppVmInitCalls || []) : null,
+    ppVmDragCalls: interceptVerify ? await page.evaluate(() => window.__ppVmCalls || []) : null,
+    ppVmTrack: interceptVerify ? await page.evaluate(() => window.__ppVmTrack?.[0] || null) : null,
     calls: await page.evaluate(() => window.__x5Calls),
     events: await page.evaluate(() => window.__x5Events),
     environment: await page.evaluate(() => ({
@@ -1504,6 +1603,7 @@ async (page) => {
     nonceRandomAll: await page.evaluate(() => window.__nonceRandomAll || []),
     nonceRandomCheckpoints: await page.evaluate(() => window.__nonceRandomCheckpoints || []),
     nonceGtTrace: await page.evaluate(() => window.__nonceGtTrace || []),
+    nonceTargetTrace: await page.evaluate(() => window.__nonceTargetTrace || null),
     nonceLtTrace: await page.evaluate(() => window.__nonceLtTrace || []),
     nonceMtTrace: await page.evaluate(() => window.__nonceMtTrace || []),
     nonceTtTrace: await page.evaluate(() => window.__nonceTtTrace || []),
@@ -1553,6 +1653,7 @@ async (page) => {
     etArithmeticProbe: await page.evaluate(() => window.__etArithmeticProbe || []),
     etPayloadBytes: await page.evaluate(() => window.__etPayloadBytes || null),
     verifyRequests: await Promise.all(verifyRequests),
+    verifyResponses: await Promise.all(verifyResponses),
   };
   const gzip = await page.evaluate(async (value) => {
     const bytes = new TextEncoder().encode(JSON.stringify(value));
@@ -1565,4 +1666,10 @@ async (page) => {
     return btoa(encoded);
   }, capture);
   return { gzip };
+  };
+  if (manualDrag) {
+    page.__dynamicCollect = collect;
+    return { ready: true, buttonVisible: await page.locator('.scratch-captcha-slider .button').isVisible() };
+  }
+  return collect();
 }

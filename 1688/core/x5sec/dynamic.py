@@ -22,6 +22,7 @@ class PageProfile:
     referrer: str = ""
     umid_token: str = ""
     et_init_cookie: str = ""
+    umid_storage: str = ""
 
     def as_runtime_input(self) -> dict[str, str]:
         profile = {
@@ -34,6 +35,8 @@ class PageProfile:
             "referrer": self.referrer,
             "umidToken": self.umid_token,
         }
+        if self.umid_token:
+            profile["umidStorage"] = self.umid_storage or self.umid_token
         if self.et_init_cookie:
             profile["etInitCookie"] = self.et_init_cookie
         return profile
@@ -74,6 +77,10 @@ def make_fy_nonce(
 ) -> FyNonce:
     page_input = profile.as_runtime_input()
     page_input["umidToken"] = umid_token
+    page_input["umidStorage"] = (
+        profile.umid_storage if profile.umid_storage and umid_token == profile.umid_token
+        else umid_token
+    )
     result = _run_js(
         {
             "mode": "fy_nonce",

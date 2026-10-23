@@ -59,7 +59,28 @@ def first_difference(browser: list[dict], local: list[dict]) -> dict | None:
     return None
 
 
-def compare_call(capture: dict, call: dict, *, prior: list[dict], record: bool) -> dict:
+def compare_call(capture: dict, call: dict, *, prior: list[dict], record: bool,
+                 serializer_replay: bool = False,
+                 return_local_value: bool = False) -> dict:
+    prior = [
+        {
+            **entry,
+            "name": entry.get("name") or "getFYToken",
+            "dateTape": entry.get("dateTape", entry.get("callDateTape") or []),
+        }
+        for entry in prior
+    ]
+    early_calls = capture.get("fyEarlyCalls") or []
+    target_early_index = next((index for index, entry in enumerate(early_calls)
+                               if entry.get("name") == "getFYToken"
+                               and entry.get("output") == call.get("output")), None)
+    record_early_index = (next((index for index in range(target_early_index - 1, -1, -1)
+                                if early_calls[index].get("name") == "startRecord"), None)
+                          if target_early_index is not None else None)
+    record_prior = ([entry for entry in early_calls[record_early_index + 1:target_early_index]
+                     if entry.get("name") in ("getUidToken", "getFYToken")]
+                    if record and target_early_index is not None
+                    and record_early_index is not None else [])
     startup = capture["environment"]["startup"]
     webgl = capture["environment"]["webgl"]
     page = capture["page"]
@@ -186,6 +207,15 @@ def compare_call(capture: dict, call: dict, *, prior: list[dict], record: bool) 
         "fyCallCookie": call.get("fyEnvironmentSnapshot", {}).get(
             "document.cookie", {}).get("replayValue"),
         "fyPriorCalls": prior,
+        "fyRecordPriorCalls": record_prior,
+        "fyRecordAfterMousedown": bool(
+            record and capture.get("fy28Context")
+            and (capture["fy28Context"][0].get("x") or 0) > next(
+                (index for index, event in enumerate(capture.get("events") or [])
+                 if event.get("type") == "mousedown"), float("inf"))),
+        "fySerializerReplayBytes": ([entry.get("resultBytes") for entry in
+                                      capture.get("fySerializerCalls") or []]
+                                     if serializer_replay else None),
         "fyWindowNames": call.get("fyWindowNames"),
         "fyWindowKeys": call.get("fyWindowKeys"),
         "nonceWindowKeys": ((capture.get("fySerializerCalls") or [{}])[0]
@@ -248,6 +278,11 @@ def compare_call(capture: dict, call: dict, *, prior: list[dict], record: bool) 
                            "localLength": len(local_bytes),
                            "browserHead": browser_bytes[:96],
                            "localHead": local_bytes[:96],
+                           "differenceCount": sum(left != right for left, right in
+                                                  zip(browser_bytes, local_bytes)),
+                           "firstDifferences": [offset for offset, (left, right) in
+                                                enumerate(zip(browser_bytes, local_bytes))
+                                                if left != right][:25],
                            "matchingBlocks": [{"browserStart": block.a,
                                                "localStart": block.b,
                                                "length": block.size}
@@ -584,7 +619,7 @@ def compare_call(capture: dict, call: dict, *, prior: list[dict], record: bool) 
         (index for index, (left, right) in enumerate(zip(browser_branches, local_branches))
          if left != right), None,
     )
-    return {
+    report = {
         "equal": call["output"] == local["fy"],
         "browserLength": len(call["output"]),
         "localLength": len(local["fy"]),
@@ -820,6 +855,8 @@ def compare_call(capture: dict, call: dict, *, prior: list[dict], record: bool) 
                                      for key in profile_differences[:30]]},
         "featureWrites": {"browser": feature_writes(capture.get("fyFeatureWrites") or []),
                           "local": feature_writes(local.get("fyFeatureWrites") or [])},
+        "feature28Context": {"browser": capture.get("fy28Context") or [],
+                             "local": local.get("fy28Context") or []},
         "feature11Writes": {
             "browser": [entry for entry in capture.get("fyFeatureWrites") or []
                         if entry.get("index") == "11_item"],
@@ -1014,6 +1051,9 @@ def compare_call(capture: dict, call: dict, *, prior: list[dict], record: bool) 
         "resourceQueries": {"browser": resource_queries(capture.get("fyResourceQueries") or []),
                             "local": resource_queries(local.get("fyResourceQueries") or [])},
     }
+    if return_local_value:
+        report["localValue"] = local["fy"]
+    return report
 
 
 def main() -> None:
@@ -1024,6 +1064,8 @@ def main() -> None:
                         default=True, help="定向记录 FY VM 分支，默认开启")
     parser.add_argument("--summary", action="store_true",
                         help="只输出长度、轨迹数量和逐字节一致性")
+    parser.add_argument("--serializer-replay", action="store_true",
+                        help="诊断用：以浏览器序列化字节替换本地结果，检查后续编码")
     args = parser.parse_args()
     path = args.capture or OUTPUT
     if args.capture is None:
@@ -1044,7 +1086,8 @@ def main() -> None:
     baseline = compare_call(capture, probe["call"], prior=earlier, record=False)
     final_call = next(call for call in capture["calls"] if call["label"] == "fy")
     drag = compare_call(capture, final_call,
-                        prior=[*earlier, probe["call"]], record=True)
+                        prior=[*earlier, probe["call"]], record=True,
+                        serializer_replay=args.serializer_replay)
     asset_equal = capture.get("fyAssetStats") == asset_stats(
         FY_ASSET.read_text(encoding="utf-8").rstrip("\n"))
     if args.summary:
@@ -1055,6 +1098,7 @@ def main() -> None:
                      ("equal", "browserLength", "localLength", "eventCount",
                       "firstOutputDifference")},
             "fyAssetEqual": asset_equal,
+            "serializerReplay": args.serializer_replay,
         }, ensure_ascii=False))
     else:
         print(json.dumps({"capture": str(path), "baseline": baseline, "drag": drag,

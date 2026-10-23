@@ -307,7 +307,8 @@ if (input.mode === 'et') {
     height: page.screen?.height ?? 720,
     availWidth: page.screen?.availWidth ?? 1280,
     availHeight: page.screen?.availHeight ?? 720,
-    availLeft: 0, availTop: 0,
+    availLeft: page.screenProfile?.values?.availLeft ?? page.screen?.availLeft ?? 0,
+    availTop: page.screenProfile?.values?.availTop ?? page.screen?.availTop ?? 0,
   })) {
     Object.defineProperty(Screen.prototype, name, {
       configurable: true,
@@ -866,6 +867,10 @@ if (input.mode === 'fy_nonce') {
       configurable: true, enumerable: true, ...descriptor,
     });
   }
+  const tokenListConstructor = Object.getOwnPropertyDescriptor(
+    DOMTokenList.prototype, 'constructor');
+  delete DOMTokenList.prototype.constructor;
+  Object.defineProperty(DOMTokenList.prototype, 'constructor', tokenListConstructor);
   global.DOMTokenList = browserNative('DOMTokenList', DOMTokenList);
   global.WindVane = {
     version: '3.0.6',
@@ -1095,6 +1100,7 @@ global.Image = class Image extends HTMLElement {
   set src(value) {
     this._src = String(value);
     if (this._src.startsWith('data:image/svg+xml;base64,')) {
+      if (input.traceNonceGt) global.__nonceSvgRawSource = this._src;
       const normalized = spawnSync('python3', [path.join(__dirname,
         '../../../tools/render_nonce_svg.py'), '--normalize'], {
         input: this._src, encoding: 'utf8', maxBuffer: 1024 * 1024,
@@ -1103,6 +1109,9 @@ global.Image = class Image extends HTMLElement {
         throw new Error(`SVG normalization failed: ${String(normalized.stderr).slice(0, 500)}`);
       }
       this._src = normalized.stdout;
+      if (typeof input.nonceSvgReplaySource === 'string') {
+        this._src = input.nonceSvgReplaySource;
+      }
       lastNonceSvgImage = this;
       if (input.traceNonceGt) global.__nonceSvgSource = this._src;
     }
@@ -1290,7 +1299,8 @@ let fyFontWidthIndex = 0;
 Object.defineProperty(HTMLElement.prototype, 'innerHTML', {
   get() { return this._innerHTML || ''; },
   set(value) {
-    this._innerHTML = normalizeNonceMarkup(String(value));
+    this._innerHTML = input.nonceNormalizeMarkup === false
+      ? String(value) : normalizeNonceMarkup(String(value));
     if (input.mode === 'fy_nonce' && this instanceof HTMLSpanElement &&
         this._innerHTML === 'mmmmmmmmmmlli') {
       const widths = (input.fyFontProbes || []).find(entry =>
@@ -1597,6 +1607,14 @@ for (const name of ['addEventListener', 'removeEventListener', 'dispatchEvent'])
     value: browserNative(name, EventTarget.prototype[name]),
     enumerable: true, configurable: true, writable: true,
   });
+}
+if (input.mode === 'nonce_only') {
+  const addListener = EventTarget.prototype.addEventListener;
+  const tracedAddListener = function (type, listener, options) {
+    return addListener.call(this, type, listener, options);
+  };
+  Object.defineProperty(tracedAddListener, 'name', { value: '' });
+  EventTarget.prototype.addEventListener = tracedAddListener;
 }
 const nonceDocument = new HTMLDocument();
 Object.defineProperty(global, 'document', {
@@ -1939,8 +1957,8 @@ global.Screen = class Screen {
   get height() { return page.screen?.height ?? 720; }
   get availWidth() { return page.screen?.availWidth ?? 1280; }
   get availHeight() { return page.screen?.availHeight ?? 720; }
-  get availLeft() { return 0; }
-  get availTop() { return 0; }
+  get availLeft() { return page.screenProfile?.values?.availLeft ?? page.screen?.availLeft ?? 0; }
+  get availTop() { return page.screenProfile?.values?.availTop ?? page.screen?.availTop ?? 0; }
   get orientation() { return screenOrientation; }
   get onchange() { return null; }
   get isExtended() { return false; }
@@ -2193,7 +2211,9 @@ const windowListeners = new Map();
 if (input.mode === 'fy_nonce') {
   const orientationValues = new WeakMap();
   global.ondeviceorientation = null;
-  global.DeviceMotionEvent = class DeviceMotionEvent extends Event {};
+  global.DeviceMotionEvent = class DeviceMotionEvent extends Event {
+    constructor(type, init = {}) { super(type, init); }
+  };
   global.DeviceOrientationEvent = class DeviceOrientationEvent extends Event {
     constructor(type, init = {}) {
       super(type);
@@ -2368,6 +2388,7 @@ try {
       global.__fyDgCalls = [];
       global.__fyDg13GateChecks = [];
       global.__fyFeatureWrites = [];
+      global.__fy28Context = [];
       global.__fy115Writes = [];
       global.__fy24Context = [];
       global.__fyMr22Steps = [];
@@ -2405,6 +2426,7 @@ try {
       global.__fyUmidInput = input.fyUmidResponse ||
         (page.umidToken ? [0, 'cn', page.umidToken] : null);
       global.__fySerializerCalls = [];
+      global.__fySerializerReplayBytes = input.fySerializerReplayBytes || null;
       global.__fyValueSig = value => {
         if (typeof value === 'string') {
           let hash = 2166136261;
@@ -2631,7 +2653,11 @@ try {
       const featureArrayNeedle = 'iC=[]';
       if (!fySource.includes(featureArrayNeedle)) throw new Error('FY feature array 探针位置不存在');
       fySource = fySource.replace(featureArrayNeedle,
-        'iC=new Proxy([],{set(t,k,v,r){globalThis.__fyFeatureArray=iC;if(["12","24","54","66","73","81","115","119","125","137","148","152","157"].includes(String(k)))globalThis.__fyFeatureWrites.push({index:String(k),type:typeof v,value:typeof v==="number"?v:null,valueSig:globalThis.__fyValueSig(v),jCount:globalThis.__fyJCalls.length,earlyCount:globalThis.__fyEarlyCalls?.length??0,time:performance.now(),stack:new Error().stack.split("\\n").slice(1,11)});if(k==="115"&&v&&typeof v==="object")v=new Proxy(v,{set(o,key,val,receiver){globalThis.__fy115Writes.push({key:String(key),valueSig:globalThis.__fyValueSig(val),earlyCount:globalThis.__fyEarlyCalls?.length??0,stack:new Error().stack.split("\\n").slice(1,6)});return Reflect.set(o,key,val,receiver)}});if(k==="11"&&Array.isArray(v))v=new Proxy(v,{set(o,key,val,receiver){if(key!=="length"&&globalThis.__fyFeatureWrites.filter(item=>item.index==="11_item").length<8)globalThis.__fyFeatureWrites.push({index:"11_item",itemIndex:String(key),valueDetail:globalThis.__fyDeepSig(val,true),stack:new Error().stack.split(String.fromCharCode(10)).slice(1,6)});return Reflect.set(o,key,val,receiver)}});return Reflect.set(t,k,v,r)}})');
+        'iC=new Proxy([],{set(t,k,v,r){globalThis.__fyFeatureArray=iC;if(["12","24","28","54","66","73","81","115","119","125","137","148","152","157"].includes(String(k)))globalThis.__fyFeatureWrites.push({index:String(k),type:typeof v,value:typeof v==="number"?v:null,valueSig:globalThis.__fyValueSig(v),jCount:globalThis.__fyJCalls.length,earlyCount:globalThis.__fyEarlyCalls?.length??0,time:performance.now(),stack:new Error().stack.split("\\n").slice(1,11)});if(k==="115"&&v&&typeof v==="object")v=new Proxy(v,{set(o,key,val,receiver){globalThis.__fy115Writes.push({key:String(key),valueSig:globalThis.__fyValueSig(val),earlyCount:globalThis.__fyEarlyCalls?.length??0,stack:new Error().stack.split("\\n").slice(1,6)});return Reflect.set(o,key,val,receiver)}});if(k==="11"&&Array.isArray(v))v=new Proxy(v,{set(o,key,val,receiver){if(key!=="length"&&globalThis.__fyFeatureWrites.filter(item=>item.index==="11_item").length<8)globalThis.__fyFeatureWrites.push({index:"11_item",itemIndex:String(key),valueDetail:globalThis.__fyDeepSig(val,true),stack:new Error().stack.split(String.fromCharCode(10)).slice(1,6)});return Reflect.set(o,key,val,receiver)}});return Reflect.set(t,k,v,r)}})');
+      const feature28Needle = 'd[p][I]=d[x]-1';
+      if (!fySource.includes(feature28Needle)) throw new Error('FY 特征 28 写入点不存在');
+      fySource = fySource.replace(feature28Needle,
+        'globalThis.__fy28Context.length<40&&globalThis.__fy28Context.push({I,key:k,x:d[x],isFeatureArray:d[i]===globalThis.__fyFeatureArray,time:performance.now()}),d[p][I]=d[x]-1');
       const feature24Needle = 'd[9][X]=1,d[k]=586';
       if (!fySource.includes(feature24Needle)) throw new Error('FY feature24 探针位置不存在');
       fySource = fySource.replace(feature24Needle,
@@ -2639,7 +2665,7 @@ try {
       const mrStepNeedle = 'for(d[k]=68;d[k]!==U;){var Kz=d[k]&o,yH,O=d[k]>>5&o;';
       if (!fySource.includes(mrStepNeedle)) throw new Error('FY mr 步进探针位置不存在');
       fySource = fySource.replace(mrStepNeedle,
-        `${mrStepNeedle}if(v===52&&globalThis.__fySerializing&&globalThis.__fyStyleVmInputs.length<1500)globalThis.__fyStyleVmInputs.push({kind:"mr52step",pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(key=>[key,globalThis.__fyValueSig(d[key])])});if(v===25&&globalThis.__fySerializing&&globalThis.__fyStyleVmInputs.length<900)globalThis.__fyStyleVmInputs.push({kind:"mr25step",pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(key=>[key,globalThis.__fyValueSig(d[key])])});if(v===16&&globalThis.__fySerializing&&globalThis.__fyMr16Steps.length<5000)globalThis.__fyMr16Steps.push({pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}),detail:globalThis.__fyMr16Steps.length<30?globalThis.__fyDeepSig(d,true):null,branchKey:d[k]===261?C[$][99]:null,branchValue:d[k]===261?globalThis.__fyValueSig(d[E]?.[C[$][99]]):null,branchOwn:d[k]===261?Object.prototype.hasOwnProperty.call(d[E],C[$][99]):null,nextKey:d[k]===613?C[$][b]:null,nextValue:d[k]===613?globalThis.__fyValueSig(d[E]?.[C[$][b]]):null,nextOwn:d[k]===613?Object.prototype.hasOwnProperty.call(d[E],C[$][b]):null,preKey:d[k]===613?C[$][89]:null,preValue:d[k]===613?globalThis.__fyValueSig(d[E]?.[C[$][89]]):null,preOwn:d[k]===613?Object.prototype.hasOwnProperty.call(d[E],C[$][89]):null});if(v===22&&globalThis.__fyMr22Steps.length<200)globalThis.__fyMr22Steps.push({pc:d[k],branch:Kz,opcode:O,MTag:Object.prototype.toString.call(M),MKeys:M&&typeof M==="object"?Object.getOwnPropertyNames(M).slice(0,8):null,M0Type:typeof M?.[0]});if(v===3&&globalThis.__fyMr3Steps.length<3000)globalThis.__fyMr3Steps.push({pc:d[k],branch:Kz,opcode:O});if(v===43&&globalThis.__fyMr43Steps.length<1000)globalThis.__fyMr43Steps.push({pc:d[k],branch:Kz,opcode:O,s,zTag:Object.prototype.toString.call(z),regSig:s==="deviceorientation"?Object.fromEntries(Object.keys(d).map(k=>[k,globalThis.__fyValueSig(d[k])])):null});if(v===56&&globalThis.__fyMr56Steps.length<500)globalThis.__fyMr56Steps.push({pc:d[k],branch:Kz,opcode:O,earlyCount:globalThis.__fyEarlyCalls?.length??0});if(v===47&&globalThis.__fyMr47Steps.length<5000)globalThis.__fyMr47Steps.push({pc:d[k],branch:Kz,opcode:O,eType:typeof d[E],eLength:d[E]?.length,eTag:Object.prototype.toString.call(d[E]),pType:typeof d[p],pLength:d[p]?.length,pTag:Object.prototype.toString.call(d[p]),d3Length:d[3]?.length,d9Length:d[9]?.length,earlyCount:globalThis.__fyEarlyCalls?.length??0});`);
+        `${mrStepNeedle}if(v===52&&globalThis.__fySerializing&&globalThis.__fyStyleVmInputs.length<1500)globalThis.__fyStyleVmInputs.push({kind:"mr52step",pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(key=>[key,globalThis.__fyValueSig(d[key])])});if(v===25&&globalThis.__fySerializing&&globalThis.__fyStyleVmInputs.length<900)globalThis.__fyStyleVmInputs.push({kind:"mr25step",pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(key=>[key,globalThis.__fyValueSig(d[key])])});if(v===16&&globalThis.__fySerializing&&globalThis.__fyMr16Steps.length<5000)globalThis.__fyMr16Steps.push({pc:d[k],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}),detail:globalThis.__fyMr16Steps.length<30?globalThis.__fyDeepSig(d,true):null,branchKey:d[k]===261?C[$][99]:null,branchValue:d[k]===261?globalThis.__fyValueSig(d[E]?.[C[$][99]]):null,branchOwn:d[k]===261?Object.prototype.hasOwnProperty.call(d[E],C[$][99]):null,nextKey:d[k]===613?C[$][b]:null,nextValue:d[k]===613?globalThis.__fyValueSig(d[E]?.[C[$][b]]):null,nextOwn:d[k]===613?Object.prototype.hasOwnProperty.call(d[E],C[$][b]):null,preKey:d[k]===613?C[$][89]:null,preValue:d[k]===613?globalThis.__fyValueSig(d[E]?.[C[$][89]]):null,preOwn:d[k]===613?Object.prototype.hasOwnProperty.call(d[E],C[$][89]):null});if(v===22&&globalThis.__fyMr22Steps.length<200)globalThis.__fyMr22Steps.push({pc:d[k],branch:Kz,opcode:O,MTag:Object.prototype.toString.call(M),MKeys:M&&typeof M==="object"?Object.getOwnPropertyNames(M).slice(0,8):null,M0Type:typeof M?.[0]});if(v===3&&globalThis.__fyMr3Steps.length<3000)globalThis.__fyMr3Steps.push({pc:d[k],branch:Kz,opcode:O});if(v===43&&globalThis.__fyMr43Steps.length<1000)globalThis.__fyMr43Steps.push({pc:d[k],branch:Kz,opcode:O,s,zTag:Object.prototype.toString.call(z),regSig:s==="deviceorientation"?Object.fromEntries(Object.keys(d).map(k=>[k,globalThis.__fyValueSig(d[k])])):null,reg13:s==="deviceorientation"&&d[k]===265&&typeof d[13]==="function"?{name:d[13].name,length:d[13].length,source:String(d[13]).slice(0,120)}:null});if(v===56&&globalThis.__fyMr56Steps.length<500)globalThis.__fyMr56Steps.push({pc:d[k],branch:Kz,opcode:O,earlyCount:globalThis.__fyEarlyCalls?.length??0});if(v===47&&globalThis.__fyMr47Steps.length<5000)globalThis.__fyMr47Steps.push({pc:d[k],branch:Kz,opcode:O,eType:typeof d[E],eLength:d[E]?.length,eTag:Object.prototype.toString.call(d[E]),pType:typeof d[p],pLength:d[p]?.length,pTag:Object.prototype.toString.call(d[p]),d3Length:d[3]?.length,d9Length:d[9]?.length,earlyCount:globalThis.__fyEarlyCalls?.length??0});`);
       const jEntryNeedle = 'function J(Z7){';
       if (!fySource.includes(jEntryNeedle)) throw new Error('FY J 入口探针位置不存在');
       fySource = fySource.replace(jEntryNeedle,
@@ -2738,7 +2764,10 @@ try {
       const serializerNeedle = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
       if (!fySource.includes(serializerNeedle)) throw new Error('FY serializer 探针位置不存在');
       fySource = fySource.replace(serializerNeedle,
-        '(function(){const args=[d[i],d[m],d[2],d[4],d[5]],t={fnName:C[l]?.name,fnPrefix:String(C[l]).slice(0,120),argSig:args.map(globalThis.__fyValueSig),argArrays:[d[i],d[m]].map(v=>Array.isArray(v)?v.slice():null),mKeys:d[m]&&typeof d[m]==="object"?Object.keys(d[m]).slice(0,30):null,mProfile:Object.fromEntries(Object.keys(d[m]||{}).map(k=>[k,globalThis.__fyValueSig(d[m][k])])),featureProfile:Object.fromEntries(Object.keys(d[2]||{}).map(k=>[k,globalThis.__fyValueSig(d[2][k])])),featureDeep:Object.fromEntries(Object.keys(d[2]||{}).map(k=>[k,globalThis.__fyDeepSig(d[2][k])])),featureDetail:{11:globalThis.__fyDeepSig(d[2]?.[11],true),105:globalThis.__fyDeepSig(d[2]?.[105],true),152:globalThis.__fyDeepSig(d[2]?.[152],true)},feature52Raw:d[2]?.[52],feature77Raw:Array.isArray(d[2]?.[77])?d[2][77].slice():null,feature152Raw:Array.isArray(d[2]?.[152])?d[2][152].slice():null,feature115:Object.fromEntries(Object.entries(d[2]?.[115]||{}).map(([k,v])=>[k,globalThis.__fyValueSig(v)])),feature125:Array.isArray(d[2]?.[125])?d[2][125].map(globalThis.__fyValueSig):null,feature125Last:typeof d[2]?.[125]?.at?.(-1)==="string"?d[2][125].at(-1).slice(0,80):null};globalThis.__fySerializerCalls.push(t);globalThis.__fySerializing=true;try{d[p]=W(C[l],null,1,...args)}finally{globalThis.__fySerializing=false}if(!globalThis.__fyWindowDescriptorSnapshot)globalThis.__fyWindowDescriptorSnapshot=globalThis.__fyDescribeWindow();t.resultSig=globalThis.__fyValueSig(d[p]);t.resultBytes=Array.isArray(d[p])?Array.from(d[p]):null})(),d[i]=d[p]');
+        '(function(){const args=[d[i],d[m],d[2],d[4],d[5]],t={fnName:C[l]?.name,fnPrefix:String(C[l]).slice(0,120),argSig:args.map(globalThis.__fyValueSig),argArrays:[d[i],d[m]].map(v=>Array.isArray(v)?v.slice():null),mKeys:d[m]&&typeof d[m]==="object"?Object.keys(d[m]).slice(0,30):null,mProfile:Object.fromEntries(Object.keys(d[m]||{}).map(k=>[k,globalThis.__fyValueSig(d[m][k])])),featureProfile:Object.fromEntries(Object.keys(d[2]||{}).map(k=>[k,globalThis.__fyValueSig(d[2][k])])),featureDeep:Object.fromEntries(Object.keys(d[2]||{}).map(k=>[k,globalThis.__fyDeepSig(d[2][k])])),featureDetail:{11:globalThis.__fyDeepSig(d[2]?.[11],true),105:globalThis.__fyDeepSig(d[2]?.[105],true),152:globalThis.__fyDeepSig(d[2]?.[152],true)},feature52Raw:d[2]?.[52],feature77Raw:Array.isArray(d[2]?.[77])?d[2][77].slice():null,feature152Raw:Array.isArray(d[2]?.[152])?d[2][152].slice():null,feature115:Object.fromEntries(Object.entries(d[2]?.[115]||{}).map(([k,v])=>[k,globalThis.__fyValueSig(v)])),feature125:Array.isArray(d[2]?.[125])?d[2][125].map(globalThis.__fyValueSig):null,feature125Raw:Array.isArray(d[2]?.[125])?d[2][125].slice():null,feature125Value21:d[2]?.[125]?.[21],feature125Last:typeof d[2]?.[125]?.at?.(-1)==="string"?d[2][125].at(-1).slice(0,80):null};globalThis.__fySerializerCalls.push(t);globalThis.__fySerializing=true;try{d[p]=W(C[l],null,1,...args)}finally{globalThis.__fySerializing=false}if(!globalThis.__fyWindowDescriptorSnapshot)globalThis.__fyWindowDescriptorSnapshot=globalThis.__fyDescribeWindow();t.resultSig=globalThis.__fyValueSig(d[p]);t.resultBytes=Array.isArray(d[p])?Array.from(d[p]):null})(),d[i]=d[p]');
+      if (Array.isArray(input.fySerializerReplayBytes)) fySource = fySource.replace(
+        't.resultSig=globalThis.__fyValueSig(d[p]);t.resultBytes=',
+        'if(Array.isArray(globalThis.__fySerializerReplayBytes?.[globalThis.__fySerializerCalls.length-1]))d[p]=globalThis.__fySerializerReplayBytes[globalThis.__fySerializerCalls.length-1].slice();t.resultSig=globalThis.__fyValueSig(d[p]);t.resultBytes=');
       fySource = fySource.replace('d[S][X]=1,d[k]=586',
         'globalThis.__fy24AlternateContext.push({v,z,s,AN,JY,eo,opcode:O,key:X,targetTag:Object.prototype.toString.call(d[S]),earlyCount:globalThis.__fyEarlyCalls?.length??0,time:performance.now()}),d[S][X]=1,d[k]=586');
       const resourceQueryNeedle = 'OA=d[8][d[m]](d[9]),d[8]=OA';
@@ -2886,7 +2915,6 @@ try {
     for (const prior of fyPriorCalls.slice(callbackPriorCount)) replayFyPrior(prior);
     if (typeof input.fyCallCookie === 'string') loadCookieSnapshot(input.fyCallCookie);
     global.__fyDragStackLine = input.fyDragStackLine;
-    if (input.record) __fyModule.startRecord();
     const replayRectValues = new WeakMap();
     class ReplayDOMRect {
       constructor(values) { replayRectValues.set(this, values); }
@@ -2919,6 +2947,21 @@ try {
       },
     });
     const fyEvents = input.mode === 'fy_nonce' ? input.events || [] : [];
+    let fyRecordStarted = false;
+    const startFyRecord = () => {
+      if (input.traceFyBranch) {
+        global.__fySerialEntryTrace = [];
+        global.__fySerialVxSteps = [];
+        global.__fyMr47Steps = [];
+      }
+      if (input.traceFyBranch) global.__fyEarlyCalls.push({ name: 'startRecord' });
+      __fyModule.startRecord();
+      fyRecordStarted = true;
+      for (const prior of input.fyRecordPriorCalls || []) replayFyPrior(prior);
+    };
+    if (input.record && !fyEvents.some(event => event.type === 'mousedown')) {
+      startFyRecord();
+    }
     for (const [eventIndex, event] of fyEvents.entries()) {
       if (Number.isFinite(event.timeStamp)) {
         noncePerformanceNow = event.timeStamp;
@@ -2985,8 +3028,12 @@ try {
             ? Reflect.getOwnPropertyDescriptor(target, key) : undefined;
         },
       });
+      if (input.record && !fyRecordStarted && event.type === 'mousedown'
+          && !input.fyRecordAfterMousedown) startFyRecord();
       document.dispatchEvent(replayProxy);
       for (const callback of windowListeners.get(replay.type) || []) callback.call(global, replayProxy);
+      if (input.record && !fyRecordStarted && event.type === 'mousedown'
+          && input.fyRecordAfterMousedown) startFyRecord();
       const nextEvent = input.events[eventIndex + 1];
       if (nextEvent && Number.isFinite(event.timeStamp) &&
           Number.isFinite(nextEvent.timeStamp)) {
@@ -3060,10 +3107,11 @@ try {
         if (!source.startsWith('Error\n')) return source;
         return input.nonceErrorStacks?.[nonceErrorStackIndex++] ?? source;
       }
+      global.__nonceSkipMarkupNormalization = input.nonceNormalizeMarkup === false;
       if (!input.traceNonceGt) {
         nonceSource = nonceSource.replace(
           'function mt(n){return re[te]=n,te++}',
-          'function mt(n){if(typeof n==="string")n=normalizeNonceStack(normalizeNonceMarkup(n));return re[te]=n,te++}',
+          'function mt(n){if(typeof n==="string")n=normalizeNonceStack(globalThis.__nonceSkipMarkupNormalization?n:normalizeNonceMarkup(n));return re[te]=n,te++}',
         );
       }
       if (input.traceNonceGt) {
@@ -3200,6 +3248,10 @@ try {
       if (input.nonceInitDelayMs) {
         await new Promise(resolve => setTimeout(resolve, input.nonceInitDelayMs));
       }
+      if (Number.isInteger(input.noncePrePhaseWorkerCount)) {
+        global.__nonceDeliverWorkerEvents?.(input.noncePrePhaseWorkerCount);
+      }
+      const replayNonceEvents = () => {
       for (const [eventIndex, event] of (input.events || []).entries()) {
         const target = Object.assign(element((event.target?.tag || 'div').toLowerCase()), {
           tagName: event.target?.tag || 'DIV',
@@ -3234,6 +3286,7 @@ try {
             type: event.type, message: String(error).slice(0, 160) });
         }
       }
+      };
       const nonceFunctionLength = String(crypto.genRandomValues).length;
       const noncePriorOutputs = [];
       const noncePriorConsumption = [];
@@ -3253,6 +3306,7 @@ try {
         noncePriorConsumption.push({ random: nonceInitRandomConsumed - beforeRandom,
           time: nonceInitTimeConsumed - beforeTime });
       }
+      replayNonceEvents();
       Math.random = nonceInitRandom;
       Date.now = nonceInitNow;
       const nonceRandom = Math.random;
@@ -3269,12 +3323,20 @@ try {
       applyNonceWindowPresence(input.phase);
       global.__nonceDeliverWorkerEvents?.(
         input.nonceWorkerCountsByPhase?.[String(input.phase)] ?? 0);
+      const nonceTraceNames = input.traceNonceGt ? [
+        '__nonceLtTrace', '__nonceMtTrace', '__nonceTtTrace',
+        '__nonceDispatchTrace', '__nonceJnTrace', '__nonceGtTrace',
+      ] : [];
+      const nonceTraceBefore = Object.fromEntries(nonceTraceNames.map(name => [name, global[name]]));
+      for (const name of nonceTraceNames) global[name] = [];
       const nonce = Object.hasOwn(input, 'phase')
         ? (resourcePhase++, global.__noncePhase = input.phase,
           crypto.genRandomValues(input.fy, input.phase))
         : (resourcePhase++, global.__noncePhase = null,
           crypto.genRandomValues(input.fy));
       const nonceTargetMemoryAfter = global.__nonceSnapshotMemory?.() ?? null;
+      const nonceTargetTrace = Object.fromEntries(nonceTraceNames.map(name => [name, global[name]]));
+      for (const name of nonceTraceNames) global[name] = nonceTraceBefore[name];
       Math.random = nonceRandom;
       Date.now = nonceNow;
       report(JSON.stringify({ nonce, randomConsumed, timeConsumed,
@@ -3287,6 +3349,7 @@ try {
         nonceEnvironmentBeforeInit: global.__nonceEnvironmentBeforeInit,
         nonceInitRandomFrames, nonceInitRandomCheckpoints, nonceInitTimeFrames,
         nonceGtTrace: global.__nonceGtTrace,
+        nonceTargetTrace,
         nonceLtTrace: global.__nonceLtTrace,
         nonceMtTrace: global.__nonceMtTrace,
         nonceTtTrace: global.__nonceTtTrace,
@@ -3309,6 +3372,7 @@ try {
         nonceEventErrors: global.__nonceEventErrors,
         nonceImageAssignments: global.__nonceImageAssignments,
         nonceSvgSource: global.__nonceSvgSource,
+        nonceSvgRawSource: global.__nonceSvgRawSource,
         nonceImageDispatch: global.__nonceImageDispatch,
         nonceImageError: global.__nonceImageError,
         nonceDigestTrace: global.__nonceDigestTrace,
@@ -3373,6 +3437,7 @@ try {
       fyDgCalls: global.__fyDgCalls,
       fyDg13GateChecks: global.__fyDg13GateChecks,
       fyFeatureWrites: global.__fyFeatureWrites,
+      fy28Context: global.__fy28Context,
       fy115Writes: global.__fy115Writes,
       fy24Context: global.__fy24Context,
       fy24AlternateContext: global.__fy24AlternateContext,

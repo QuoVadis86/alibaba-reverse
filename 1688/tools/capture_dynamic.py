@@ -214,6 +214,10 @@ def make_et_payload(
         payload["etWarmupM14Requests"] = prior_calls
         payload["replayMessageEvent"] = True
         payload["etCallStackMode"] = "playwright"
+        call_fingerprint = capture.get("etCallFingerprint") or []
+        if len(call_fingerprint) > 21 and type(call_fingerprint[21]) is int:
+            # W[21] can change between ET initialization and a human drag.
+            payload["callFingerprintOverrides"] = {"21": call_fingerprint[21]}
     if replay_startup:
         startup = capture.get("environment", {}).get("startup") or {}
         payload["initRandomTape"] = [entry["value"] for entry in startup.get("random", [])
@@ -263,8 +267,10 @@ def make_nonce_payload(
     payload["nonceWindowKeys"] = state.get("windowKeys")
     payload["nonceWindowNames"] = (capture.get("nonceStateBeforeInit") or {}).get(
         "windowNames") or state.get("windowNames")
+    all_dom_reads = [*(capture.get("nonceLtTrace") or []),
+                     *((capture.get("nonceTargetTrace") or {}).get("__nonceLtTrace") or [])]
     payload["nonceDomElementCounts"] = [entry["value"]["length"] for entry in
-                                        capture.get("nonceLtTrace") or []
+                                        all_dom_reads
                                         if entry.get("key") == "*" and
                                         entry.get("value", {}).get("tag") ==
                                         "[object NodeList]"]
@@ -279,6 +285,12 @@ def make_nonce_payload(
                                    capture.get("nonceMtTrace") or []
                                    if isinstance(entry.get("content"), str) and
                                    entry["content"].startswith("Error\n")]
+    payload["nonceErrorStacks"].extend(
+        entry["content"] for entry in
+        (capture.get("nonceTargetTrace") or {}).get("__nonceMtTrace") or []
+        if isinstance(entry.get("content"), str) and
+        entry["content"].startswith("Error\n")
+    )
     payload["nonceTimerStart"] = next((entry["result"]["value"] for entry in
                                        capture.get("nonceDispatchTrace") or []
                                        if entry.get("kind") == "qt" and
@@ -336,6 +348,10 @@ def make_nonce_payload(
             count = int.from_bytes(bytes(sample[9076 - start:9080 - start]), "little")
             worker_counts[phase] = count + 1 if count else 0
     payload["nonceWorkerCountsByPhase"] = worker_counts
+    # Worker 消息在首次非初始化调用之前已进入浏览器事件循环。
+    first_phase = str(early_calls[1]["args"][1]) if len(early_calls) > 1 else None
+    if first_phase in worker_counts:
+        payload["noncePrePhaseWorkerCount"] = worker_counts[first_phase]
     animation_snapshot = next((item["memoryBefore"] for item in early_calls[1:]
                                if item.get("memoryBefore") and
                                item["memoryBefore"]["sampleStart"] <= 8812 and
@@ -507,6 +523,37 @@ def compare_capture(
     return result
 
 
+def build_capture_code(
+    challenge: dict[str, Any], *, startup_trace: bool = False,
+    break_et: bool = False, trace_et_vm: bool = False,
+    trace_et_pc: bool = False, trace_nonce_gt: bool = False,
+    probe_fy: bool = False, trace_fy_branch: bool = False,
+    save_et_source: bool = False, manual_drag: bool = False,
+    intercept_verify: bool = False,
+) -> str:
+    return _SCRIPT.read_text().replace(
+        "CHALLENGE_PAYLOAD", json.dumps(challenge, ensure_ascii=False)
+    ).replace("MANUAL_DRAG_PAYLOAD", json.dumps(manual_drag)).replace(
+        "INTERCEPT_VERIFY_PAYLOAD", json.dumps(intercept_verify)).replace(
+        "STARTUP_TRACE", json.dumps(startup_trace)
+    ).replace("BREAK_ET", json.dumps(break_et)
+    ).replace("TRACE_ET_VM", json.dumps(trace_et_vm)).replace(
+        "TRACE_ET_PC_PAYLOAD", json.dumps(trace_et_pc)).replace(
+        "TRACE_NONCE_GT_PAYLOAD", json.dumps(trace_nonce_gt)).replace(
+        "PROBE_FY_PAYLOAD", json.dumps(probe_fy)).replace(
+        "TRACE_FY_BRANCH_PAYLOAD", json.dumps(trace_fy_branch)).replace(
+        "ET_PC_PROBE_PAYLOAD", json.dumps(_ET_PC_PROBE.read_text().strip())).replace(
+        "ET_W_PROBE_PAYLOAD", json.dumps(_ET_W_PROBE.read_text().strip())).replace(
+        "ENVIRONMENT_PROBE_PAYLOAD", json.dumps(_ENVIRONMENT_PROBE.read_text())).replace(
+        "NONCE_LT_PROBE_PAYLOAD", json.dumps(_NONCE_LT_PROBE.read_text().strip())).replace(
+        "NONCE_MT_PROBE_PAYLOAD", json.dumps(_NONCE_MT_PROBE.read_text().strip())).replace(
+        "NONCE_TT_PROBE_PAYLOAD", json.dumps(_NONCE_TT_PROBE.read_text().strip())).replace(
+        "NONCE_DISPATCH_PROBE_PAYLOAD", json.dumps(_NONCE_DISPATCH_PROBE.read_text().strip())).replace(
+        "NONCE_MEMORY_PROBE_PAYLOAD", json.dumps(_NONCE_MEMORY_PROBE.read_text().strip())).replace(
+        "NONCE_JN_PROBE_PAYLOAD", json.dumps(_NONCE_JN_PROBE.read_text().strip())).replace(
+        "SAVE_ET_SOURCE_PAYLOAD", json.dumps(save_et_source))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="采集并对照 FY、nonce、ET")
     parser.add_argument("link_type", choices=("captchacapslidev2",))
@@ -525,25 +572,12 @@ def main() -> None:
         parser.error("--trace-fy-branch 需要同时指定 --probe-fy")
     challenge = get_challenge(args.link_type)
     session = f"dynamic_{os.getpid()}"
-    code = _SCRIPT.read_text().replace(
-        "CHALLENGE_PAYLOAD", json.dumps(challenge, ensure_ascii=False)
-    ).replace("STARTUP_TRACE", json.dumps(args.startup_trace)).replace(
-        "BREAK_ET", json.dumps(args.break_et)
-    ).replace("TRACE_ET_VM", json.dumps(args.trace_et_vm)).replace(
-        "TRACE_ET_PC_PAYLOAD", json.dumps(args.trace_et_pc)).replace(
-        "TRACE_NONCE_GT_PAYLOAD", json.dumps(args.trace_nonce_gt)).replace(
-        "PROBE_FY_PAYLOAD", json.dumps(args.probe_fy)).replace(
-        "TRACE_FY_BRANCH_PAYLOAD", json.dumps(args.trace_fy_branch)).replace(
-        "ET_PC_PROBE_PAYLOAD", json.dumps(_ET_PC_PROBE.read_text().strip())).replace(
-        "ET_W_PROBE_PAYLOAD", json.dumps(_ET_W_PROBE.read_text().strip())).replace(
-        "ENVIRONMENT_PROBE_PAYLOAD", json.dumps(_ENVIRONMENT_PROBE.read_text())).replace(
-        "NONCE_LT_PROBE_PAYLOAD", json.dumps(_NONCE_LT_PROBE.read_text().strip())).replace(
-        "NONCE_MT_PROBE_PAYLOAD", json.dumps(_NONCE_MT_PROBE.read_text().strip())).replace(
-        "NONCE_TT_PROBE_PAYLOAD", json.dumps(_NONCE_TT_PROBE.read_text().strip())).replace(
-        "NONCE_DISPATCH_PROBE_PAYLOAD", json.dumps(_NONCE_DISPATCH_PROBE.read_text().strip())).replace(
-        "NONCE_MEMORY_PROBE_PAYLOAD", json.dumps(_NONCE_MEMORY_PROBE.read_text().strip())).replace(
-        "NONCE_JN_PROBE_PAYLOAD", json.dumps(_NONCE_JN_PROBE.read_text().strip())).replace(
-        "SAVE_ET_SOURCE_PAYLOAD", json.dumps(args.save_et_source))
+    code = build_capture_code(
+        challenge, startup_trace=args.startup_trace, break_et=args.break_et,
+        trace_et_vm=args.trace_et_vm, trace_et_pc=args.trace_et_pc,
+        trace_nonce_gt=args.trace_nonce_gt, probe_fy=args.probe_fy,
+        trace_fy_branch=args.trace_fy_branch, save_et_source=args.save_et_source,
+    )
     output = _capture_with_session(session, code)
     payload = output.split("### Result\n", 1)[1].split("\n\n", 1)[0]
     packed, _ = json.JSONDecoder().raw_decode(payload)

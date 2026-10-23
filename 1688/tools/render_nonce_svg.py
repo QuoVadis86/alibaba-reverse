@@ -9,6 +9,8 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import html5lib
+
 
 NAMED_COLORS = {
     "black": (0, 0, 0), "white": (255, 255, 255),
@@ -16,6 +18,7 @@ NAMED_COLORS = {
     "darkcyan": (0, 139, 139), "darksalmon": (233, 150, 122),
     "darkgreen": (0, 100, 0), "lightgray": (211, 211, 211),
     "darkgray": (169, 169, 169),
+    "darkmagenta": (139, 0, 139),
     "lightblue": (173, 216, 230),
     "teal": (0, 128, 128), "aqua": (0, 255, 255),
     "navy": (0, 0, 128), "olive": (128, 128, 0),
@@ -32,49 +35,13 @@ NAMED_COLORS = {
 
 
 def normalize_svg_markup(svg: str) -> str:
-    def normalize_tag(match: re.Match[str]) -> str:
-        tag = match.group(1)
-        attributes = match.group(2)
-        parsed: list[str] = []
-        seen: set[str] = set()
-        for attribute in re.finditer(
-            r'\s+([\w:-]+)(?:\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+)))?',
-            attributes,
-        ):
-            name = attribute.group(1)
-            if name in seen:
-                continue
-            seen.add(name)
-            value = next((entry for entry in attribute.groups()[1:] if entry is not None), "")
-            parsed.append(f'{name}="{value}"')
-        return f'<{tag}{" " + " ".join(parsed) if parsed else ""}>'
-
-    normalized = re.sub(r'<([A-Za-z][\w:-]*)([^<>]*?)>', normalize_tag, svg)
-    output: list[str] = []
-    open_tags: list[str] = []
-    cursor = 0
-    for match in re.finditer(r'</?([A-Za-z][\w:-]*)[^<>]*>', normalized):
-        output.append(normalized[cursor:match.start()])
-        tag = match.group(1)
-        if match.group().startswith("</"):
-            if tag in open_tags:
-                while open_tags:
-                    closing = open_tags.pop()
-                    output.append(f"</{closing}>")
-                    if closing == tag:
-                        break
-        else:
-            if tag == "a" and tag in open_tags:
-                while open_tags:
-                    closing = open_tags.pop()
-                    output.append(f"</{closing}>")
-                    if closing == "a":
-                        break
-            output.append(match.group())
-            open_tags.append(tag)
-        cursor = match.end()
-    output.append(normalized[cursor:])
-    return "".join(output)
+    fragment = html5lib.parseFragment(
+        svg, treebuilder="etree", namespaceHTMLElements=False,
+    )
+    return html5lib.serialize(
+        fragment, tree="etree", omit_optional_tags=False,
+        quote_attr_values="always", alphabetical_attributes=False,
+    )
 
 
 def color(value: str) -> bytes:
