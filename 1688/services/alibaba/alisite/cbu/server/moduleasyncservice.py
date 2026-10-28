@@ -5,7 +5,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field, PositiveInt
 
-from api.response import JsonValue, MtopResponse
+from api.response import JsonObject, JsonValue, MtopResponse
 from api.transport import MtopRequest, MtopTransport
 
 API: Final = "mtop.alibaba.alisite.cbu.server.ModuleAsyncService"
@@ -25,7 +25,7 @@ class ShopOfferListQuery(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     member_id: str = Field(min_length=1)
-    keywords: str = ""
+    keywords: str | None = None
     page_num: PositiveInt = 1
     count: PositiveInt = 30
     sort_type: str = "wangpu_score"
@@ -52,16 +52,17 @@ class ModuleAsyncService:
 
     def get_offer_list(self, query: ShopOfferListQuery) -> MtopResponse[JsonValue]:
         """查询店铺商品列表及筛选结果。"""
-        appdata = {
+        appdata: JsonObject = {
             "sortType": query.sort_type,
             "sellerRecommendFilter": query.seller_recommend_filter,
             "mixFilter": query.mix_filter,
             "tradenumFilter": query.tradenum_filter,
             "quantityBegin": query.quantity_begin,
-            "keywords": query.keywords,
             "pageNum": query.page_num,
             "count": query.count,
         }
+        if query.keywords is not None:
+            appdata["keywords"] = query.keywords
         data = {
             "componentKey": "Wp_pc_common_offerlist",
             "params": json.dumps(

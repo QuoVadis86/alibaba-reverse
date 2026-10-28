@@ -5,10 +5,14 @@ from __future__ import annotations
 import requests
 
 from services.alibaba import AlibabaServices
+from services.alisite import AlisiteServices
+from services.cbu import CbuServices
 from services.freightinfoservice import FreightInfoService
+from services.ipregionqueryservice import IpRegionQueryService
 from services.laputa import LaputaServices
 from services.mmga import MmgaServices
 from services.moga import MogaServices
+from services.pc import PcServices
 from services.relationrecommend import RelationRecommendServices
 from services.trade import TradeNamespace
 from services.user import UserServices
@@ -27,8 +31,12 @@ class MtopClient:
         self.offer_detail = self.laputa.miniod
         self.wosc = WoscServices(transport)
         self.moga = MogaServices(transport)
+        self.pc = PcServices(transport)
         self.trade = TradeNamespace(transport)
         self.freightinfoservice = FreightInfoService(transport)
+        self.ipregionqueryservice = IpRegionQueryService(transport)
         self.alibaba = AlibabaServices(transport)
+        self.alisite = AlisiteServices(transport)
+        self.cbu = CbuServices(transport)
         self.relationrecommend = RelationRecommendServices(transport, http)
         self.user = UserServices(transport)

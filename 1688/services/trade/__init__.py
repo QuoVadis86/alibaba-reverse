@@ -1,6 +1,7 @@
 """1688 交易域接口集合。"""
 
 from services.trade.mtoprateservice import MtopRateService
+from services.trade.receiveaddress import ReceiveAddressService
 from api.transport import MtopTransport
 
 
@@ -9,3 +10,4 @@ class TradeNamespace:
 
     def __init__(self, transport: MtopTransport) -> None:
         self.mtoprateservice = MtopRateService(transport)
+        self.receiveaddress = ReceiveAddressService(transport)

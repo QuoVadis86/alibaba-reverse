@@ -22,6 +22,22 @@ class ShopCardQuery(BaseModel):
     top_category_id: PositiveInt = 15
 
 
+class ShopCardDetailQuery(BaseModel):
+    """详情页抓包中的完整店铺卡片上下文。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offer_id: PositiveInt
+    offer_member_tags: list[PositiveInt]
+    seller_user_id: PositiveInt
+    seller_member_id: str = Field(min_length=1)
+    offer_model_sign: dict[str, bool]
+    seller_identity: str = Field(min_length=1)
+    seller_winport_url_map: dict[str, str]
+    winport_url: str = Field(min_length=1)
+    user_id: int = 0
+
+
 class ShopCardService:
     """查询店铺名称、评分和粉丝等卡片信息。"""
 
@@ -54,5 +70,27 @@ class ShopCardService:
                     },
                     "sellerIdentity": "cht",
                 },
+            )
+        )
+
+    def get_from_detail(self, query: ShopCardDetailQuery) -> MtopResponse[JsonValue]:
+        """按商品详情页传入的上下文查询店铺卡片。"""
+        return self._transport.request(
+            MtopRequest(
+                api=API,
+                version="1.0",
+                method="POST",
+                data={
+                    "offerId": query.offer_id,
+                    "userId": query.user_id,
+                    "offerMemberTags": query.offer_member_tags,
+                    "sellerUserId": query.seller_user_id,
+                    "sellerMemberId": query.seller_member_id,
+                    "offerModelSign": query.offer_model_sign,
+                    "sellerIdentity": query.seller_identity,
+                    "sellerWinportUrlMap": query.seller_winport_url_map,
+                    "winportUrl": query.winport_url,
+                },
+                extra_params={"type": "originaljson", "timeout": "20000", "callback": None},
             )
         )

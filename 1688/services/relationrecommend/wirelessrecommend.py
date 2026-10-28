@@ -5,7 +5,7 @@ from __future__ import annotations
 import base64
 import json
 from pathlib import Path
-from typing import Final, assert_never
+from typing import assert_never
 from urllib.parse import quote_from_bytes, urlsplit
 
 import requests
@@ -14,8 +14,14 @@ from pydantic import BaseModel, ConfigDict, Field, PositiveInt
 from api.exceptions import MtopError
 from api.response import JsonObject, JsonValue, MtopResponse
 from api.transport import MtopRequest, MtopTransport
-
-API: Final = "mtop.relationrecommend.WirelessRecommend.recommend"
+from services.relationrecommend._captured import (
+    API,
+    HotKeywordsQuery,
+    InputHotKeywordsQuery,
+    call_captured,
+    hot_keywords,
+    input_hot_keywords,
+)
 
 
 class TextSearchQuery(BaseModel):
@@ -76,6 +82,46 @@ class WirelessRecommendService:
     def __init__(self, transport: MtopTransport, http: requests.Session) -> None:
         self._transport = transport
         self._http = http
+
+    def get_hot_keywords(
+        self, query: HotKeywordsQuery | None = None
+    ) -> MtopResponse[JsonValue]:
+        """获取 PC 搜索框展示的热词。"""
+        return hot_keywords(self._transport, query or HotKeywordsQuery())
+
+    def get_input_hot_keywords(
+        self, query: InputHotKeywordsQuery | None = None
+    ) -> MtopResponse[JsonValue]:
+        """获取搜索框输入时展示的热词。"""
+        return input_hot_keywords(self._transport, query or InputHotKeywordsQuery())
+
+    def get_home_experiments(self) -> MtopResponse[JsonValue]:
+        """获取首页找工厂推荐区的实验配置。"""
+        return call_captured(
+            self._transport,
+            31250,
+            {
+                "scene_id": 1,
+                "pageName": "findFactory",
+                "level1_biz": "recommend",
+                "level2_biz": "homeguess",
+                "level3_biz": "pc_main",
+            },
+        )
+
+    def get_initial_data(self) -> MtopResponse[JsonValue]:
+        """获取 PC 商品搜索页的初始配置。"""
+        return call_captured(
+            self._transport,
+            32517,
+            {
+                "appName": "nodeSearchWork",
+                "method": "getInitialData",
+                "verticalProductFlag": "pcmarket",
+                "searchScene": "pcOfferSearch",
+                "charset": "GBK",
+            },
+        )
 
     def search_text(self, query: TextSearchQuery) -> MtopResponse[JsonValue]:
         """按关键词查询商品。"""

@@ -10,6 +10,8 @@
 - [Python SDK 使用](#python-sdk)
 - [接口索引与目录结构](#接口路径和代码组织)
 - [真实请求与响应样例](samples/README.md)
+- [s.1688.com HAR 接口清单](docs/s-1688-har-interfaces.md)
+- [商品详情与店铺 HAR 接口清单](docs/detail-shop-har-interfaces.md)
 - [使用边界](#使用边界)
 
 ## 目录
@@ -79,6 +81,7 @@ from services.relationrecommend.wirelessrecommend import (
     CompanySearchQuery,
     TextSearchQuery,
 )
+from services.cbu.pc.smart.engine.api.abtest import AbtestQuery
 
 with create_http_client() as http:
     client = MtopClient(http)
@@ -113,6 +116,16 @@ with create_http_client() as http:
     results = client.relationrecommend.wirelessrecommend.search_text(
         TextSearchQuery(keywords="收纳盒")
     )
+    hot_keywords = client.relationrecommend.wirelessrecommend.get_hot_keywords()
+    search_initial_data = client.relationrecommend.wirelessrecommend.get_initial_data()
+    experiment = client.cbu.pc.smart.engine.api.abtest.execute(
+        AbtestQuery(
+            abtest_code="5382",
+            level1_biz="search",
+            level2_biz="image",
+            level3_biz="pc",
+        )
+    )
     companies = client.relationrecommend.wirelessrecommend.get_company_list(
         CompanySearchQuery(keywords="减肥神器", page_id="从企业搜索页读取的 pageId")
     )
@@ -139,14 +152,25 @@ with create_http_client() as http:
 | 同上 | `get_recommendations(offer_id)` | 获取商品详情页推荐商品 |
 | 同上 | `get_shop_relation(...)` | 查询当前会话与店铺的关注关系 |
 | 同上 | `get_rate_card_info(...)` | 获取详情页评价卡片汇总信息 |
+| 同上 | `get_subscription(...)` / `get_ai_index(...)` / `get_barcode(...)` / `get_sell_points(...)` / `get_decision_attributes(...)` / `get_delivery_time(...)` / `get_similar_offers(...)` | 查询详情页订阅、AI、条码、卖点、决策属性、发货时间与相似同款 |
 | `mtop.1688.wosc.queryOfferSkuSelectorModel` | `client.wosc.queryofferskuselectormodel.get(offer_id)` | 获取商品 SKU 规格、价格和库存 |
 | `mtop.1688.moga.pc.shopcard` | `client.moga.pc.shopcard.get(...)` | 获取店铺名称、评分和粉丝等卡片信息 |
+| 同上 | `get_from_detail(...)` | 使用详情页完整商品和卖家上下文查询店铺卡片 |
 | `mtop.1688.freightInfoService.getFreightInfoWithScene` | `client.freightinfoservice.get(...)` | 查询指定地区和购买数量对应的商品运费 |
 | `mtop.alibaba.carriagecenter.fulfillmentsolution.query4offer` | `client.alibaba.carriagecenter.fulfillmentsolution.get(...)` | 查询指定地区和数量的履约配送方案 |
+| 同上 | `get_from_detail(...)` | 使用详情页商品、类目和地址上下文查询履约方案 |
 | `mtop.alibaba.alisite.cbu.server.ModuleAsyncService` | `client.alibaba.alisite.cbu.server.moduleasyncservice.get_header(...)` / `get_certification(...)` / `get_offer_list(...)` | 获取店铺头部、认证信息和商品列表模块 |
 | `mtop.relationrecommend.WirelessRecommend.recommend` | `client.relationrecommend.wirelessrecommend.get_company_list(...)` | 按关键词获取企业/工厂搜索结果 |
 | 同上 | `search_text(...)` / `get_config(...)` / `search_by_image(...)` | 关键词搜商品、查询搜索筛选项和以图搜同款 |
+| 同上 | `get_hot_keywords()` / `get_home_experiments()` / `get_initial_data()` | 获取搜索框热词、首页找工厂推荐实验配置、搜索页初始配置 |
+| 同上 | `get_input_hot_keywords()` | 获取搜索框输入热词；`get_hot_keywords(...)` 也支持详情页和店铺的场景参数 |
+| `mtop.cbu.pc.smart.engine.api.abtest.execute` | `client.cbu.pc.smart.engine.api.abtest.execute(...)` | 查询指定业务场景的实验配置；HAR 中的 `5382` 样例返回配置不存在 |
 | `mtop.1688.trade.service.MtopRateService.queryItemRatedListV2` / `queryDsrRateDataV2` | `client.trade.mtoprateservice.get_ratings(...)` / `get_dsr(...)` | 查询商品评价列表和描述、物流、服务评分 |
+| 同上 | `get_ratings_from_detail(...)` / `get_dsr_from_detail(...)` | 使用详情页评价参数查询 |
+| `mtop.1688.trade.receiveaddress.queryReceiveAddresses` | `client.trade.receiveaddress.query_receive_addresses()` | 查询登录用户的收货地址 |
+| `mtop.1688.IpRegionQueryService.queryIpInfo` | `client.ipregionqueryservice.query_ip_info()` | 查询当前 IP 地区 |
+| `mtop.1688.pc.plugin.placement.decision.batchget` | `client.pc.plugin.placement.decision.batchget(...)` | 批量查询详情页插件位点配置 |
+| `mtop.alisite.cbu.winport.sync.moduledata.get` | `client.alisite.cbu.winport.sync.moduledata.get_header(...)` / `get_discount_information(...)` / `get_coupon_banner(...)` | 查询店铺头部、折扣与优惠券组件 |
 | `mtop.user.getUserSimple` | `client.user.usersimple.get()` | 获取当前登录会话对应的用户基本信息 |
 
 ```text
@@ -160,6 +184,11 @@ services/
 ├── alibaba/carriagecenter/fulfillmentsolution.py
 ├── alibaba/alisite/cbu/server/moduleasyncservice.py # 店铺头部、认证和商品列表组件
 ├── relationrecommend/wirelessrecommend.py      # 关键词和图片搜索
+├── cbu/pc/smart/engine/api/abtest.py             # PC 智能引擎实验配置
+├── alisite/cbu/winport/sync/moduledata.py        # 店铺同步组件
+├── ipregionqueryservice.py                       # IP 地区
+├── pc/plugin/placement/decision.py               # 页面插件位点
+├── trade/receiveaddress.py                       # 收货地址
 └── user/usersimple.py
 ```
 

@@ -47,6 +47,53 @@ class OfferRateCardInfoQuery(BaseModel):
     seller_member_id: str = Field(alias="sellerMemberId", min_length=1)
 
 
+class OfferSubscriptionQuery(BaseModel):
+    """商品订阅日历的查询条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offer_id: PositiveInt
+    calendar: str = "1"
+    activity_start_timestamps: str = "0"
+    activity_end_timestamps: str = "0"
+
+
+class OfferAiIndexQuery(BaseModel):
+    """详情页 AI 索引查询条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offer_id: PositiveInt
+    offer_member_tags: list[PositiveInt]
+    buyer_offline_crowds: list[JsonValue] = Field(default_factory=list)
+
+
+class OfferSellPointQuery(BaseModel):
+    """详情页卖点查询所需的商品和卖家上下文。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offer_id: PositiveInt
+    offer_member_tags: list[PositiveInt]
+    seller_user_id: PositiveInt
+    seller_member_id: str = Field(min_length=1)
+    offer_signs: dict[str, bool]
+    buyer_offline_crowds: list[JsonValue] = Field(default_factory=list)
+    user_id: int = 0
+    use_ai_bot: bool = False
+    scene: str = "new26pc"
+
+
+class SimilarOffersQuery(BaseModel):
+    """详情页同款商品查询条件。"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    offer_id: PositiveInt
+    query_source: str = "PC"
+    need_sort: bool = True
+
+
 class OfferDetailMtopService:
     """详情服务端点下按 serviceName 分发的接口。"""
 
@@ -59,6 +106,73 @@ class OfferDetailMtopService:
             {
                 "serviceName": "offerDetailPCABService",
                 "abTestKey": ab_test_key,
+            }
+        )
+
+    def get_subscription(self, query: OfferSubscriptionQuery) -> MtopResponse[JsonValue]:
+        """查询商品订阅日历。"""
+        return self._call(
+            {
+                "serviceName": "querySubscribeService",
+                "offerId": query.offer_id,
+                "calendar": query.calendar,
+                "extra": {
+                    "activityStartTimestamps": query.activity_start_timestamps,
+                    "activityEndTimestamps": query.activity_end_timestamps,
+                },
+            }
+        )
+
+    def get_ai_index(self, query: OfferAiIndexQuery) -> MtopResponse[JsonValue]:
+        """查询详情页 AI 索引数据。"""
+        return self._call(
+            {
+                "serviceName": "NewYxAiIndexPCService",
+                "offerId": query.offer_id,
+                "offerMemberTags": query.offer_member_tags,
+                "buyerOfflineCrowds": query.buyer_offline_crowds,
+            }
+        )
+
+    def get_barcode(self, offer_id: int) -> MtopResponse[JsonValue]:
+        """查询商品条码。"""
+        return self._call({"serviceName": "offerBarCodeService", "offerId": offer_id})
+
+    def get_sell_points(self, query: OfferSellPointQuery) -> MtopResponse[JsonValue]:
+        """查询 PC 商品详情页卖点。"""
+        return self._call(
+            {
+                "serviceName": "offerPCSellPointQueryService",
+                "scene": query.scene,
+                "offerId": query.offer_id,
+                "userId": query.user_id,
+                "offerMemberTags": query.offer_member_tags,
+                "sellerUserId": query.seller_user_id,
+                "offerSigns": query.offer_signs,
+                "sellerMemberId": query.seller_member_id,
+                "buyerOfflineCrowds": query.buyer_offline_crowds,
+                "useAiBot": query.use_ai_bot,
+            }
+        )
+
+    def get_decision_attributes(self, offer_id: int) -> MtopResponse[JsonValue]:
+        """查询商品决策属性。"""
+        return self._call({"serviceName": "decisionAttrService", "offerId": offer_id})
+
+    def get_delivery_time(self, offer_id: int) -> MtopResponse[JsonValue]:
+        """查询商品预计发货时间。"""
+        return self._call(
+            {"serviceName": "queryOfferDeliveryTimeService", "offerId": offer_id}
+        )
+
+    def get_similar_offers(self, query: SimilarOffersQuery) -> MtopResponse[JsonValue]:
+        """查询详情页相似同款商品。"""
+        return self._call(
+            {
+                "serviceName": "offerSimilarSameService",
+                "offerId": query.offer_id,
+                "querySource": query.query_source,
+                "needSort": query.need_sort,
             }
         )
 
@@ -123,5 +237,11 @@ class OfferDetailMtopService:
                 method="POST",
                 data={"mmgaRequest": payload},
                 headers=HEADERS,
+                extra_params={
+                    "_bx-login": "new",
+                    "type": "originaljson",
+                    "timeout": "20000",
+                    "callback": None,
+                },
             )
         )
