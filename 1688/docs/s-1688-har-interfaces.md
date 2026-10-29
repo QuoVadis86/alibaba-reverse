@@ -4,9 +4,9 @@
 
 | API | 版本 | 次数 | 请求体中的业务调用 | SDK 入口 | HAR 响应 |
 | --- | --- | ---: | --- | --- | --- |
-| `mtop.relationrecommend.WirelessRecommend.recommend` | `2.0` | 1 | `appId=39799`, `params.method=shadeHotKeyword` | `client.relationrecommend.wirelessrecommend.get_hot_keywords()` | 成功 |
+| `mtop.relationrecommend.WirelessRecommend.recommend` | `2.0` | 1 | `appId=39799`, `params.method=shadeHotKeyword` | `client.search.results.get_hot_keywords()` | 成功 |
 | 同上 | `2.0` | 1 | `appId=31250`, `params.pageName=findFactory`, `level2_biz=homeguess` | `get_home_experiments()` | 成功 |
 | 同上 | `2.0` | 1 | `appId=32517`, `params.method=getInitialData` | `get_initial_data()` | 成功 |
-| `mtop.cbu.pc.smart.engine.api.abtest.execute` | `1.0` | 1 | `abtestCode=5382`, `extraParams` 为 `search/image/pc` 场景 | `client.cbu.pc.smart.engine.api.abtest.execute(...)` | `CPSE-RPC-AB_TEST_ERROR`：实验配置不存在 |
+| `mtop.cbu.pc.smart.engine.api.abtest.execute` | `1.0` | 1 | `abtestCode=5382`, `extraParams` 为 `search/image/pc` 场景 | `client.platform.experiment.execute(...)` | `CPSE-RPC-AB_TEST_ERROR`：实验配置不存在 |
 
 这些请求均使用 POST，表单字段为 `data`，查询参数采用 `type=originaljson` 和 `dataType=jsonp`。AB 实验请求还带有 `ignoreLogin=true`、`prefix=h5api` 和 `jsonpIncPrefix=search1688`。接口封装按 HAR 重建请求；AB 实验代码 `5382` 在这份抓包中未返回有效配置，不能据此确认其他实验代码的成功响应结构。

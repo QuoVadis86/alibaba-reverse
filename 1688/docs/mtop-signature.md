@@ -42,14 +42,14 @@ sign = compute_sign(
 uv run --project 1688 mtop-1688 566344866833
 ```
 
-不提供环境变量时会自动执行匿名引导。Cookie 是可选的；如需传入，请通过安全方式设置 `MTOP_COOKIE`，不要提交到仓库或写进命令历史。服务模块按 MTOP API 路径存放。例如 `mtop.1688.mmga.offerdetail.service` 对应 `services/mmga/offerdetail.py`，物流、推荐、详情配置和店铺关系方法都在该文件中。商品详情使用 `mtop.1688.laputa.miniod`；物流等详情页子服务通过 POST 调用，并附带 `_bx-login: new` 请求头：
+不提供环境变量时会自动执行匿名引导。Cookie 是可选的；如需传入，请通过安全方式设置 `MTOP_COOKIE`，不要提交到仓库或写进命令历史。服务模块按业务能力存放。例如 `mtop.1688.mmga.offerdetail.service` 位于 `services/product/detail_extra.py`，物流、推荐、详情配置和店铺关系方法都在该文件中。商品详情使用 `mtop.1688.laputa.miniod`；物流等详情页子服务通过 POST 调用，并附带 `_bx-login: new` 请求头：
 
 ```python
 from api import MtopClient, OfferLogisticsQuery, create_http_client
 
 with create_http_client() as http:
     client = MtopClient(http)
-    response = client.mmga.offerdetail.get_logistics(
+    response = client.product.detail_extra.get_logistics(
         OfferLogisticsQuery(
             offer_id=566344866833,
             seller_id=123456789,
@@ -59,7 +59,7 @@ with create_http_client() as http:
     print(response.data)
 ```
 
-物流入参中的卖家 ID 等字段应填写商品详情上下文中的实际值。详情 AB 配置使用 `client.mmga.offerdetail.get_config(ab_test_key)`，商品详情通过 `client.laputa.miniod.get(offer_id)` 获取；其他接口入口也按照 MTOP 路径组织。接口方法返回统一的 `MtopResponse`：`success` 表示 MTOP 是否成功，`ret` 保存服务端状态码，`data` 是业务响应数据，`raw` 保留完整原始响应。
+物流入参中的卖家 ID 等字段应填写商品详情上下文中的实际值。详情 AB 配置使用 `client.product.detail_extra.get_config(ab_test_key)`，商品详情通过 `client.product.detail.get(offer_id)` 获取；其他接口入口按业务域和能力组织。接口方法返回统一的 `MtopResponse`：`success` 表示 MTOP 是否成功，`ret` 保存服务端状态码，`data` 是业务响应数据，`raw` 保留完整原始响应。
 
 详情接口会解析 `offerDetail`、`dataModel` 等稳定外层字段；商品业务对象内部字段因商品类型而异，当前保留为 JSON。运费、履约等接口已封装，部分服务可能要求有效登录态。客户端不处理登录、验证码或风控挑战，接口调用被服务端拦截时保留服务端响应，不尝试绕过。
 

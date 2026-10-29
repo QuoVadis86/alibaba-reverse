@@ -2,41 +2,39 @@
 
 from __future__ import annotations
 
+from typing import final
+
 import requests
 
-from services.alibaba import AlibabaServices
-from services.alisite import AlisiteServices
-from services.cbu import CbuServices
-from services.freightinfoservice import FreightInfoService
-from services.ipregionqueryservice import IpRegionQueryService
-from services.laputa import LaputaServices
-from services.mmga import MmgaServices
-from services.moga import MogaServices
-from services.pc import PcServices
-from services.relationrecommend import RelationRecommendServices
-from services.trade import TradeNamespace
-from services.user import UserServices
 from api.transport import MtopTransport
-from services.wosc import WoscServices
+from services.account import AccountServices
+from services.ai import AiServices
+from services.home import HomeServices
+from services.marketing import MarketingServices
+from services.platform import PlatformServices
+from services.product import ProductServices
+from services.recommend import RecommendServices
+from services.search import SearchServices
+from services.shop import ShopServices
+from services.trade import TradeServices
 
 
+@final
 class MtopClient:
-    """1688 MTOP SDK；接口入口遵循 MTOP API 路径命名。"""
+    """1688 MTOP SDK；接口按业务域和能力分组。"""
 
-    def __init__(self, http: requests.Session, cookie_string: str | None = None) -> None:
+    def __init__(
+        self, http: requests.Session, cookie_string: str | None = None
+    ) -> None:
         transport = MtopTransport(http, cookie_string)
-        self.mmga = MmgaServices(transport)
-        self.laputa = LaputaServices(transport)
-        # 提供按业务含义调用商品详情的入口；laputa.miniod 保留 MTOP 路径命名。
-        self.offer_detail = self.laputa.miniod
-        self.wosc = WoscServices(transport)
-        self.moga = MogaServices(transport)
-        self.pc = PcServices(transport)
-        self.trade = TradeNamespace(transport)
-        self.freightinfoservice = FreightInfoService(transport)
-        self.ipregionqueryservice = IpRegionQueryService(transport)
-        self.alibaba = AlibabaServices(transport)
-        self.alisite = AlisiteServices(transport)
-        self.cbu = CbuServices(transport)
-        self.relationrecommend = RelationRecommendServices(transport, http)
-        self.user = UserServices(transport)
+        self.product = ProductServices(transport)
+        self.shop = ShopServices(transport)
+        self.account = AccountServices(transport)
+        self.home = HomeServices(transport)
+        self.search = SearchServices(transport, http)
+        self.recommend = RecommendServices(transport)
+        self.ai = AiServices(transport)
+        self.trade = TradeServices(transport)
+        self.marketing = MarketingServices(transport)
+        self.platform = PlatformServices(transport)
+        self.offer_detail = self.product.detail

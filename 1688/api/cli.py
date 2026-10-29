@@ -20,7 +20,7 @@ def main(
         if not offer_id.isdecimal():
             raise MtopError("商品 ID 必须是数字")
         with create_http_client() as http:
-            result = MtopClient(http, cookie).wosc.queryofferskuselectormodel.get(offer_id)
+            result = MtopClient(http, cookie).product.sku.get(offer_id)
     except (requests.RequestException, MtopError) as error:
         typer.echo(f"查询失败：{error}", err=True)
         raise typer.Exit(code=1) from error

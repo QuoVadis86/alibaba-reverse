@@ -12,7 +12,7 @@ from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from api import MtopClient, create_http_client
-from services.relationrecommend.wirelessrecommend import (
+from services.search.results import (
     CompanySearchQuery,
 )
 
@@ -29,7 +29,7 @@ OUTPUT_DIR = Path(__file__).resolve().parents[2] / ".playwright-cli"
 def request_challenge() -> dict[str, Any]:
     with create_http_client() as http:
         http.headers["User-Agent"] = "python"
-        response = MtopClient(http).relationrecommend.wirelessrecommend.get_company_list(QUERY)
+        response = MtopClient(http).search.results.get_company_list(QUERY)
         data = response.data
         url = data.get("url") if isinstance(data, dict) else None
         action = ""
