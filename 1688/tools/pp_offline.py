@@ -77,20 +77,23 @@ def fetch_umid(session: requests.Session) -> str:
 
 
 def trajectory_events(points, distance: float) -> tuple[PointerEvent, ...]:
-    events = [PointerEvent(type="mousedown", x=int(points[0].x * distance), y=0,
+    """转成 FY 需要的绝对坐标事件（与页面按钮位置一致）。"""
+    origin_x = BUTTON.x + BUTTON.width / 2
+    origin_y = BUTTON.y + BUTTON.height / 2
+    events = [PointerEvent(type="mousedown", x=int(origin_x), y=int(origin_y),
                            time_stamp=int(points[0].t_ms), buttons=1)]
     events.extend(
-        PointerEvent(type="mousemove", x=int(point.x * distance), y=0,
+        PointerEvent(type="mousemove", x=int(origin_x + point.x * distance), y=int(origin_y),
                      time_stamp=int(point.t_ms), buttons=1)
         for point in points
     )
-    events.append(PointerEvent(type="mouseup", x=int(points[-1].x * distance), y=0,
-                               time_stamp=int(points[-1].t_ms), buttons=0))
+    events.append(PointerEvent(type="mouseup", x=int(origin_x + points[-1].x * distance),
+                               y=int(origin_y), time_stamp=int(points[-1].t_ms), buttons=0))
     return tuple(events)
 
 
 def attempt(seed: int, templates: list, distance: float, dry_run: bool,
-            challenge_path: Path | None = None) -> dict[str, Any]:
+            challenge_path: Path | None = None, phase: int = 1) -> dict[str, Any]:
     if challenge_path is not None:
         challenge = json.loads(challenge_path.read_text())
     else:
@@ -126,7 +129,7 @@ def attempt(seed: int, templates: list, distance: float, dry_run: bool,
     events = trajectory_events(points, distance)
 
     umid = fetch_umid(session)
-    fy = make_fy_nonce(profile, phase=1, umid_token=umid, events=events)
+    fy = make_fy_nonce(profile, phase=phase, umid_token=umid, events=events)
     et = sign_et(profile, f"//{host}{path}/_____tmd_____/slide", events=events)
 
     pow_detail = PowDetail(l=int(pp["l"]), i=int(pp["i"]), q=pp["q"], t=pp["t"],
@@ -196,6 +199,7 @@ def main() -> int:
                         default=Path(__file__).resolve().parents[2] / ".playwright-cli" / "human_traj.json")
     parser.add_argument("--dry-run", action="store_true", help="只组装，不发送")
     parser.add_argument("--challenge", type=Path, help="复用已有挑战（url + cookies）")
+    parser.add_argument("--phase", type=int, default=1, choices=(1, 2, 3, 4))
     arguments = parser.parse_args()
 
     templates = load_templates(str(arguments.templates)) if arguments.templates.exists() else []
@@ -203,7 +207,7 @@ def main() -> int:
     for index in range(arguments.trials):
         seed = arguments.seed + index
         try:
-            outcome = attempt(seed, templates, arguments.distance, arguments.dry_run, arguments.challenge)
+            outcome = attempt(seed, templates, arguments.distance, arguments.dry_run, arguments.challenge, arguments.phase)
         except Exception as error:  # noqa: BLE001
             outcome = {"seed": seed, "error": f"{type(error).__name__}: {error}"[:300]}
         outcome["seed"] = seed

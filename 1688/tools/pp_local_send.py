@@ -88,6 +88,9 @@ def main() -> int:
     parser.add_argument("--out", type=Path, help="结果 JSON 输出路径")
     parser.add_argument("--headless", action="store_true", help="无头运行（人工拖动会不可用）")
     parser.add_argument("--self-test", type=Path, help="离线自检：不启动浏览器、不联网")
+    parser.add_argument("--retries", type=int, default=1, help="失败后换新挑战重试的次数")
+    parser.add_argument("--trajectory", type=Path, help="用生成的轨迹代替人工拖动")
+    parser.add_argument("--os-drag", action="store_true", help="用 CGEvent 注入轨迹")
     arguments = parser.parse_args()
 
     if arguments.self_test:
@@ -103,18 +106,32 @@ def main() -> int:
         raise SystemExit(f"挑战文件不存在: {challenge}")
 
     out = arguments.out or Path("/tmp/pp_local_send_result.json")
-    command = ["--challenge", str(challenge), "--mode", arguments.mode, "--out", str(out)]
-    if arguments.headless:
-        command.append("--headless")
-    result = _run(command)
-    sys.stderr.write(result.stderr)
-    sys.stderr.write(result.stdout)
-    if not out.exists():
-        sys.stdout.write(result.stdout)
-        return result.returncode or 1
-    payload = json.loads(out.read_text())
-    print(json.dumps(_summary(payload), ensure_ascii=False, indent=1))
-    return result.returncode
+    attempts = []
+    for index in range(arguments.retries):
+        if index:
+            challenge = _new_challenge()
+        command = ["--challenge", str(challenge), "--mode", arguments.mode, "--out", str(out)]
+        if arguments.headless:
+            command.append("--headless")
+        if arguments.trajectory:
+            command += ["--trajectory", str(arguments.trajectory)]
+        if arguments.os_drag:
+            command.append("--os-drag")
+        result = _run(command)
+        sys.stderr.write(result.stderr)
+        if not out.exists():
+            attempts.append({"attempt": index + 1, "error": "no result"})
+            continue
+        payload = json.loads(out.read_text())
+        summary = _summary(payload)
+        summary["attempt"] = index + 1
+        attempts.append(summary)
+        print(json.dumps(summary, ensure_ascii=False), flush=True)
+        if summary.get("code") == 0:
+            break
+    passed = any(item.get("code") == 0 for item in attempts)
+    print(json.dumps({"attempts": len(attempts), "pass": passed}, ensure_ascii=False))
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":
