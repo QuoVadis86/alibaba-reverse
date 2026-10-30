@@ -534,3 +534,26 @@ local=1060  browser=1122  diff=-62  相同率 18.3%（此前 4.2%）
 
 缺的 79 字节里，大部分是 WebGL。参数已补一部分（差距 79→62），
 剩下要补的是**扩展列表 + 每个扩展对象的形状**。
+
+## 21. WebGL 扩展路径：本地读的参数比浏览器多
+
+补上 `webglProfile.ext` 后 FY 抛 `Cannot read properties of null (reading '0')`。
+记录 `getParameter` 返回 null 的入参：
+
+```
+nullParams: [null, null, null, null, 33902]   # ALIASED_LINE_WIDTH_RANGE
+```
+
+补 `33902=[1,1]` 后又变成 `33901`（`ALIASED_POINT_SIZE_RANGE`）。
+补齐 `33901/33902/3386` 后不再崩，但：
+
+```
+local=1150  browser=1122  diff=+28  same=4.2%
+```
+
+**本地 payload 反而比浏览器长**，说明 FY 在本地多探测了一批 WebGL 参数。
+浏览器里 FY 只读了 6 个参数，本地读了 8+ 个——**FY 认为本地环境可疑，
+所以探测得更深**。
+
+这与此前 pc 269 的分叉是同一类问题：本地环境里有某个细节让 FY 走了
+"更严格检查"的分支。下一步要从这些"多读的参数"倒推它怀疑的是什么。

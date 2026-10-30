@@ -1085,6 +1085,9 @@ global.WebGLRenderingContext = class WebGLRenderingContext {
     }
     if (name === 34047) return webglFlags.get(this)?.anisotropy ? 16 : null;
     const value = input.webglProfile?.params?.[name];
+    if (value === undefined && input.webglProfile) {
+      (global.__fyNullParams ||= []).push(name);
+    }
     const tag = input.webglProfile?.paramTypes?.[name];
     if (tag === '[object Int32Array]') return Int32Array.from(Object.values(value));
     if (tag === '[object Float32Array]') return Float32Array.from(Object.values(value));
@@ -3173,6 +3176,8 @@ try {
             qz: global.__fyQzCalls?.slice(-3),
             early: global.__fyEarlyCalls?.slice(-8),
             steps: global.__fyQzSteps?.slice(0, 120),
+            webgl: global.__fyTrace?.webgl?.slice(-12),
+            nullParams: global.__fyNullParams?.slice(0, 20),
             stepsLen: global.__fyQzSteps?.length,
             regChanges: global.__fyRegChanges?.slice(0, 20),
           }) + '\n');
@@ -3241,6 +3246,8 @@ try {
           fyError: String(error).slice(0, 300),
           qzCalls: global.__fyQzCalls?.slice(-5),
           earlyCalls: global.__fyEarlyCalls?.slice(-10),
+          nullParams: global.__fyNullParams?.slice(0, 20),
+          webglTrace: global.__fyTrace?.webgl?.slice(-12),
         }) + '\n');
       }
       throw error;
