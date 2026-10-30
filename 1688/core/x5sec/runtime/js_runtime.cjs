@@ -2484,6 +2484,29 @@ try {
       },
     });
     if (activeFyWindowNames) Object.getOwnPropertyNames = replayWindowNames;
+    if (input.mode === 'fy_nonce') {
+      // 页面在加载 FY 之前已经设好的全局对象（实测自真实页面，见
+      // 1688/research/fy-event-path/probe_preload_globals.cjs）
+      if (global.AWSC === undefined) global.AWSC = {};
+      if (global.AWSCInner === undefined) global.AWSCInner = {};
+      if (global.AWSCFY === undefined) global.AWSCFY = function () {};
+      if (global.etrprtrt === undefined) global.etrprtrt = 0.01;
+      if (global.ncLanguage === undefined) global.ncLanguage = null;
+      if (global.__awsc_et__ === undefined) global.__awsc_et__ = { ver: 'g', jsv: 77, load: true };
+      if (global.__etModule === undefined) global.__etModule = { ver: 'g', jsv: 77, load: true };
+      if (global.loadAplusJsAFunc === undefined) global.loadAplusJsAFunc = {};
+      if (global.g_aplus_grey_launched === undefined) global.g_aplus_grey_launched = 1;
+      if (global.AWSC_SPECIFY_FYMODULE_ADDRESSES === undefined) {
+        global.AWSC_SPECIFY_FYMODULE_ADDRESSES = {
+          normalAddresses: ['https://o.alicdn.com/seclab/f/index1.js'],
+        };
+      }
+      if (global.AWSC_SPECIFY_NCMODULE_ADDRESSES === undefined) {
+        global.AWSC_SPECIFY_NCMODULE_ADDRESSES = {
+          normalAddresses: ['https://g.alicdn.com/AWSC/nc/1.97.2/nc.js'],
+        };
+      }
+    }
     if (input.mode === 'fy_nonce' && (input.fyInitialOptions || input.fyOptions)) {
       global.fyglobalopt = input.fyInitialOptions || input.fyOptions;
     }

@@ -193,6 +193,11 @@ def main() -> int:
     local_dg = [[step.get("pc"), step.get("branch"), step.get("opcode")] for step in (local.get("fyDgSteps") or [])]
     local_mr = local.get("fyMrPcs") or []
     local_qz = [[step.get("pc"), step.get("branch"), step.get("opcode")] for step in (local.get("fyQzSteps") or [])]
+    browser_oa = [item[3] if len(item) > 3 else None for item in (browser.get("qz") or []) if isinstance(item, list)]
+    local_oa = [(call.get("args") or [[None]])[0][1] if isinstance((call.get("args") or [[None]])[0], list) else None
+                for call in (local.get("fyQzCalls") or [])]
+    if browser_oa or local_oa:
+        print(f"\nQz OA 序列: browser={browser_oa[:12]} local={local_oa[:12]}")
 
     comparisons = [
         ("DG", browser.get("dg") or [], local_dg),

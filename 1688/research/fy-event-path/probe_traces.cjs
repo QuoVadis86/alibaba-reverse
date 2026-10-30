@@ -55,7 +55,7 @@ const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
       let body = await resp.text();
       if (body.includes(DG_LOOP)) { body = body.split(DG_LOOP).join(DG_LOOP + 'if(window.__t.dg.length<4000)window.__t.dg.push([d[7],aE,O]);'); patched.dg += 1; }
       if (body.includes(MR_LOOP)) { body = body.split(MR_LOOP).join(MR_LOOP + 'if(window.__t.mr.length<4000)window.__t.mr.push([d[m],Kz,O]);'); patched.mr += 1; }
-      if (body.includes(QZ_LOOP)) { body = body.split(QZ_LOOP).join(QZ_LOOP + 'if(window.__t.qz.length<4000)window.__t.qz.push([d[$],JY,O]);'); patched.qz += 1; }
+      if (body.includes(QZ_LOOP)) { body = body.split(QZ_LOOP).join(QZ_LOOP + 'if(window.__t.qz.length<4000)window.__t.qz.push([d[$],JY,O,OA]);'); patched.qz += 1; }
       if (body.includes(SER)) { body = body.split(SER).join('window.__t.ser.push(Array.isArray(d[p])?d[p].slice():null),' + SER); patched.ser += 1; }
       const C9NEEDLE = 'd[c]=d[K][yj],d[m]=d[c]?720:750';
       if (body.includes(C9NEEDLE)) { body = body.split(C9NEEDLE).join('window.__c9hook(C[9]),' + C9NEEDLE); patched.c9 = (patched.c9 || 0) + 1; }
