@@ -2877,6 +2877,31 @@ try {
         if (k === 'currentScript') continue;
         setGet(globalThis.document, k, v);
       }
+      // 让被替换的方法在 toString/name/length 上看起来是原生函数
+      const nativeize = (fn, name, length) => {
+        try {
+          Object.defineProperty(fn, 'name', { value: name, configurable: true });
+          Object.defineProperty(fn, 'length', { value: length, configurable: true });
+          fn.toString = function () { return `function ${name}() { [native code] }`; };
+        } catch {}
+        return fn;
+      };
+      if (typeof HTMLCanvasElement !== 'undefined') {
+        nativeize(HTMLCanvasElement.prototype.toDataURL, 'toDataURL', 0);
+        nativeize(HTMLCanvasElement.prototype.getContext, 'getContext', 1);
+      }
+      for (const name of ['WebGLRenderingContext', 'WebGL2RenderingContext']) {
+        const Ctor = globalThis[name];
+        if (Ctor && Ctor.prototype.getParameter) nativeize(Ctor.prototype.getParameter, 'getParameter', 1);
+      }
+      if (input.envDeep) {
+        for (const [dotted, value] of Object.entries(input.envDeep)) {
+          const parts = String(dotted).split('.');
+          let target = globalThis;
+          for (let i = 0; i < parts.length - 1 && target; i += 1) target = target[parts[i]];
+          if (target) setGet(target, parts[parts.length - 1], value);
+        }
+      }
       if (Array.isArray(input.canvasTape) && input.canvasTape.length) {
         const tape = input.canvasTape.slice();
         HTMLCanvasElement.prototype.toDataURL = function () {

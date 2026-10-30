@@ -212,6 +212,7 @@ def main() -> int:
     parser.add_argument("--env-profile", type=Path, help="capture_env.cjs 产出的环境值")
     parser.add_argument("--canvas-tape", type=Path, help="capture_canvas.cjs 产出的 canvas 数据")
     parser.add_argument("--webgl-params", action="store_true", help="从 canvas 数据里带 WebGL 参数")
+    parser.add_argument("--env-deep", type=Path, help="capture_deep.cjs 产出的深层环境值")
     arguments = parser.parse_args()
 
     templates = load_templates(str(arguments.templates)) if arguments.templates.exists() else []
@@ -226,6 +227,9 @@ def main() -> int:
                     str(item["param"]): item["value"] for item in caps.get("params", [])
                     if item.get("name") == "WebGLRenderingContext"
                 }
+    if arguments.env_deep:
+        extra = extra or {}
+        extra["envDeep"] = json.loads(arguments.env_deep.read_text())
     results = []
     for index in range(arguments.trials):
         seed = arguments.seed + index
