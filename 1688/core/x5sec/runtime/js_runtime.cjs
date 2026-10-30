@@ -2373,7 +2373,9 @@ try {
       },
     });
     if (activeFyWindowNames) Object.getOwnPropertyNames = replayWindowNames;
-    if (input.mode === 'fy_nonce') global.fyglobalopt = input.fyInitialOptions || input.fyOptions || {};
+    if (input.mode === 'fy_nonce' && (input.fyInitialOptions || input.fyOptions)) {
+      global.fyglobalopt = input.fyInitialOptions || input.fyOptions;
+    }
     if (typeof input.charAtValue === 'number') String.prototype.charAt.value = input.charAtValue;
     const startup = replayStartup();
     let fySource = reference('fy-index1.js');
@@ -2422,6 +2424,7 @@ try {
       global.__fyMr43Lookup = [];
       global.__fyQzCalls = [];
       global.__fyQzSteps = [];
+      global.__fyDgPcs = [];
       global.__fyRegChanges = [];
       global.__fyR16 = undefined;
       global.__fyR18 = undefined;
@@ -2810,7 +2813,7 @@ try {
     if (input.traceFyBranch) fs.writeFileSync('.playwright-cli/fy_instrumented_local.js', fySource);
     eval(fySource);
     documentState.currentScript = null;
-    if (input.mode === 'fy_nonce') Object.assign(global.fyglobalopt, input.fyOptions || {});
+    if (input.mode === 'fy_nonce' && global.fyglobalopt) Object.assign(global.fyglobalopt, input.fyOptions || {});
     const fyUmPerfCallbackPresent = typeof global.__um_perf_cb === 'function';
     if (input.mode === 'fy_nonce') await Promise.resolve();
     const options = {
@@ -3635,6 +3638,9 @@ try {
       fyMr47Writes: global.__fyMr47Writes,
       fyMrCalls: global.__fyMrCalls,
       fySerializerCalls: global.__fySerializerCalls,
+      fyDgPcs: global.__fyDgPcs,
+      fyDgSteps: global.__fyDgSteps,
+      fyDgWindowChecks: global.__fyDgWindowChecks,
       fyResourceQueries: global.__fyResourceQueries,
       fyScriptAppends: global.__fyScriptAppends,
       fyScriptCreates: global.__fyScriptCreates,
