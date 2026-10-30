@@ -377,3 +377,19 @@ n = "234!" + base64( encrypt( serializedArray ) )
    在 `fy_nonce` 路径上不触发，需定位真正调用点），与浏览器明文逐段对比。
 
 探针脚本：`1688/tools/probe_fy_payload.cjs`（需新挑战：`get_challenge.request_challenge()`）。
+
+## 14. FY 能看见我们的回放标记（`__fyMouseReplay`）
+
+runtime 给每个回放事件挂了 `__fyMouseReplay: true`。FY 会读取这个属性
+（`fyEventReads` 里可见），并据此改变行为——把标记对 FY 隐藏后：
+
+```
+默认        fy_len = 1824
+隐藏标记    fy_len = 1828
+```
+
+差别虽小，但证明 **FY 在检查"这个事件是不是合成回放"**。打开
+`hideFyReplayFlag` 后 FY 会真正开始处理事件，并进入此前从未到达的分支
+（当前会在读取某元素 `.left` 时抛错，说明还需补元素几何）。
+
+这是继 payload 可抓取之后第二个"看得见"的入口：我们终于能让 FY 走真路径。

@@ -3113,6 +3113,7 @@ try {
       replay.__fyMouseReplay = true;
       const replayProxy = new Proxy(replay, {
         get(target, key, receiver) {
+          if (key === '__fyMouseReplay' && input.hideFyReplayFlag) return undefined;
           if (eventIndex < 2 && (global.__fyEventReads ||= []).length < 300) {
             const value = Reflect.get(target, key, receiver);
             global.__fyEventReads.push({ eventIndex, key: String(key),
