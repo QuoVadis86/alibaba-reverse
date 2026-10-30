@@ -2624,6 +2624,11 @@ try {
       if (!fySource.includes(pixelNeedle)) throw new Error('FY 像素探针位置不存在');
       fySource = fySource.replace(pixelNeedle,
         'd[X]=function(y){if(globalThis.__fyPixelTrace.length<10)globalThis.__fyPixelTrace.push({type:typeof y,length:y?.length,entryCount:globalThis.__fyEntryTrace.length,nonzero:y?.reduce?.((n,v)=>n+(v!==0),0),head:Array.from(y?.slice?.(0,32)||[]),tail:Array.from(y?.slice?.(-32)||[]),stack:new Error().stack.split("\\n").slice(1,4)});for(var k=4;');
+      const dgEntryNeedle = 'function DG(zU,dC,eM,Kt,wZ,Hj){';
+      if (fySource.includes(dgEntryNeedle)) {
+        fySource = fySource.replace(dgEntryNeedle,
+          'function DG(zU,dC,eM,Kt,wZ,Hj){globalThis.__fyDgCalls=(globalThis.__fyDgCalls||[]).concat([{zU:zU,args:[typeof dC,typeof eM,typeof Kt,typeof wZ,typeof Hj]}]);');
+      }
       const mrLoopNeedle = 'for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;switch(Kz){';
       if (fySource.includes(mrLoopNeedle)) {
         fySource = fySource.replace(mrLoopNeedle,
@@ -3624,6 +3629,7 @@ try {
       fyP18: global.__fyP18,
       fyResKey: global.__fyResKey,
       fyMr16: global.__fyMr16,
+      fyDgCalls: global.__fyDgCalls,
       fyDgWindowChecks: global.__fyDgWindowChecks,
       fyDgObjectChecks: global.__fyDgObjectChecks,
       fyDgStringChecks: global.__fyDgStringChecks,
