@@ -2858,6 +2858,16 @@ try {
     const callbackPriorCount = input.fyCallbackPriorCount ?? 2;
     if (input.traceFyBranch) global.__fyEarlyCalls.push({ name: 'init' });
     if (typeof page.umidStorage === 'string') localStorage.setItem('lswucn', page.umidStorage);
+    if (Number(input.surfacePadding) > 0) {
+      let pad = 0;
+      while (Object.getOwnPropertyNames(globalThis).length < Number(input.surfacePadding) && pad < 20000) {
+        Object.defineProperty(globalThis, `__surfacePad${pad}`, {
+          value: pad, writable: true, enumerable: false, configurable: true,
+        });
+        pad += 1;
+      }
+      fs.writeSync(2, `surface padding -> ${Object.getOwnPropertyNames(globalThis).length} own props (added ${pad})\n`);
+    }
     __fyModule.init(input.fyInitOptions || options, () => {
       for (const prior of fyPriorCalls.slice(0, callbackPriorCount)) replayFyPrior(prior);
     });

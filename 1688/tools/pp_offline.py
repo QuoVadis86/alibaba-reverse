@@ -93,7 +93,8 @@ def trajectory_events(points, distance: float) -> tuple[PointerEvent, ...]:
 
 
 def attempt(seed: int, templates: list, distance: float, dry_run: bool,
-            challenge_path: Path | None = None, phase: int = 1) -> dict[str, Any]:
+            challenge_path: Path | None = None, phase: int = 1,
+            surface_padding: int | None = None) -> dict[str, Any]:
     if challenge_path is not None:
         challenge = json.loads(challenge_path.read_text())
     else:
@@ -129,7 +130,8 @@ def attempt(seed: int, templates: list, distance: float, dry_run: bool,
     events = trajectory_events(points, distance)
 
     umid = fetch_umid(session)
-    fy = make_fy_nonce(profile, phase=phase, umid_token=umid, events=events)
+    fy = make_fy_nonce(profile, phase=phase, umid_token=umid, events=events,
+                       surface_padding=surface_padding)
     et = sign_et(profile, f"//{host}{path}/_____tmd_____/slide", events=events)
 
     pow_detail = PowDetail(l=int(pp["l"]), i=int(pp["i"]), q=pp["q"], t=pp["t"],
@@ -200,6 +202,7 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="只组装，不发送")
     parser.add_argument("--challenge", type=Path, help="复用已有挑战（url + cookies）")
     parser.add_argument("--phase", type=int, default=1, choices=(1, 2, 3, 4))
+    parser.add_argument("--surface-padding", type=int, help="把 window 自有属性数补到该值")
     arguments = parser.parse_args()
 
     templates = load_templates(str(arguments.templates)) if arguments.templates.exists() else []
@@ -207,7 +210,7 @@ def main() -> int:
     for index in range(arguments.trials):
         seed = arguments.seed + index
         try:
-            outcome = attempt(seed, templates, arguments.distance, arguments.dry_run, arguments.challenge, arguments.phase)
+            outcome = attempt(seed, templates, arguments.distance, arguments.dry_run, arguments.challenge, arguments.phase, arguments.surface_padding)
         except Exception as error:  # noqa: BLE001
             outcome = {"seed": seed, "error": f"{type(error).__name__}: {error}"[:300]}
         outcome["seed"] = seed
