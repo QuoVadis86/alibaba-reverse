@@ -790,8 +790,108 @@ if (global.RTCPeerConnection) Object.defineProperty(global.RTCPeerConnection, 'g
   value: browserNative('generateCertificate', async function generateCertificate() { return {}; }),
 });
 if (input.mode === 'fy_nonce') global.Touch = browserNative('Touch', class Touch {});
-if (input.mode === 'fy_nonce') global.AudioContext = browserNative(
-  'AudioContext', class AudioContext {});
+if (input.mode === 'fy_nonce') {
+  const audioState = new WeakMap();
+  class AudioNode {
+    constructor(context, type) {
+      audioState.set(this, { context, type, connected: [], onaudioprocess: null });
+    }
+    connect(node) {
+      const state = audioState.get(this);
+      if (node) state.connected.push(node);
+      if (state.type === 'scriptProcessor' && typeof state.onaudioprocess === 'function' && !state.fired) {
+        state.fired = true;
+        const handler = state.onaudioprocess;
+        setTimeout(() => {
+          try {
+            handler.call(this, {
+              type: 'audioprocess',
+              inputBuffer: { numberOfChannels: 1, length: 4096, sampleRate: 44100,
+                getChannelData: () => new Float32Array(4096) },
+              outputBuffer: { numberOfChannels: 1, length: 4096, sampleRate: 44100,
+                getChannelData: () => new Float32Array(4096) },
+              playbackTime: 0, isTrusted: true,
+              target: this, srcElement: this, currentTarget: this,
+              preventDefault() {}, stopPropagation() {},
+            });
+          } catch (error) { (global.__fyAudioErrors ||= []).push(String(error).slice(0, 160)); }
+        }, 0);
+      }
+      return node;
+    }
+    disconnect() { audioState.get(this).connected.length = 0; }
+  }
+  class ScriptProcessorNode extends AudioNode {
+    constructor(context, bufferSize, inputChannels, outputChannels) {
+      super(context, 'scriptProcessor');
+      this.bufferSize = bufferSize || 4096;
+      this.numberOfInputChannels = inputChannels || 1;
+      this.numberOfOutputChannels = outputChannels || 1;
+    }
+    get onaudioprocess() { return audioState.get(this).onaudioprocess; }
+    set onaudioprocess(fn) { audioState.get(this).onaudioprocess = fn; }
+  }
+  class AnalyserNode extends AudioNode {
+    constructor(context) {
+      super(context, 'analyser');
+      this.fftSize = 2048;
+      this.frequencyBinCount = 1024;
+      this.minDecibels = -100;
+      this.maxDecibels = -30;
+      this.smoothingTimeConstant = 0.8;
+    }
+    getFloatFrequencyData(array) {
+      for (let i = 0; i < array.length; i += 1) array[i] = -100 + (i % 37) * 0.25;
+      return array;
+    }
+    getByteFrequencyData(array) {
+      for (let i = 0; i < array.length; i += 1) array[i] = (i * 7) % 256;
+      return array;
+    }
+    getFloatTimeDomainData(array) {
+      for (let i = 0; i < array.length; i += 1) array[i] = ((i % 19) - 9) / 100;
+      return array;
+    }
+  }
+  class AudioContext {
+    constructor() {
+      this.sampleRate = 44100;
+      this.currentTime = 0;
+      this.baseLatency = 0.01;
+      this.outputLatency = 0.01;
+      this.state = 'running';
+      this.destination = new AudioNode(this, 'destination');
+    }
+    createScriptProcessor(bufferSize, inputChannels, outputChannels) {
+      (global.__fyAudioCalls ||= []).push({ op: 'createScriptProcessor', bufferSize });
+      return new ScriptProcessorNode(this, bufferSize, inputChannels, outputChannels);
+    }
+    createAnalyser() { (global.__fyAudioCalls ||= []).push({ op: 'createAnalyser' }); return new AnalyserNode(this); }
+    createGain() { const node = new AudioNode(this, 'gain'); node.gain = { value: 1, setValueAtTime() {} }; return node; }
+    createOscillator() {
+      const node = new AudioNode(this, 'oscillator');
+      node.frequency = { value: 440, setValueAtTime() {} };
+      node.type = 'sine'; node.start = () => {}; node.stop = () => {};
+      return node;
+    }
+    createMediaStreamSource() { return new AudioNode(this, 'mediaStream'); }
+    createBufferSource() { const node = new AudioNode(this, 'buffer'); node.start = () => {}; return node; }
+    createBuffer(channels, length, rate) {
+      const data = Array.from({ length: channels }, () => new Float32Array(length));
+      return { numberOfChannels: channels, length, sampleRate: rate,
+        getChannelData: (index) => data[index] || new Float32Array(length) };
+    }
+    resume() { this.state = 'running'; return Promise.resolve(); }
+    suspend() { this.state = 'suspended'; return Promise.resolve(); }
+    close() { this.state = 'closed'; return Promise.resolve(); }
+  }
+  Object.defineProperty(AudioContext.prototype, Symbol.toStringTag, { configurable: true, value: 'AudioContext' });
+  global.AudioContext = browserNative('AudioContext', AudioContext);
+  global.webkitAudioContext = global.AudioContext;
+  global.ScriptProcessorNode = browserNative('ScriptProcessorNode', ScriptProcessorNode);
+  global.AnalyserNode = browserNative('AnalyserNode', AnalyserNode);
+  global.AudioNode = browserNative('AudioNode', AudioNode);
+}
 if (input.mode === 'fy_nonce') global.Bluetooth = browserNative('Bluetooth', class Bluetooth {});
 if (input.mode === 'fy_nonce') global.BluetoothDevice = browserNative('BluetoothDevice', class BluetoothDevice {});
 if (input.mode === 'fy_nonce') global.BlobEvent = browserNative('BlobEvent', class BlobEvent {});
@@ -3698,6 +3798,8 @@ try {
       fyMr47Writes: global.__fyMr47Writes,
       fyMrCalls: global.__fyMrCalls,
       fySerializerCalls: global.__fySerializerCalls,
+      fyAudioCalls: global.__fyAudioCalls,
+      fyAudioErrors: global.__fyAudioErrors,
       fyDgPcs: global.__fyDgPcs,
       fyDgSteps: global.__fyDgSteps,
       fyDgWindowChecks: global.__fyDgWindowChecks,
