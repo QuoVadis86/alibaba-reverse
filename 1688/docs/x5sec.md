@@ -393,3 +393,24 @@ runtime 给每个回放事件挂了 `__fyMouseReplay: true`。FY 会读取这个
 （当前会在读取某元素 `.left` 时抛错，说明还需补元素几何）。
 
 这是继 payload 可抓取之后第二个"看得见"的入口：我们终于能让 FY 走真路径。
+
+## 15. 浏览器里 Qz（VM 主分发）的真实参数
+
+用 route 改写 FY 脚本，记录 `Qz(OA,P,EL,Kt,M,v,Z)` 的前 12 次调用。关键的是
+`OA===1`（事件）那一次，mousedown 时：
+
+| 参数 | 浏览器实际值 |
+|---|---|
+| `P` | `MouseEvent`：`clientX=463 clientY=492 offsetX=20 timeStamp≈1711 isTrusted=true` |
+| `P.target` | `SPAN#nc_1_n1z.nc_iconfont.btn_slide` |
+| `EL` | 同一个 `SPAN` 元素（`HTMLSpanElement`） |
+| `Kt` | `Number` |
+| `M` | `Array` |
+
+其余 `OA`（11/13/12/2/4/15）的 `EL` 多为 `window` 或数组，`P` 为空。
+
+本地复刻这条调用后，FY 在 `d[I]=d[p][C[S]]` 处抛
+`Cannot read properties of undefined (reading 'left')`——`d[p]` 这个 VM 寄存器
+是 undefined。说明本地走的 opcode 序列与浏览器不同，某个前置寄存器没被赋值。
+
+探针：`1688/tools/probe_fy_qz.cjs`。
