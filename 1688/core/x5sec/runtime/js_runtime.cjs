@@ -893,6 +893,25 @@ if (input.mode === 'fy_nonce') Object.defineProperty(Document.prototype, 'wasDis
 });
 global.Element = class Element extends EventTarget {};
 if (input.mode === 'fy_nonce') {
+  const makeRect = (left, top, width, height) => ({
+    x: left, y: top, left, top, right: left + width, bottom: top + height,
+    width, height, toJSON() { return { x: left, y: top, left, top, right: left + width,
+      bottom: top + height, width, height }; },
+  });
+  Object.defineProperty(Element.prototype, 'getBoundingClientRect', {
+    configurable: true, enumerable: true, writable: true,
+    value: browserNative('getBoundingClientRect', function () {
+      const width = Number(this.clientWidth) || 0;
+      const height = Number(this.clientHeight) || 0;
+      return makeRect(0, 0, width, height);
+    }),
+  });
+  Object.defineProperty(Element.prototype, 'getClientRects', {
+    configurable: true, enumerable: true,
+    value: browserNative('getClientRects', function () {
+      return [this.getBoundingClientRect()];
+    }),
+  });
   const classLists = new WeakMap();
   Object.defineProperty(Element.prototype, 'classList', {
     configurable: true, enumerable: true,
@@ -3067,11 +3086,14 @@ try {
         noncePerformanceNow = event.timeStamp;
         replayTimestamp = Math.floor(performanceTimeOrigin + event.timeStamp);
       }
+      const _tRect = event.target?.rect || { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 };
       let target = Object.assign(element((event.target?.tag || 'div').toLowerCase()), {
         tagName: event.target?.tag || 'DIV',
         nodeName: event.target?.tag || 'DIV',
         id: event.target?.id || '',
         className: event.target?.className || '',
+        left: _tRect.left, top: _tRect.top, right: _tRect.right,
+        bottom: _tRect.bottom, width: _tRect.width, height: _tRect.height,
         parentNode: document.body,
         getBoundingClientRect() {
           return new ReplayDOMRect(event.target?.rect || {
@@ -3097,11 +3119,16 @@ try {
         ownKeys() { return []; },
         getOwnPropertyDescriptor() { return undefined; },
       });
+      const _rect = event.target?.rect || { left: 0, top: 0, width: 0, height: 0 };
+      const _offX = event.x - (_rect.left || 0);
+      const _offY = event.y - (_rect.top || 0);
       const replay = {
         type: event.type, clientX: event.x, clientY: event.y,
         x: event.x, y: event.y,
         pageX: event.x, pageY: event.y,
         screenX: event.screenX ?? event.x, screenY: event.screenY ?? event.y,
+        offsetX: _offX, offsetY: _offY, layerX: _offX, layerY: _offY,
+        movementX: 0, movementY: 0,
         timeStamp: event.timeStamp,
         buttons: event.buttons ?? 1, isTrusted: true,
         button: 0,
@@ -3131,8 +3158,19 @@ try {
       });
       if (input.record && !fyRecordStarted && event.type === 'mousedown'
           && !input.fyRecordAfterMousedown) startFyRecord();
-      document.dispatchEvent(replayProxy);
-      for (const callback of windowListeners.get(replay.type) || []) callback.call(global, replayProxy);
+      try {
+        document.dispatchEvent(replayProxy);
+        for (const callback of windowListeners.get(replay.type) || []) callback.call(global, replayProxy);
+      } catch (error) {
+        if (input.traceFy) {
+          fs.writeSync(2, JSON.stringify({
+            eventIndex, type: event.type, error: String(error).slice(0, 200),
+            qz: global.__fyQzCalls?.slice(-3),
+            early: global.__fyEarlyCalls?.slice(-8),
+          }) + '\n');
+        }
+        throw error;
+      }
       if (input.record && !fyRecordStarted && event.type === 'mousedown'
           && input.fyRecordAfterMousedown) startFyRecord();
       const nextEvent = input.events[eventIndex + 1];
@@ -3184,9 +3222,21 @@ try {
       canvas: global.__fyTrace.canvas.length,
       webgl: global.__fyTrace.webgl.length,
     } : null;
-    const fy = traceFyJson('target', () => Object.hasOwn(input, 'fyOptions')
-      ? __fyModule.getFYToken(input.fyOptions)
-      : __fyModule.getFYToken());
+    let fy;
+    try {
+      fy = traceFyJson('target', () => Object.hasOwn(input, 'fyOptions')
+        ? __fyModule.getFYToken(input.fyOptions)
+        : __fyModule.getFYToken());
+    } catch (error) {
+      if (input.traceFy) {
+        fs.writeSync(2, JSON.stringify({
+          fyError: String(error).slice(0, 300),
+          qzCalls: global.__fyQzCalls?.slice(-5),
+          earlyCalls: global.__fyEarlyCalls?.slice(-10),
+        }) + '\n');
+      }
+      throw error;
+    }
     const fyTraceEnd = input.traceFy ? {
       canvas: global.__fyTrace.canvas.length,
       webgl: global.__fyTrace.webgl.length,
