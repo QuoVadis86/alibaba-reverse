@@ -89,8 +89,12 @@ def trajectory_events(points, distance: float) -> tuple[PointerEvent, ...]:
     return tuple(events)
 
 
-def attempt(seed: int, templates: list, distance: float, dry_run: bool) -> dict[str, Any]:
-    challenge = request_challenge()
+def attempt(seed: int, templates: list, distance: float, dry_run: bool,
+            challenge_path: Path | None = None) -> dict[str, Any]:
+    if challenge_path is not None:
+        challenge = json.loads(challenge_path.read_text())
+    else:
+        challenge = request_challenge()
     if not challenge.get("url"):
         raise RuntimeError("未取得挑战")
 
@@ -148,7 +152,7 @@ def attempt(seed: int, templates: list, distance: float, dry_run: bool) -> dict[
         SlideRequestInput(
             appkey=app_key, token=token, secdata=secdata,
             fy_token=fy.fy, umid_token=fy.umid_token, rand_value=fy.nonce,
-            button=BUTTON, track=TRACK, et_ready=True,
+            button=BUTTON, track=TRACK, et_ready=True, landscape=True,
             ppt_ms=solved.elapsed_ms, timestamp_ms=int(time.time() * 1000),
         )
     )
@@ -162,6 +166,7 @@ def attempt(seed: int, templates: list, distance: float, dry_run: bool) -> dict[
     }
     if dry_run:
         result["url_length"] = len(url)
+        result["url"] = url
         return result
 
     response = session.get(url, timeout=20, headers={
@@ -188,6 +193,7 @@ def main() -> int:
     parser.add_argument("--templates", type=Path,
                         default=Path(__file__).resolve().parents[2] / ".playwright-cli" / "human_traj.json")
     parser.add_argument("--dry-run", action="store_true", help="只组装，不发送")
+    parser.add_argument("--challenge", type=Path, help="复用已有挑战（url + cookies）")
     arguments = parser.parse_args()
 
     templates = load_templates(str(arguments.templates)) if arguments.templates.exists() else []
@@ -195,7 +201,7 @@ def main() -> int:
     for index in range(arguments.trials):
         seed = arguments.seed + index
         try:
-            outcome = attempt(seed, templates, arguments.distance, arguments.dry_run)
+            outcome = attempt(seed, templates, arguments.distance, arguments.dry_run, arguments.challenge)
         except Exception as error:  # noqa: BLE001
             outcome = {"seed": seed, "error": f"{type(error).__name__}: {error}"[:300]}
         outcome["seed"] = seed
