@@ -3167,6 +3167,8 @@ try {
             eventIndex, type: event.type, error: String(error).slice(0, 200),
             qz: global.__fyQzCalls?.slice(-3),
             early: global.__fyEarlyCalls?.slice(-8),
+            steps: global.__fyQzSteps?.slice(0, 120),
+            stepsLen: global.__fyQzSteps?.length,
           }) + '\n');
         }
         throw error;
