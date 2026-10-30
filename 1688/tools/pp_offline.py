@@ -130,6 +130,12 @@ def attempt(seed: int, templates: list, distance: float, dry_run: bool,
     events = trajectory_events(points, distance)
 
     umid = fetch_umid(session)
+    # lswucn 的格式是 `令牌@@秒级时间戳`（实测 80 字符），只写令牌会短 12 字符。
+    profile = PageProfile(
+        url=challenge["url"], user_agent=USER_AGENT, cookie=profile.cookie,
+        token=token, app_key=app_key, x5secdata=secdata, umid_token=umid,
+        umid_storage=f"{umid}@@{int(time.time())}",
+    )
     fy = make_fy_nonce(profile, phase=phase, umid_token=umid, events=events,
                        surface_padding=surface_padding, extra=extra)
     et = sign_et(profile, f"//{host}{path}/_____tmd_____/slide", events=events)
