@@ -237,6 +237,13 @@ if (input.mode === 'et') {
     });
   }
   Document.prototype.addEventListener = nativeShape('addEventListener', addEtListener);
+  Document.prototype.dispatchEvent = nativeShape('dispatchEvent', function dispatchEvent(event) {
+    const type = event && event.type;
+    for (const callback of etListeners.get(type) || []) {
+      try { callback.call(this, event); } catch (error) { (global.__fyDocDispatchErrors ||= []).push(String(error).slice(0, 120)); }
+    }
+    return true;
+  });
   Document.prototype.removeEventListener = nativeShape('removeEventListener', removeEtListener);
   Document.prototype.querySelector = nativeShape('querySelector', () => null);
   Document.prototype.createEvent = nativeShape('createEvent', () => ({ initEvent() {}, initMouseEvent() {} }));
@@ -638,6 +645,10 @@ if (input.mode === 'fy_nonce' || input.mode === 'nonce_only') {
     arrayBuffer: async () => new ArrayBuffer(0) });
   global.EventTarget = class EventTarget {
     addEventListener(type, listener) {
+      if (input.traceFy) {
+        const kind = this === global ? 'window' : (this && this.tagName) ? `element:${this.tagName}` : Object.prototype.toString.call(this);
+        (global.__fyListenerLog ||= []).push({ kind, type: String(type), capture: !!(arguments[2] && (arguments[2] === true || arguments[2].capture)) });
+      }
       const registry = nonceEventListeners.get(this) || new Map();
       nonceEventListeners.set(this, registry);
       const listeners = registry.get(type) || [];
