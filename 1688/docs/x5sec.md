@@ -557,3 +557,26 @@ local=1150  browser=1122  diff=+28  same=4.2%
 
 这与此前 pc 269 的分叉是同一类问题：本地环境里有某个细节让 FY 走了
 "更严格检查"的分支。下一步要从这些"多读的参数"倒推它怀疑的是什么。
+
+## 22. init 参数已核对，`fyglobalopt.timeout` 是唯一差异
+
+拦截 `window.__fyModule` 的赋值，包住 `init` 记录参数：页面传入的选项
+与我们硬编码的**完全一致**（`MaxMTLog`…`_umopt_npfp`，10 个键）。
+
+但 `window.fyglobalopt` 的最终值比我们多一个键：
+
+```json
+{ ..., "_umopt_npfp": 1, "timeout": 2000 }
+```
+
+补上 `timeout: 2000` 后，pc 269 的 `d[18]` 从 `undefined` 变成 `"cn"`，
+但 `d[16]` 仍是 `Window`（浏览器是 `Array`），分叉依旧（pc 269 → 77）。
+
+### 结论
+
+- init 参数：已核对，一致
+- `fyglobalopt`：已补 `timeout`
+- **VM 初始化寄存器顺序仍与浏览器不同**（`d[16]` 应为 `Array`）
+
+剩下的是字节码层面的问题：pc 22 这条指令在我们的 runtime 里写入了
+不同的值。要继续就得反汇编 VM 的初始化指令。
