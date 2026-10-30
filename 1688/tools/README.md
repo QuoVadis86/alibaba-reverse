@@ -30,6 +30,22 @@ uv run --project 1688 python 1688/tools/pp_local_send.py \
 
 前提：`navigator.webdriver` 必须为 `false`。Playwright 默认注入 `--enable-automation` 会导致验证返回 `code=300`。
 
+## 拖拽轨迹
+
+~~~bash
+# 采集真人样本（人工拖动 N 次；验证请求被 abort，token 不消费）
+NODE_PATH=$(npm root -g) node 1688/tools/collect_trajectory.cjs \
+  --challenge .playwright-cli/challenge_live_captcha.json --out /tmp/human.json --runs 5
+
+# 生成轨迹（模板模式；无 --templates 时用参数化回退）
+uv run --project 1688 python 1688/tools/gen_trajectory.py \
+  --templates /tmp/human.json --start 492,502 --end 746,502 --seed 7 --vm-events
+~~~
+
+- `collect_trajectory.cjs`：记录 `pointerdown/pointermove/pointerup`（含 `timeStamp`），每次拖动后 abort 验证请求并重载页面。
+- `gen_trajectory.py`：模板变形 + 可选参数化回退；输出完整轨迹与 VM 采样事件。
+- `core/x5sec/trajectory.py`：模型实现。模板模式与真人样本的时长、事件数、效率、峰值速度中位数一致。
+
 ## 离线复验（已有采集文件）
 
 ~~~bash

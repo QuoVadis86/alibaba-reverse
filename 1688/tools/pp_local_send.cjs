@@ -241,7 +241,7 @@ async function runCapture(options) {
   });
 
   await page.goto(challenge.url, { waitUntil: 'domcontentloaded', timeout: 45000 });
-  await page.waitForFunction(() => document.querySelector('.btn_slide'), { timeout: 30000 });
+  await page.waitForFunction(() => document.querySelector('.btn_slide') || document.querySelector('.scratch-captcha-slider'), { timeout: 30000 });
 
   const webdriver = await page.evaluate(() => navigator.webdriver);
   if (webdriver !== false) {
@@ -264,7 +264,7 @@ async function runCapture(options) {
     referrer: document.referrer,
     title: document.title,
     userAgent: navigator.userAgent,
-    sliderRect: document.querySelector('.btn_slide')?.getBoundingClientRect().toJSON(),
+    sliderRect: document.querySelector('.btn_slide, .scratch-captcha-slider')?.getBoundingClientRect().toJSON(),
   }));
   initCommands = await page.evaluate(() => window.__ppVmInitCalls.slice());
   log(`action=${profile.action} 基础ppSign=${(profile.ppSign || '').length} init=${initCommands.length}`);

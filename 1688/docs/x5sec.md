@@ -221,18 +221,34 @@ HTTP 200 与 `success: true` 在成功、失败时都出现，**只能以 `resul
 
 ---
 
-## 8. 拖拽模型接口（预留）
+## 8. 拖拽轨迹生成
 
-模型接入后替换 `dragCalls` 的数据来源，下游不变：
+`core/x5sec/trajectory.py` 提供两种模式，入口是 `tools/gen_trajectory.py`。
 
-```jsonc
-// 输入
-{ "start": {"x","y","t"}, "end": {"x","y"}, "constraints": {"duration_ms","jitter","device","dpr"} }
-// 输出
-[{ "type":"pointerdown|pointermove|pointerup", "clientX","clientY","timeStamp","buttons","targetRect" }]
+**模板模式（推荐）**：读取 `tools/collect_trajectory.cjs` 采集的真人样本，按模板形状做时间/距离变形。5 条真人样本（250–350 px）与生成结果的对比：
+
+| 指标 | 真人中位 | 生成器中位 |
+| --- | --- | --- |
+| 时长 | 900 ms | 862 ms |
+| 移动事件数 | 78 | 88 |
+| 路径效率 | 1.000 | 1.000 |
+| 峰值速度 | 2077 px/s | 2251 px/s |
+| 平均速度 | 525 px/s | 500 px/s |
+
+**参数模式**：无模板时回退到 Fitts 时长 + 1–3 段最小加加速度，形状不如模板忠实。
+
+```bash
+# 采集真人样本（人工拖动 N 次，abort 验证请求，token 不消费）
+uv run --project 1688 python -c "import sys;sys.path.insert(0,'1688');from tools.get_challenge import request_challenge;import json,os;r=request_challenge();open('.playwright-cli/challenge_live_captcha.json','w').write(json.dumps(r))"
+NODE_PATH=$(npm root -g) node 1688/tools/collect_trajectory.cjs \
+  --challenge .playwright-cli/challenge_live_captcha.json --out /tmp/human.json --runs 5
+
+# 生成
+uv run --project 1688 python 1688/tools/gen_trajectory.py \
+  --templates /tmp/human.json --start 492,502 --end 746,502 --seed 7 --vm-events
 ```
 
-注意：VM 只采样少量事件（实测 3 条），但 `slidedata` 需要完整轨迹；模型要同时满足两者。
+输出同时包含完整轨迹（给 `slidedata`）和压缩后的 VM 事件（3 条采样）。真人拖动有两个特征必须保留：**运动段才产生事件，停顿期不发事件**；**路径几乎笔直**（效率 0.997+）。
 
 ---
 
