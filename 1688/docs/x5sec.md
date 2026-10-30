@@ -501,3 +501,36 @@ offset 0..42 完全相同，差异从 offset 43 开始
 （不是轨迹、不是时间、不是随机）。
 
 下一步：把这段差异按格式解出来，定位缺的是哪个字段。
+
+## 20. 缺失的 79 字节就是 WebGL（消融实验）
+
+在浏览器里逐项"关闭"一个能力，看 payload 长度变化（`PIN=1 NO_DRAG=1`）：
+
+| 关闭项 | payload | 变化 |
+|---|---|---|
+| 基线 | 1122 | — |
+| canvas 2d | 1120 | −2 |
+| **webgl** | **1031** | **−91** |
+| plugins | 1120 | −2 |
+| storage | 1119 | −3 |
+| performance.memory | 1102 | −20 |
+| webrtc | 1116 | −6 |
+
+**WebGL 一项就占 91 字节**，正好覆盖本地缺的 79 字节。
+
+### 补齐 WebGL 参数后
+
+`capture_webgl_full.cjs` 抓到 6 个 `getParameter` 值 + 39 个
+`getSupportedExtensions` 名称。只传参数时：
+
+```
+local=1060  browser=1122  diff=-62  相同率 18.3%（此前 4.2%）
+```
+
+再传 `webglProfile.ext` 会让 FY 抛 `Cannot read properties of null
+(reading '0')`——扩展对象的结构不对，需要继续对齐。
+
+### 结论
+
+缺的 79 字节里，大部分是 WebGL。参数已补一部分（差距 79→62），
+剩下要补的是**扩展列表 + 每个扩展对象的形状**。
