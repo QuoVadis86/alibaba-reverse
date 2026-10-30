@@ -24,6 +24,7 @@ import os
 import re
 import sys
 import time
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -138,6 +139,9 @@ def attempt(seed: int, templates: list, distance: float, dry_run: bool,
         token=token, app_key=app_key, x5secdata=secdata, umid_token=umid,
         umid_storage=f"{umid}@@{int(time.time())}",
     )
+    _nav = (extra.get("envProfile") or {}).get("navigator") or {}
+    if _nav.get("plugins"):
+        profile = replace(profile, plugins=_nav["plugins"], mime_types=_nav.get("mimeTypes"))
     fy = make_fy_nonce(profile, phase=phase, umid_token=umid, events=events,
                        surface_padding=surface_padding, extra=extra)
     et = sign_et(profile, f"//{host}{path}/_____tmd_____/slide", events=events)

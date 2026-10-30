@@ -312,3 +312,34 @@ FY 把环境属性面（属性是否存在、描述符形状、自有属性数�
 2. 若接入成功，把 `dynamic.py` 的三个模块纳入同一 capture 契约。
 3. 轨迹模型接入后，评估"无需人工拖动"的可行性。
 4. 最后才是 PP 的 wasm/IR 纯算移植。
+
+## 11. FY 的反自动化检测清单（从 index1.js 解出）
+
+`index1.js` 末尾有一张 `-1` 位移的字符串表，解出来是 FY 会逐个探测的
+**自动化/容器特征**。命中任意一项都会让 token 的语义偏离真浏览器。
+
+| 类别 | 探测点 |
+|---|---|
+| 容器/框架 | `cefQuery`（CEF）、`electronDefaultApp`（Electron）、`WV.Event.APP.Background`（WebView）、`__wxjs_environment`（微信） |
+| RPA 插件 | `mazhan`（码栈）、`DSJPLUG`、`zhishuchacha`、`fmget_targets`、`isConnect`、`bestNewLog` |
+| 注入脚本 | `script[src*="lsjztc.com"]`、`script[src*="dianzhentan.com"]`、`script[src*="wstplug.oss"]` |
+| 旧插件 | `ShockwaveFlash.shockwaveFlash`、`getSVGViewerVersion`、`AcroPDF.PDF`、`Adobe.SVGCtl`、`WMPlayer.OCX`、`npdivx.DivXBrowserPlugin`、`MSXML2.*` |
+| 显示模式 | `(display-mode: standalone)` vs `(display-mode: browser)` |
+| 输入能力 | `ontouchstart`、`iceServers`、`onicecandidate`、`maxTouchPoints` |
+| 原生性 | 正则 `\{\s*\[native code\]\s*\}$`（函数 toString 必须是原生形态） |
+| 设备 | `iPhone`、`android|iphone|ipod|ipad`、`mobile` |
+| WebGL 能力 | `EMAX_COMBINED_VERTEX_UNIFORM_COMPONENTS`、`MAX_TEXTURE_LOD_BIAS`、`getSupportedExtensions` |
+
+本地 runtime 里这些标记全部为 `undefined`（与真浏览器一致），这是正确的；
+但 `navigator.plugins` 必须传真实的 5 项（`PDF Viewer` 等），否则 FY 读到的是
+无名对象。`pp_offline.py` 现已从 `env_values.json` 透传 `plugins`/`mimeTypes`。
+
+## 12. 已确认无法通过"补属性"跨越的边界
+
+截至当前，B 路径已对齐：34 个读取路径、68 项环境值、Canvas 400x60 指纹、
+WebGL ANGLE/Metal 参数、`ownPropertyCount` 1282、`lswucn` 80 字符格式、
+事件 target（`SPAN.nc_iconfont.btn_slide`）、真实 plugins/mimeTypes。
+token 长度已到 1824–1880（浏览器 1888），仍返回 `code=300`。
+
+结论：**剩余差异在 FY 的加密 token 内部**，不在可观测环境。要越过，只有
+解密 `n`（需要 VM 内部的 PRNG/密钥），或让 FY 在**真实浏览器上下文**里跑。

@@ -23,6 +23,8 @@ class PageProfile:
     umid_token: str = ""
     et_init_cookie: str = ""
     umid_storage: str = ""
+    plugins: tuple | None = None
+    mime_types: tuple | None = None
 
     def as_runtime_input(self) -> dict[str, str]:
         profile = {
@@ -39,6 +41,10 @@ class PageProfile:
             profile["umidStorage"] = self.umid_storage or self.umid_token
         if self.et_init_cookie:
             profile["etInitCookie"] = self.et_init_cookie
+        if self.plugins is not None:
+            profile["plugins"] = list(self.plugins)
+        if self.mime_types is not None:
+            profile["mimeTypes"] = list(self.mime_types)
         return profile
 
 
