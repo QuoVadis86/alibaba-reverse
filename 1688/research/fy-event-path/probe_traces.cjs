@@ -10,6 +10,9 @@ const DG_LOOP = 'for(d[1]=dC,d[2]=eM,d[7]=x;d[7]!==U;){var aE=d[7]&o,dn,O=d[7]>>
 const MR_LOOP = 'for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;';
 const QZ_LOOP = 'for(d[x]=EL,d[i]=Kt,d[$]=a;d[$]!==U;){var JY=d[$]&o,wZ,O=d[$]>>5&o;';
 const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
+const DG_ENTRY = 'function DG(zU,dC,eM,Kt,wZ,Hj){';
+const MR_ENTRY = 'C[4]=function mr(xF,QO,z,FL,eo){';
+const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
 
 (async () => {
   const browser = await chromium.launch({
@@ -22,7 +25,7 @@ const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
   const page = await ctx.newPage();
 
   await page.addInitScript(() => {
-    window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], c9: null };
+    window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], c9: null, calls: { dg: [], mr: [], qz: [] } };
     window.__c9hook = (t) => {
       try {
         if (!t) return;
@@ -53,9 +56,12 @@ const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
     try {
       const resp = await route.fetch();
       let body = await resp.text();
-      if (body.includes(DG_LOOP)) { body = body.split(DG_LOOP).join(DG_LOOP + 'if(window.__t.dg.length<4000)window.__t.dg.push([d[7],aE,O]);'); patched.dg += 1; }
-      if (body.includes(MR_LOOP)) { body = body.split(MR_LOOP).join(MR_LOOP + 'if(window.__t.mr.length<4000)window.__t.mr.push([d[m],Kz,O]);'); patched.mr += 1; }
-      if (body.includes(QZ_LOOP)) { body = body.split(QZ_LOOP).join(QZ_LOOP + 'if(window.__t.qz.length<4000)window.__t.qz.push([d[$],JY,O,OA]);'); patched.qz += 1; }
+      if (body.includes(DG_ENTRY)) { body = body.split(DG_ENTRY).join(DG_ENTRY + 'window.__t.calls.dg.push(zU);window.__dgCall=window.__t.calls.dg.length-1;'); patched.dgEntry = 1; }
+      if (body.includes(MR_ENTRY)) { body = body.split(MR_ENTRY).join(MR_ENTRY + 'window.__t.calls.mr.push(xF);window.__mrCall=window.__t.calls.mr.length-1;'); patched.mrEntry = 1; }
+      if (body.includes(QZ_ENTRY)) { body = body.split(QZ_ENTRY).join(QZ_ENTRY + 'window.__t.calls.qz.push(OA);window.__qzCall=window.__t.calls.qz.length-1;'); patched.qzEntry = 1; }
+      if (body.includes(DG_LOOP)) { body = body.split(DG_LOOP).join(DG_LOOP + 'if(window.__t.dg.length<4000)window.__t.dg.push([d[7],aE,O,window.__dgCall]);'); patched.dg += 1; }
+      if (body.includes(MR_LOOP)) { body = body.split(MR_LOOP).join(MR_LOOP + 'if(window.__t.mr.length<4000)window.__t.mr.push([d[m],Kz,O,window.__mrCall]);'); patched.mr += 1; }
+      if (body.includes(QZ_LOOP)) { body = body.split(QZ_LOOP).join(QZ_LOOP + 'if(window.__t.qz.length<4000)window.__t.qz.push([d[$],JY,O,window.__qzCall]);'); patched.qz += 1; }
       if (body.includes(SER)) { body = body.split(SER).join('window.__t.ser.push(Array.isArray(d[p])?d[p].slice():null),' + SER); patched.ser += 1; }
       const C9NEEDLE = 'd[c]=d[K][yj],d[m]=d[c]?720:750';
       if (body.includes(C9NEEDLE)) { body = body.split(C9NEEDLE).join('window.__c9hook(C[9]),' + C9NEEDLE); patched.c9 = (patched.c9 || 0) + 1; }
@@ -72,7 +78,7 @@ const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
     return { sx: b.x + b.width / 2, sy: b.y + b.height / 2,
       rect: { x: b.x, y: b.y, left: b.left, top: b.top, right: b.right, bottom: b.bottom, width: b.width, height: b.height } };
   });
-  await page.evaluate(() => { window.__t = { dg: [], mr: [], qz: [], ser: [], events: [] }; });
+  await page.evaluate(() => { window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], calls: { dg: [], mr: [], qz: [] } }; });
 
   const cdp = await ctx.newCDPSession(page);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -100,7 +106,7 @@ const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
 
   fs.writeFileSync(out, JSON.stringify({
     patched, rect: g.rect, cfg, fyState,
-    dg: t.dg, mr: t.mr, qz: t.qz,
+    dg: t.dg, mr: t.mr, qz: t.qz, calls: t.calls,
     payload: t.ser.length ? t.ser[t.ser.length - 1] : null,
     events: t.events,
     c9: t.c9,

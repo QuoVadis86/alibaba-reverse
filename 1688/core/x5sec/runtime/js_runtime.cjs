@@ -2798,7 +2798,7 @@ try {
       const dgStepNeedle = 'for(d[1]=dC,d[2]=eM,d[7]=x;d[7]!==U;){var aE=d[7]&o,dn,O=d[7]>>5&o;';
       if (!fySource.includes(dgStepNeedle)) throw new Error('FY DG 步进探针位置不存在');
       fySource = fySource.replace(dgStepNeedle,
-        `${dgStepNeedle}if(globalThis.__fyDgSteps.length<1000)globalThis.__fyDgSteps.push({zU,pc:d[7],branch:aE,opcode:O,flType:typeof FL,flTruthy:!!FL});`);
+        `${dgStepNeedle}if(globalThis.__fyDgSteps.length<1000)globalThis.__fyDgSteps.push({zU,pc:d[7],branch:aE,opcode:O,call:(globalThis.__fyDgCalls?globalThis.__fyDgCalls.length:0)-1,flType:typeof FL,flTruthy:!!FL});`);
       const dgWindowNeedle = 'Q=window[v],d[7]=Q?429:68';
       if (!fySource.includes(dgWindowNeedle)) throw new Error('FY DG window 探针位置不存在');
       fySource = fySource.replace(dgWindowNeedle,
@@ -2925,7 +2925,7 @@ try {
       }
       if (!fySource.includes(qzStepNeedle)) throw new Error('FY Qz 步进探针位置不存在');
       fySource = fySource.replace(qzStepNeedle,
-        'for(d[x]=EL,d[i]=Kt,d[$]=a;d[$]!==U;){var JY=d[$]&o,wZ,O=d[$]>>5&o;if(__fyQz5Call&&globalThis.__fyQz5Steps.length<5000)globalThis.__fyQz5Steps.push({call:__fyQz5Call,oa:OA,pc:d[$],branch:JY,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}),detail:__fyQz5Call===1?globalThis.__fyDeepSig(d,true):null});if(globalThis.__fyQzSteps.length<2000&&(globalThis.__fyEarlyCalls?.length??0)<=1)globalThis.__fyQzSteps.push({pc:d[$],branch:JY,opcode:O,call:globalThis.__fyQzCalls.length,earlyCount:globalThis.__fyEarlyCalls?.length??0,regs:d[$]===269?Object.keys(d).map(function(key){var v=d[key];return[key,typeof v==="object"&&v?Object.prototype.toString.call(v):String(v)]}):undefined});if(globalThis.__fyRegChanges.length<200){if(globalThis.__fyR16!==d[16]){globalThis.__fyRegChanges.push({pc:d[$],reg:16,val:Object.prototype.toString.call(d[16])});globalThis.__fyR16=d[16];}if(globalThis.__fyR18!==d[18]){globalThis.__fyRegChanges.push({pc:d[$],reg:18,val:Object.prototype.toString.call(d[18])});globalThis.__fyR18=d[18];}}');
+        'for(d[x]=EL,d[i]=Kt,d[$]=a;d[$]!==U;){var JY=d[$]&o,wZ,O=d[$]>>5&o;if(__fyQz5Call&&globalThis.__fyQz5Steps.length<5000)globalThis.__fyQz5Steps.push({call:__fyQz5Call,oa:OA,pc:d[$],branch:JY,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}),detail:__fyQz5Call===1?globalThis.__fyDeepSig(d,true):null});if(globalThis.__fyQzSteps.length<2000&&(globalThis.__fyEarlyCalls?.length??0)<=1)globalThis.__fyQzSteps.push({pc:d[$],branch:JY,opcode:O,call:(globalThis.__fyQzCalls?globalThis.__fyQzCalls.length:0)-1,earlyCount:globalThis.__fyEarlyCalls?.length??0,regs:d[$]===269?Object.keys(d).map(function(key){var v=d[key];return[key,typeof v==="object"&&v?Object.prototype.toString.call(v):String(v)]}):undefined});if(globalThis.__fyRegChanges.length<200){if(globalThis.__fyR16!==d[16]){globalThis.__fyRegChanges.push({pc:d[$],reg:16,val:Object.prototype.toString.call(d[16])});globalThis.__fyR16=d[16];}if(globalThis.__fyR18!==d[18]){globalThis.__fyRegChanges.push({pc:d[$],reg:18,val:Object.prototype.toString.call(d[18])});globalThis.__fyR18=d[18];}}');
       const mr43LookupNeedle = 'd[S]=d[i][r],d[S]&&(d[1]=!0)';
       if (!fySource.includes(mr43LookupNeedle)) throw new Error('FY mr43 lookup 探针位置不存在');
       fySource = fySource.replace(mr43LookupNeedle,
