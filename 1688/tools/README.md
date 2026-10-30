@@ -45,6 +45,10 @@ uv run --project 1688 python 1688/tools/gen_trajectory.py \
 - `collect_trajectory.cjs`：记录 `pointerdown/pointermove/pointerup`（含 `timeStamp`），每次拖动后 abort 验证请求并重载页面。
 - `gen_trajectory.py`：模板变形 + 可选参数化回退；输出完整轨迹与 VM 采样事件。
 - `core/x5sec/trajectory.py`：模型实现。模板模式与真人样本的时长、事件数、效率、峰值速度中位数一致。
+- `os_drag.swift`：macOS CGEvent 注入器（需辅助功能权限）。CDP 派发的事件 `pressure/movementX/sourceCapabilities` 与真实输入不同，会被识别；CGEvent 走 HID 通道，属性一致。
+- 轨迹必须按 **4 ms（约 250 Hz）** 采样：真人实测 200–250 Hz，密度不足会被拒绝。
+
+已验证：录制的真人曲线（4 ms）+ CGEvent 注入 + 本地 `bx-pp` + 本地发送 → `code=0`。
 
 ## 离线复验（已有采集文件）
 

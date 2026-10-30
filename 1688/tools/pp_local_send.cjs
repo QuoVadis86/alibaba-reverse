@@ -28,16 +28,17 @@ const VERIFY_RE = /\/(slide|newslidevalidate)(\/|\?|$)/;
 const PC_INIT_CALL = 5320;   // VM 内部：初始化命令写入点
 const PC_TRACK = 4117;       // VM 内部：轨迹编码入口
 const TRACK_COMMAND = '_$PS';
+const BOOLEAN_FLAGS = new Set(['headless', 'patch-events', 'os-drag']);
 
 const log = (...args) => console.log(new Date().toISOString().slice(11, 19), ...args);
 
 function parseArgs(argv) {
-  const out = { mode: 'local', headless: false };
+  const out = { mode: 'local', headless: false, trajectory: null };
   for (let i = 2; i < argv.length; i += 1) {
     const key = argv[i];
     if (!key.startsWith('--')) continue;
     const name = key.slice(2);
-    if (name === 'headless') { out.headless = true; continue; }
+    if (BOOLEAN_FLAGS.has(name)) { out[name] = true; continue; }
     out[name] = argv[i + 1];
     i += 1;
   }
@@ -154,6 +155,24 @@ async function runCapture(options) {
     name: cookie.name, value: cookie.value, domain: cookie.domain, path: cookie.path,
   })));
   const page = await context.newPage();
+
+  if (options['patch-events']) {
+    await page.addInitScript(() => {
+      let lastX = null, lastY = null, dx = 0, dy = 0;
+      const track = (event) => {
+        if (lastX !== null) { dx = event.clientX - lastX; dy = event.clientY - lastY; }
+        lastX = event.clientX; lastY = event.clientY;
+      };
+      for (const name of ['pointermove', 'mousemove']) document.addEventListener(name, track, true);
+      const define = (proto, name, getter) => {
+        try { Object.defineProperty(proto, name, { configurable: true, get: getter }); } catch {}
+      };
+      define(MouseEvent.prototype, 'movementX', function () { return dx; });
+      define(MouseEvent.prototype, 'movementY', function () { return dy; });
+      define(PointerEvent.prototype, 'pressure', function () { return this.buttons ? 0.5 : 0; });
+      define(UIEvent.prototype, 'sourceCapabilities', function () { return { firesTouchEvents: false }; });
+    });
+  }
 
   await page.addInitScript(() => {
     window.__ppVmCalls = [];
@@ -304,8 +323,79 @@ async function runCapture(options) {
     });
   });
 
-  await page.bringToFront();
-  log('READY —— 请手动拖动滑块（180 秒）');
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, Math.max(ms, 0)));
+
+  if (options.trajectory && options['os-drag']) {
+    const trajectory = JSON.parse(fs.readFileSync(options.trajectory, 'utf8'));
+    const points = trajectory.points || [];
+    if (!points.length) throw new Error('轨迹文件没有 points');
+    const geometry = await page.evaluate(() => {
+      const button = document.querySelector('.btn_slide, .scratch-captcha-slider');
+      const scale = document.querySelector('.nc_scale');
+      const b = button.getBoundingClientRect();
+      const s = scale ? scale.getBoundingClientRect() : b;
+      const chrome = window.outerHeight - window.innerHeight;
+      return {
+        sx: window.screenX + b.x + b.width / 2,
+        sy: window.screenY + chrome + b.y + b.height / 2,
+        travel: Math.max(s.width, 1) + 16,
+      };
+    });
+    const payload = {
+      points: points.map(([t, nx, ny]) => [
+        t, geometry.sx + nx * geometry.travel, geometry.sy + ny * geometry.travel,
+      ]),
+    };
+    const temp = path.join(require('node:os').tmpdir(), `os_drag_${process.pid}.json`);
+    fs.writeFileSync(temp, JSON.stringify(payload));
+    const binary = options['os-drag-bin'] || '/tmp/os_drag';
+    if (!fs.existsSync(binary)) throw new Error(`找不到 OS 注入器: ${binary}`);
+    await page.bringToFront();
+    await sleep(250);
+    log(`OS 注入 points=${points.length} 起点=(${geometry.sx.toFixed(0)},${geometry.sy.toFixed(0)}) 跨度=${geometry.travel.toFixed(0)}px`);
+    const injected = spawnSync(binary, [temp], { encoding: 'utf8', timeout: 30000 });
+    if (injected.status !== 0) throw new Error(`OS 注入失败: ${(injected.stderr || '').slice(0, 200)}`);
+    log('OS 注入完成，等待验证请求');
+  } else if (options.trajectory) {
+    const trajectory = JSON.parse(fs.readFileSync(options.trajectory, 'utf8'));
+    const points = trajectory.points || [];
+    if (!points.length) throw new Error('轨迹文件没有 points');
+    const geometry = await page.evaluate(() => {
+      const button = document.querySelector('.btn_slide, .scratch-captcha-slider');
+      const scale = document.querySelector('.nc_scale');
+      const b = button.getBoundingClientRect();
+      const s = scale ? scale.getBoundingClientRect() : b;
+      // 需要走满 scale 宽度减去按钮宽度，额外留 8px 过冲。
+      const travel = Math.max(s.width - b.width, 1) + 8;
+      return { sx: b.x + b.width / 2, sy: b.y + b.height / 2,
+               ex: b.x + b.width / 2 + travel, ey: b.y + b.height / 2 };
+    });
+    const span = geometry.ex - geometry.sx;
+    log(`回放轨迹 points=${points.length} 跨度=${span.toFixed(1)}px`);
+    const cdp = await context.newCDPSession(page);
+    const map = (nx, ny) => ({ x: geometry.sx + nx * span, y: geometry.sy + ny * span });
+    const first = map(points[0][1], points[0][2]);
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: first.x, y: first.y, buttons: 0 });
+    await sleep(30);
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: first.x, y: first.y,
+      button: 'left', clickCount: 1, buttons: 1 });
+    let previous = points[0][0];
+    for (const [t, nx, ny] of points.slice(1)) {
+      await sleep(t - previous);
+      previous = t;
+      const position = map(nx, ny);
+      await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: position.x, y: position.y,
+        button: 'left', buttons: 1 });
+    }
+    await sleep(20);
+    const lastPoint = map(points[points.length - 1][1], points[points.length - 1][2]);
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: lastPoint.x, y: lastPoint.y,
+      button: 'left', clickCount: 1, buttons: 0 });
+    log('轨迹回放完成，等待验证请求');
+  } else {
+    await page.bringToFront();
+    log('READY —— 请手动拖动滑块（180 秒）');
+  }
 
   const deadline = Date.now() + 180000;
   while (!outcome && Date.now() < deadline) await page.waitForTimeout(500);

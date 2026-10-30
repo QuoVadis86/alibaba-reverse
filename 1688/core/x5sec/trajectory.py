@@ -236,6 +236,11 @@ def load_templates(path: str) -> list[Template]:
         # 强制单调，消除噪声导致的回退。
         for index in range(1, len(progress)):
             progress[index] = max(progress[index], progress[index - 1])
+        # 归一化到 [0, 1]：真人第一个采样点常常已经在起点前方，
+        # 若直接 clamp 会在轨迹开头造成一段"不动"的死区。
+        low, high = progress[0], progress[-1]
+        span = max(high - low, 1e-6)
+        progress = [(value - low) / span for value in progress]
         templates.append(Template(tuple(times), tuple(progress),
                                   up["t"] - start_t, distance))
     return templates

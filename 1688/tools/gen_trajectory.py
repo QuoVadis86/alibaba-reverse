@@ -44,10 +44,13 @@ def main() -> int:
     parser.add_argument("--templates", type=Path, help="真人轨迹 JSON（collect_trajectory.cjs 输出）")
     parser.add_argument("--template-index", type=int, help="指定模板序号；默认按 seed 选择")
     parser.add_argument("--out", type=Path, help="轨迹 JSON 输出路径")
+    parser.add_argument("--hz", type=float, default=250.0, help="采样率（真人实测约 200–250 Hz）")
+    parser.add_argument("--normalized", action="store_true", help="输出 0..1 归一化坐标")
+    parser.add_argument("--distance", type=float, default=316.0, help="归一化时用于计算时长的真实距离（px）")
     parser.add_argument("--vm-events", action="store_true", help="同时输出处罚页 VM 需要的少量事件")
     arguments = parser.parse_args()
 
-    constraints = Constraints(seed=arguments.seed)
+    constraints = Constraints(seed=arguments.seed, sample_hz=arguments.hz)
     templates = []
     if arguments.templates:
         if not arguments.templates.exists():
@@ -56,14 +59,19 @@ def main() -> int:
         if not templates:
             raise SystemExit("模板文件里没有可用轨迹")
 
+    target_end = (arguments.distance, arguments.end[1]) if arguments.normalized else arguments.end
     if templates:
         index = arguments.template_index if arguments.template_index is not None \
             else arguments.seed % len(templates)
-        points = generate_like(templates[index], arguments.start, arguments.end, constraints)
+        points = generate_like(templates[index], arguments.start, target_end, constraints)
         mode = f"template#{index}"
     else:
-        points = generate(arguments.start, arguments.end, constraints)
+        points = generate(arguments.start, target_end, constraints)
         mode = "parametric"
+
+    if arguments.normalized:
+        scale = max(arguments.distance, 1.0)
+        points = [type(points[0])(p.t_ms, p.x / scale, p.y / scale, p.buttons) for p in points]
 
     report = {
         "mode": mode,
