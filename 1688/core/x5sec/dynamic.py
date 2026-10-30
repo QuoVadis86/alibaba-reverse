@@ -75,6 +75,7 @@ def make_fy_nonce(
     record: bool = False,
     events: tuple[PointerEvent, ...] = (),
     surface_padding: int | None = None,
+    extra: dict | None = None,
 ) -> FyNonce:
     page_input = profile.as_runtime_input()
     page_input["umidToken"] = umid_token
@@ -90,6 +91,7 @@ def make_fy_nonce(
             "record": record,
             "events": [event.as_runtime_input() for event in events],
             **({"surfacePadding": surface_padding} if surface_padding else {}),
+            **(extra or {}),
         }
     )
     fy = result.get("fy")

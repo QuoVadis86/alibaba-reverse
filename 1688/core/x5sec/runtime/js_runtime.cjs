@@ -2858,6 +2858,44 @@ try {
     const callbackPriorCount = input.fyCallbackPriorCount ?? 2;
     if (input.traceFyBranch) global.__fyEarlyCalls.push({ name: 'init' });
     if (typeof page.umidStorage === 'string') localStorage.setItem('lswucn', page.umidStorage);
+    if (input.envProfile) {
+      const env = input.envProfile;
+      const setGet = (target, key, value) => {
+        try { Object.defineProperty(target, key, { configurable: true, enumerable: true, get: () => value }); }
+        catch { try { target[key] = value; } catch {} }
+      };
+      for (const [k, v] of Object.entries(env.navigator || {})) {
+        if (k === 'mimeTypes' || k === 'plugins') continue;
+        setGet(globalThis.navigator, k, v);
+      }
+      for (const [k, v] of Object.entries(env.screen || {})) setGet(globalThis.screen, k, v);
+      for (const [k, v] of Object.entries(env.window || {})) {
+        if (k === 'ownPropertyCount') continue;
+        setGet(globalThis, k, v);
+      }
+      for (const [k, v] of Object.entries(env.document || {})) {
+        if (k === 'currentScript') continue;
+        setGet(globalThis.document, k, v);
+      }
+      if (Array.isArray(input.canvasTape) && input.canvasTape.length) {
+        const tape = input.canvasTape.slice();
+        HTMLCanvasElement.prototype.toDataURL = function () {
+          return tape.length > 1 ? tape.shift() : tape[0];
+        };
+      }
+      if (input.webglParams) {
+        for (const name of ['WebGLRenderingContext', 'WebGL2RenderingContext']) {
+          const Ctor = globalThis[name];
+          if (!Ctor) continue;
+          const original = Ctor.prototype.getParameter;
+          Ctor.prototype.getParameter = function (param) {
+            const key = String(param);
+            if (Object.prototype.hasOwnProperty.call(input.webglParams, key)) return input.webglParams[key];
+            return original.call(this, param);
+          };
+        }
+      }
+    }
     if (Number(input.surfacePadding) > 0) {
       let pad = 0;
       while (Object.getOwnPropertyNames(globalThis).length < Number(input.surfacePadding) && pad < 20000) {

@@ -94,7 +94,7 @@ def trajectory_events(points, distance: float) -> tuple[PointerEvent, ...]:
 
 def attempt(seed: int, templates: list, distance: float, dry_run: bool,
             challenge_path: Path | None = None, phase: int = 1,
-            surface_padding: int | None = None) -> dict[str, Any]:
+            surface_padding: int | None = None, extra: dict | None = None) -> dict[str, Any]:
     if challenge_path is not None:
         challenge = json.loads(challenge_path.read_text())
     else:
@@ -131,7 +131,7 @@ def attempt(seed: int, templates: list, distance: float, dry_run: bool,
 
     umid = fetch_umid(session)
     fy = make_fy_nonce(profile, phase=phase, umid_token=umid, events=events,
-                       surface_padding=surface_padding)
+                       surface_padding=surface_padding, extra=extra)
     et = sign_et(profile, f"//{host}{path}/_____tmd_____/slide", events=events)
 
     pow_detail = PowDetail(l=int(pp["l"]), i=int(pp["i"]), q=pp["q"], t=pp["t"],
@@ -203,14 +203,29 @@ def main() -> int:
     parser.add_argument("--challenge", type=Path, help="复用已有挑战（url + cookies）")
     parser.add_argument("--phase", type=int, default=1, choices=(1, 2, 3, 4))
     parser.add_argument("--surface-padding", type=int, help="把 window 自有属性数补到该值")
+    parser.add_argument("--env-profile", type=Path, help="capture_env.cjs 产出的环境值")
+    parser.add_argument("--canvas-tape", type=Path, help="capture_canvas.cjs 产出的 canvas 数据")
+    parser.add_argument("--webgl-params", action="store_true", help="从 canvas 数据里带 WebGL 参数")
     arguments = parser.parse_args()
 
     templates = load_templates(str(arguments.templates)) if arguments.templates.exists() else []
+    extra = None
+    if arguments.env_profile:
+        extra = {"envProfile": json.loads(arguments.env_profile.read_text())}
+        if arguments.canvas_tape:
+            caps = json.loads(arguments.canvas_tape.read_text())
+            extra["canvasTape"] = [item["value"] for item in caps.get("dataUrl", [])]
+            if arguments.webgl_params:
+                extra["webglParams"] = {
+                    str(item["param"]): item["value"] for item in caps.get("params", [])
+                    if item.get("name") == "WebGLRenderingContext"
+                }
     results = []
     for index in range(arguments.trials):
         seed = arguments.seed + index
         try:
-            outcome = attempt(seed, templates, arguments.distance, arguments.dry_run, arguments.challenge, arguments.phase, arguments.surface_padding)
+            outcome = attempt(seed, templates, arguments.distance, arguments.dry_run, arguments.challenge,
+                              arguments.phase, arguments.surface_padding, extra)
         except Exception as error:  # noqa: BLE001
             outcome = {"seed": seed, "error": f"{type(error).__name__}: {error}"[:300]}
         outcome["seed"] = seed
