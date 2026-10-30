@@ -3181,7 +3181,7 @@ try {
         const n = Object.keys(t).length;
         if (!globalThis.__fyC9 || n > globalThis.__fyC9.n) {
           const sample = {};
-          for (const k of Object.keys(t)) { try { sample[k] = JSON.stringify(t[k]).slice(0, 80); } catch (e) {} }
+          for (const k of Object.keys(t)) { try { sample[k] = JSON.stringify(t[k]); } catch (e) {} }
           globalThis.__fyC9 = { n, sample };
         }
       } catch (e) {}

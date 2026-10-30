@@ -49,7 +49,7 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
         const n = Object.keys(t).length;
         if (!window.__t.c9 || n > window.__t.c9.n) {
           const snap = {};
-          for (const k of Object.keys(t)) { try { snap[k] = JSON.stringify(t[k]).slice(0, 80); } catch (e) {} }
+          for (const k of Object.keys(t)) { try { snap[k] = JSON.stringify(t[k]); } catch (e) {} }
           window.__t.c9 = { n, snap };
         }
       } catch (e) {}
@@ -123,6 +123,7 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
     PATH: window._config_.PATH,
   } : null);
 
+  if (t.c9 && t.c9.snap) fs.writeFileSync('/tmp/ppprobe/c9_full.json', JSON.stringify(t.c9));
   fs.writeFileSync(out, JSON.stringify({
     patched, rect: g.rect, cfg, fyState,
     dg: t.dg, mr: t.mr, qz: t.qz, calls: t.calls, v: t.v,

@@ -120,6 +120,47 @@ def run_local(challenge: dict, browser: dict) -> dict:
     return json.loads(result.stdout)
 
 
+def resolve_c9(table: dict, key, depth: int = 0) -> str:
+    """把 C[9] 的链表式字符串表还原成实际字符串。"""
+    if depth > 40:
+        return "…"
+    try:
+        entry = table.get(int(key))
+    except (TypeError, ValueError):
+        return f"<{key}?>"
+    if entry is None:
+        return f"<{key}?>"
+    if len(entry) == 1:
+        return entry[0] if isinstance(entry[0], str) else f"<num {entry[0]}>"
+    head, tail = entry[0], entry[1]
+    base = resolve_c9(table, head, depth + 1) if isinstance(head, int) else str(head)
+    if isinstance(tail, str):
+        return base + tail
+    if isinstance(tail, int):
+        if tail in table:
+            return base + resolve_c9(table, tail, depth + 1)
+        try:
+            return base + chr(tail)
+        except (ValueError, OverflowError):
+            return base + f"<{tail}>"
+    return base + str(tail)
+
+
+def load_c9(path: str) -> dict:
+    try:
+        raw = json.loads(Path(path).read_text())
+    except Exception:  # noqa: BLE001
+        return {}
+    snap = raw.get("snap") or raw.get("sample") or {}
+    table = {}
+    for key, value in snap.items():
+        try:
+            table[int(key)] = json.loads(value) if isinstance(value, str) else value
+        except Exception:  # noqa: BLE001
+            continue
+    return table
+
+
 def pc_of(item):
     return item[0] if isinstance(item, (list, tuple)) else item
 
@@ -189,6 +230,8 @@ def main() -> int:
             raise RuntimeError(f"浏览器采集连续失败: {str(last_error)[:200]}")
 
     local = run_local(challenge, browser)
+    if local.get("fyC9"):
+        Path("/tmp/ppprobe/c9_local.json").write_text(json.dumps(local["fyC9"]))
 
     local_dg = [[step.get("pc"), step.get("branch"), step.get("opcode"), step.get("call")] for step in (local.get("fyDgSteps") or [])]
     local_mr = local.get("fyMrPcs") or []
@@ -239,6 +282,12 @@ def main() -> int:
     if browser_v0 or local_v0:
         print(f"\nmr 入口 v: browser={browser_v0[:10]}")
         print(f"            local  ={local_v0[:10]}")
+        browser_table = load_c9("/tmp/ppprobe/c9_full.json")
+        local_table = load_c9("/tmp/ppprobe/c9_local.json")
+        browser_cmds = [resolve_c9(browser_table, item[2]) for item in browser_v0[:10]]
+        local_cmds = [resolve_c9(local_table, item[1]) for item in local_v0[:10]]
+        print(f"mr 命令: browser={browser_cmds}")
+        print(f"         local  ={local_cmds}")
 
     browser_c9 = (browser.get("c9") or {}).get("snap") or {}
     local_c9 = (local.get("fyC9") or {}).get("sample") or {}
