@@ -234,6 +234,11 @@ def main() -> int:
     if browser_v or local_v:
         print(f"\nv 站点序列: browser={browser_v[:16]}")
         print(f"             local  ={local_v[:16]}")
+    browser_v0 = browser.get("v0") or []
+    local_v0 = local.get("v0") or []
+    if browser_v0 or local_v0:
+        print(f"\nmr 入口 v: browser={browser_v0[:10]}")
+        print(f"            local  ={local_v0[:10]}")
 
     browser_c9 = (browser.get("c9") or {}).get("snap") or {}
     local_c9 = (local.get("fyC9") or {}).get("sample") or {}

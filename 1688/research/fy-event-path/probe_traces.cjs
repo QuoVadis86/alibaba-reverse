@@ -42,7 +42,7 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
       };
       window.Worker.prototype = OrigWorker.prototype;
     }
-    window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], c9: null, v: [], calls: { dg: [], mr: [], qz: [] } };
+    window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], c9: null, v: [], v0: [], calls: { dg: [], mr: [], qz: [] } };
     window.__c9hook = (t) => {
       try {
         if (!t) return;
@@ -79,7 +79,7 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
       if (body.includes(V38)) { body = body.split(V38).join('window.__t.v.push(["38",v]),' + V38); patched.v38 = 1; }
       if (body.includes(V56)) { body = body.split(V56).join('window.__t.v.push(["56",v]),' + V56); patched.v56 = 1; }
       if (body.includes(DG_LOOP)) { body = body.split(DG_LOOP).join(DG_LOOP + 'if(window.__t.dg.length<4000)window.__t.dg.push([d[7],aE,O,window.__dgCall]);'); patched.dg += 1; }
-      if (body.includes(MR_LOOP)) { body = body.split(MR_LOOP).join(MR_LOOP + 'if(window.__t.mr.length<4000)window.__t.mr.push([d[m],Kz,O,window.__mrCall]);'); patched.mr += 1; }
+      if (body.includes(MR_LOOP)) { body = body.split(MR_LOOP).join(MR_LOOP + 'if(window.__t.mr.length<4000)window.__t.mr.push([d[m],Kz,O,window.__mrCall]);if(d[m]===20&&window.__t.v0.length<200)window.__t.v0.push([window.__mrCall,xF,QO,typeof v==="undefined"?null:v]);'); patched.mr += 1; }
       if (body.includes(QZ_LOOP)) { body = body.split(QZ_LOOP).join(QZ_LOOP + 'if(window.__t.qz.length<4000)window.__t.qz.push([d[$],JY,O,window.__qzCall]);'); patched.qz += 1; }
       if (body.includes(SER)) { body = body.split(SER).join('window.__t.ser.push(Array.isArray(d[p])?d[p].slice():null),' + SER); patched.ser += 1; }
       const C9NEEDLE = 'd[c]=d[K][yj],d[m]=d[c]?720:750';
@@ -97,7 +97,7 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
     return { sx: b.x + b.width / 2, sy: b.y + b.height / 2,
       rect: { x: b.x, y: b.y, left: b.left, top: b.top, right: b.right, bottom: b.bottom, width: b.width, height: b.height } };
   });
-  await page.evaluate(() => { window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], v: [], calls: { dg: [], mr: [], qz: [] } }; });
+  await page.evaluate(() => { window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], v: [], v0: [], calls: { dg: [], mr: [], qz: [] } }; });
 
   const cdp = await ctx.newCDPSession(page);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -127,6 +127,7 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
     patched, rect: g.rect, cfg, fyState,
     dg: t.dg, mr: t.mr, qz: t.qz, calls: t.calls, v: t.v,
     workerMessages: await page.evaluate(() => window.__workerMsgs || []),
+    v0: t.v0,
     payload: t.ser.length ? t.ser[t.ser.length - 1] : null,
     events: t.events,
     c9: t.c9,
