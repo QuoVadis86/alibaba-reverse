@@ -47,6 +47,13 @@ func post(_ type: CGEventType, _ x: Double, _ y: Double, _ pressure: Double) {
 }
 
 let points = payload.points
+if CommandLine.arguments.contains("--move") {
+    for point in points {
+        post(.mouseMoved, point[1], point[2], 0)
+        usleep(40_000)
+    }
+    exit(0)
+}
 post(.mouseMoved, points[0][1], points[0][2], 0)
 usleep(30_000)
 post(.leftMouseDown, points[0][1], points[0][2], 0.5)

@@ -175,6 +175,10 @@ async function runCapture(options) {
   }
 
   await page.addInitScript(() => {
+    window.__lastPointer = null;
+    document.addEventListener('pointermove', (event) => {
+      window.__lastPointer = { x: event.clientX, y: event.clientY, sx: event.screenX, sy: event.screenY };
+    }, true);
     window.__ppVmCalls = [];
     window.__ppVmWrites = [];
     window.__ppVmCommand = '';
@@ -209,6 +213,8 @@ async function runCapture(options) {
         writes: window.__ppVmWrites,
         track: window.__ppVmTrack[0] ?? null,
       }));
+      const injected = await page.evaluate(() => window.__injectEnd !== null && window.__injectEnd !== undefined);
+      log(`拖动来源: ${injected ? 'OS 注入' : '人工'}`);
       log(`采集 dragCalls=${capture.dragCalls.length} writes=${capture.writes.map((v) => v.length).join('/')}`
         + ` track=${(capture.track || '').length} init=${initCommands.length} base=${(profile?.ppSign || '').length}`);
       if (!capture.dragCalls.length) {
@@ -338,23 +344,41 @@ async function runCapture(options) {
       return {
         sx: window.screenX + b.x + b.width / 2,
         sy: window.screenY + chrome + b.y + b.height / 2,
+        cx: b.x + b.width / 2,
+        cy: b.y + b.height / 2,
         travel: Math.max(s.width, 1) + 16,
       };
     });
-    const payload = {
+    const build = (ox, oy) => ({
       points: points.map(([t, nx, ny]) => [
-        t, geometry.sx + nx * geometry.travel, geometry.sy + ny * geometry.travel,
+        t, geometry.sx + ox + nx * geometry.travel, geometry.sy + oy + ny * geometry.travel,
       ]),
-    };
+    });
+    // 自校准：先移动一格，读回页面看到的屏幕坐标，求出窗口偏移。
+    const probe = { points: [[0, geometry.sx - 60, geometry.sy - 60], [40, geometry.sx, geometry.sy]] };
+    fs.writeFileSync(path.join(require('node:os').tmpdir(), `os_probe_${process.pid}.json`), JSON.stringify(probe));
+    spawnSync(options['os-drag-bin'] || '/tmp/os_drag',
+      [path.join(require('node:os').tmpdir(), `os_probe_${process.pid}.json`), '--move'],
+      { encoding: 'utf8' });
+    await sleep(180);
+    const seen = await page.evaluate(() => window.__lastPointer);
+    if (!seen) throw new Error('OS 注入校准失败：页面没有收到指针事件（窗口未聚焦或坐标在窗口外）');
+    // seen.x/y 是页面视角的 client 坐标；与目标按钮中心比较后修正屏幕坐标。
+    const offsetX = geometry.cx - seen.x;
+    const offsetY = geometry.cy - seen.y;
+    log(`校准: 目标 client=(${geometry.cx.toFixed(0)},${geometry.cy.toFixed(0)}) 实测=(${seen.x.toFixed(0)},${seen.y.toFixed(0)}) 修正=(${offsetX.toFixed(0)},${offsetY.toFixed(0)})`);
+    const payload = build(offsetX, offsetY);
     const temp = path.join(require('node:os').tmpdir(), `os_drag_${process.pid}.json`);
     fs.writeFileSync(temp, JSON.stringify(payload));
     const binary = options['os-drag-bin'] || '/tmp/os_drag';
     if (!fs.existsSync(binary)) throw new Error(`找不到 OS 注入器: ${binary}`);
     await page.bringToFront();
     await sleep(250);
+    await page.evaluate(() => { window.__injectStart = performance.now(); window.__injectEnd = null; });
     log(`OS 注入 points=${points.length} 起点=(${geometry.sx.toFixed(0)},${geometry.sy.toFixed(0)}) 跨度=${geometry.travel.toFixed(0)}px`);
     const injected = spawnSync(binary, [temp], { encoding: 'utf8', timeout: 30000 });
     if (injected.status !== 0) throw new Error(`OS 注入失败: ${(injected.stderr || '').slice(0, 200)}`);
+    await page.evaluate(() => { window.__injectEnd = performance.now(); });
     log('OS 注入完成，等待验证请求');
   } else if (options.trajectory) {
     const trajectory = JSON.parse(fs.readFileSync(options.trajectory, 'utf8'));
