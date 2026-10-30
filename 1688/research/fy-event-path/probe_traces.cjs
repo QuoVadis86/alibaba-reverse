@@ -22,7 +22,18 @@ const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
   const page = await ctx.newPage();
 
   await page.addInitScript(() => {
-    window.__t = { dg: [], mr: [], qz: [], ser: [], events: [] };
+    window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], c9: null };
+    window.__c9hook = (t) => {
+      try {
+        if (!t) return;
+        const n = Object.keys(t).length;
+        if (!window.__t.c9 || n > window.__t.c9.n) {
+          const snap = {};
+          for (const k of Object.keys(t)) { try { snap[k] = JSON.stringify(t[k]).slice(0, 80); } catch (e) {} }
+          window.__t.c9 = { n, snap };
+        }
+      } catch (e) {}
+    };
     const types = ['mousedown', 'mousemove', 'mouseup', 'pointerdown', 'pointermove', 'pointerup', 'focus', 'focusin'];
     for (const t of types) {
       document.addEventListener(t, (e) => {
@@ -46,6 +57,8 @@ const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
       if (body.includes(MR_LOOP)) { body = body.split(MR_LOOP).join(MR_LOOP + 'if(window.__t.mr.length<4000)window.__t.mr.push([d[m],Kz,O]);'); patched.mr += 1; }
       if (body.includes(QZ_LOOP)) { body = body.split(QZ_LOOP).join(QZ_LOOP + 'if(window.__t.qz.length<4000)window.__t.qz.push([d[$],JY,O]);'); patched.qz += 1; }
       if (body.includes(SER)) { body = body.split(SER).join('window.__t.ser.push(Array.isArray(d[p])?d[p].slice():null),' + SER); patched.ser += 1; }
+      const C9NEEDLE = 'd[c]=d[K][yj],d[m]=d[c]?720:750';
+      if (body.includes(C9NEEDLE)) { body = body.split(C9NEEDLE).join('window.__c9hook(C[9]),' + C9NEEDLE); patched.c9 = (patched.c9 || 0) + 1; }
       await route.fulfill({ response: resp, body, headers: { ...resp.headers(), 'content-type': 'application/javascript' } });
     } catch (e) { await route.continue().catch(() => {}); }
   });
@@ -90,6 +103,7 @@ const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
     dg: t.dg, mr: t.mr, qz: t.qz,
     payload: t.ser.length ? t.ser[t.ser.length - 1] : null,
     events: t.events,
+    c9: t.c9,
   }));
   console.log('fy', JSON.stringify(fyState));
   console.log('patched', JSON.stringify(patched),

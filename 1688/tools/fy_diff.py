@@ -223,6 +223,16 @@ def main() -> int:
     print(f"DG 步数: browser={len(browser.get('dg') or [])} local={len(local_dg)}")
     print(f"mr 步数: browser={len(browser.get('mr') or [])} local={len(local_mr)}")
     print(f"Qz 步数: browser={len(browser.get('qz') or [])} local={len(local_qz)}")
+
+    browser_c9 = (browser.get("c9") or {}).get("snap") or {}
+    local_c9 = (local.get("fyC9") or {}).get("sample") or {}
+    if browser_c9 and local_c9:
+        keys = sorted(set(browser_c9) | set(local_c9), key=lambda x: int(x))
+        diffs = [(k, browser_c9.get(k), local_c9.get(k)) for k in keys
+                 if browser_c9.get(k) != local_c9.get(k)]
+        print(f"\nC[9]: browser={len(browser_c9)} local={len(local_c9)} 不同条目={len(diffs)}")
+        for key, left, right in diffs[:8]:
+            print(f"  [{key}] browser={left}  local={right}")
     return 0
 
 

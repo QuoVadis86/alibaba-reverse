@@ -2735,6 +2735,11 @@ try {
       if (!fySource.includes(pixelNeedle)) throw new Error('FY 像素探针位置不存在');
       fySource = fySource.replace(pixelNeedle,
         'd[X]=function(y){if(globalThis.__fyPixelTrace.length<10)globalThis.__fyPixelTrace.push({type:typeof y,length:y?.length,entryCount:globalThis.__fyEntryTrace.length,nonzero:y?.reduce?.((n,v)=>n+(v!==0),0),head:Array.from(y?.slice?.(0,32)||[]),tail:Array.from(y?.slice?.(-32)||[]),stack:new Error().stack.split("\\n").slice(1,4)});for(var k=4;');
+      const c9Needle = 'd[c]=d[K][yj],d[m]=d[c]?720:750';
+      if (fySource.includes(c9Needle)) {
+        fySource = fySource.replace(c9Needle,
+          '(globalThis.__fyC9hook&&globalThis.__fyC9hook(C[9])),d[c]=d[K][yj],d[m]=d[c]?720:750');
+      }
       const dgEntryNeedle = 'function DG(zU,dC,eM,Kt,wZ,Hj){';
       if (fySource.includes(dgEntryNeedle)) {
         fySource = fySource.replace(dgEntryNeedle,
@@ -3131,6 +3136,17 @@ try {
       }
       fs.writeSync(2, `surface padding -> ${Object.getOwnPropertyNames(globalThis).length} own props (added ${pad})\n`);
     }
+    globalThis.__fyC9hook = (t) => {
+      try {
+        if (!t) return;
+        const n = Object.keys(t).length;
+        if (!globalThis.__fyC9 || n > globalThis.__fyC9.n) {
+          const sample = {};
+          for (const k of Object.keys(t)) { try { sample[k] = JSON.stringify(t[k]).slice(0, 80); } catch (e) {} }
+          globalThis.__fyC9 = { n, sample };
+        }
+      } catch (e) {}
+    };
     __fyModule.init(input.fyInitOptions || options, () => {
       for (const prior of fyPriorCalls.slice(0, callbackPriorCount)) replayFyPrior(prior);
     });
@@ -3798,6 +3814,7 @@ try {
       fyMr47Writes: global.__fyMr47Writes,
       fyMrCalls: global.__fyMrCalls,
       fySerializerCalls: global.__fySerializerCalls,
+      fyC9: globalThis.__fyC9,
       fyAudioCalls: global.__fyAudioCalls,
       fyAudioErrors: global.__fyAudioErrors,
       fyDgPcs: global.__fyDgPcs,
