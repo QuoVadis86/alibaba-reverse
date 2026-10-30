@@ -7,6 +7,7 @@ const hostProcess = process;
 (async () => {
 const input = JSON.parse(fs.readFileSync(0, 'utf8'));
 const page = input.page || {};
+const FY_REPLAY = Symbol('fyMouseReplay');
 global.__fyTrace = input.traceFy ? { canvas: [], webgl: [] } : null;
 const pageUrl = new URL(page.url || 'https://h5api.m.1688.com/');
 delete global.navigator;
@@ -648,7 +649,7 @@ if (input.mode === 'fy_nonce' || input.mode === 'nonce_only') {
       registry?.set(type, (registry.get(type) || []).filter(item => item !== listener));
     }
     dispatchEvent(event) {
-      if (!(input.mode === 'fy_nonce' && event.__fyMouseReplay)) {
+      if (!(input.mode === 'fy_nonce' && (event[FY_REPLAY] || event.__fyMouseReplay))) {
         if (!Object.hasOwn(event, 'target')) {
           Object.defineProperty(event, 'target', { configurable: true, value: this });
         }
@@ -2418,6 +2419,9 @@ try {
       global.__fyMr43Lookup = [];
       global.__fyQzCalls = [];
       global.__fyQzSteps = [];
+      global.__fyRegChanges = [];
+      global.__fyR16 = undefined;
+      global.__fyR18 = undefined;
     global.__fyQz5Steps = [];
     global.__fyStyleVmInputs = [];
     global.__fyStyleParentSteps = [];
@@ -2743,7 +2747,7 @@ try {
       }
       if (!fySource.includes(qzStepNeedle)) throw new Error('FY Qz 步进探针位置不存在');
       fySource = fySource.replace(qzStepNeedle,
-        'for(d[x]=EL,d[i]=Kt,d[$]=a;d[$]!==U;){var JY=d[$]&o,wZ,O=d[$]>>5&o;if(__fyQz5Call&&globalThis.__fyQz5Steps.length<5000)globalThis.__fyQz5Steps.push({call:__fyQz5Call,oa:OA,pc:d[$],branch:JY,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}),detail:__fyQz5Call===1?globalThis.__fyDeepSig(d,true):null});if(globalThis.__fyQzSteps.length<2000&&(globalThis.__fyEarlyCalls?.length??0)<=1)globalThis.__fyQzSteps.push({pc:d[$],branch:JY,opcode:O,call:globalThis.__fyQzCalls.length,earlyCount:globalThis.__fyEarlyCalls?.length??0});');
+        'for(d[x]=EL,d[i]=Kt,d[$]=a;d[$]!==U;){var JY=d[$]&o,wZ,O=d[$]>>5&o;if(__fyQz5Call&&globalThis.__fyQz5Steps.length<5000)globalThis.__fyQz5Steps.push({call:__fyQz5Call,oa:OA,pc:d[$],branch:JY,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}),detail:__fyQz5Call===1?globalThis.__fyDeepSig(d,true):null});if(globalThis.__fyQzSteps.length<2000&&(globalThis.__fyEarlyCalls?.length??0)<=1)globalThis.__fyQzSteps.push({pc:d[$],branch:JY,opcode:O,call:globalThis.__fyQzCalls.length,earlyCount:globalThis.__fyEarlyCalls?.length??0,regs:d[$]===269?Object.keys(d).map(function(key){var v=d[key];return[key,typeof v==="object"&&v?Object.prototype.toString.call(v):String(v)]}):undefined});if(globalThis.__fyRegChanges.length<200){if(globalThis.__fyR16!==d[16]){globalThis.__fyRegChanges.push({pc:d[$],reg:16,val:Object.prototype.toString.call(d[16])});globalThis.__fyR16=d[16];}if(globalThis.__fyR18!==d[18]){globalThis.__fyRegChanges.push({pc:d[$],reg:18,val:Object.prototype.toString.call(d[18])});globalThis.__fyR18=d[18];}}');
       const mr43LookupNeedle = 'd[S]=d[i][r],d[S]&&(d[1]=!0)';
       if (!fySource.includes(mr43LookupNeedle)) throw new Error('FY mr43 lookup 探针位置不存在');
       fySource = fySource.replace(mr43LookupNeedle,
@@ -3138,6 +3142,7 @@ try {
       Object.assign(replay, event.props || {});
       Object.setPrototypeOf(replay, MouseEvent.prototype);
       replay.__fyMouseReplay = true;
+      replay[FY_REPLAY] = true;
       const replayProxy = new Proxy(replay, {
         get(target, key, receiver) {
           if (key === '__fyMouseReplay' && input.hideFyReplayFlag) return undefined;
@@ -3169,6 +3174,7 @@ try {
             early: global.__fyEarlyCalls?.slice(-8),
             steps: global.__fyQzSteps?.slice(0, 120),
             stepsLen: global.__fyQzSteps?.length,
+            regChanges: global.__fyRegChanges?.slice(0, 20),
           }) + '\n');
         }
         throw error;

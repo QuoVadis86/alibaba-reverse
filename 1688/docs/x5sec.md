@@ -439,3 +439,25 @@ runtime 给每个回放事件挂了 `__fyMouseReplay: true`。FY 会读取这个
 环境值让 FY 走了 77 而不是 586。
 
 探针：`1688/tools/probe_fy_pc.cjs`、`1688/tools/probe_fy_dp.cjs`。
+
+## 17. 根因：`__fyMouseReplay` 泄漏导致 FY 跳过事件（已修）
+
+隐藏 `__fyMouseReplay` 之后，runtime 自己的 `dispatchEvent` 也读不到这个标记，
+于是把 `event.target` 覆盖成了 `document`——FY 拿到的 `EL` 变成 `HTMLDocument`
+而不是 `SPAN`，随后走进一条浏览器不走的岔路（pc 269 分叉到 77），
+在 `d[p]` 处抛错。
+
+修法：内部标记改用 **Symbol**（`FY_REPLAY`）。FY 看不到字符串属性，
+runtime 仍能识别回放事件。
+
+修复后：
+
+```
+rc = 0
+fy_len = 1868~1872
+serializer calls = 1     ← 之前恒为 0
+```
+
+本地 FY 第一次真正走完事件路径并完成序列化。服务端仍返回 300，
+但现在本地与浏览器的**明文可以逐字节对比**（本地 1395B vs 浏览器 1354B，
+前 18 字节结构一致：`.. 00 ea .. 00 04 05 .. 11 ee f0 ab 47 ae c7 15 08 22 b4 b3`）。

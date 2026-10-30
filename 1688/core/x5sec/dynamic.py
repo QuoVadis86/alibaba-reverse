@@ -100,6 +100,7 @@ def make_fy_nonce(
             "phase": phase,
             "record": record,
             "events": [event.as_runtime_input() for event in events],
+            "hideFyReplayFlag": True,
             **({"surfacePadding": surface_padding} if surface_padding else {}),
             **(extra or {}),
         }
