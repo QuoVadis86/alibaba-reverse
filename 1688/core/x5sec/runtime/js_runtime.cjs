@@ -2629,6 +2629,16 @@ try {
         fySource = fySource.replace(mrLoopNeedle,
           'for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;if(globalThis.__fyMrPcs.length<400)globalThis.__fyMrPcs.push(d[m]);switch(Kz){');
       }
+      const resKeyNeedle = 'P=d[9][d[8]]),d[9]=P,';
+      if (fySource.includes(resKeyNeedle)) {
+        fySource = fySource.replace(resKeyNeedle,
+          'globalThis.__fyResKey=(globalThis.__fyResKey||[]).concat([{key:String(d[8]),d9type:Object.prototype.toString.call(d[9]),d9keys:d[9]&&typeof d[9]==="object"?Object.keys(d[9]).slice(0,8):null,found:!!(d[9]&&d[9][d[8]])}]),P=d[9][d[8]]),d[9]=P,');
+      }
+      const p18Needle = 'd[7]=P?352:293;break;case 19:var mr=0;';
+      if (fySource.includes(p18Needle)) {
+        fySource = fySource.replace(p18Needle,
+          'globalThis.__fyP18=(globalThis.__fyP18||[]).concat([{v:String(P),t:typeof P,dm:typeof d[m]!=="undefined"?String(d[m]):null,d8:Object.prototype.toString.call(d[8]),d5:Object.prototype.toString.call(d[5])}]),d[7]=P?352:293;break;case 19:var mr=0;');
+      }
       const dgStepNeedle = 'for(d[1]=dC,d[2]=eM,d[7]=x;d[7]!==U;){var aE=d[7]&o,dn,O=d[7]>>5&o;';
       if (!fySource.includes(dgStepNeedle)) throw new Error('FY DG 步进探针位置不存在');
       fySource = fySource.replace(dgStepNeedle,
@@ -3599,6 +3609,8 @@ try {
       fySmallCanvasTrace: global.__fySmallCanvasTrace,
       fyDgSteps: global.__fyDgSteps,
       fyMrPcs: global.__fyMrPcs,
+      fyP18: global.__fyP18,
+      fyResKey: global.__fyResKey,
       fyDgWindowChecks: global.__fyDgWindowChecks,
       fyDgObjectChecks: global.__fyDgObjectChecks,
       fyDgStringChecks: global.__fyDgStringChecks,

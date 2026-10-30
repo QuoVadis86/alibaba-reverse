@@ -659,3 +659,23 @@ d[8] = P, d[8] && (d[8] = d[9]), P = d[8], d[7] = P ? 352 : 293;
 另外确认：浏览器 Qz 的 OA 序列是 `11,13,12,2,11,13,4,15`，本地缺了第一个 11。
 
 探针：`probe_fy_oa_seq.cjs`。
+
+## 26. DG pc18 的判定条件：FY 脚本的资源计时条目
+
+浏览器侧精确插桩 `d[7]=P?352:293`：
+
+| | P | d[8] |
+|---|---|---|
+| 浏览器 | `https://o.alicdn.com/seclab/f/index1.js` | String |
+| 本地 | `null` | **null** |
+
+即 FY 从 `performance` 的 resource 计时里取 FY 脚本自己的 URL；
+浏览器有这条记录，本地没有 → 走 293 分支。
+
+再往前一步插桩 `P=d[9][d[8]]` 发现 **`d[9]` 本身为假**——它是 FY 在 init 时
+构建的资源注册表（`C[9][105]`）。本地这张表是空的。
+
+已尝试传入 `fyResourceEntries` / `fyResourceQueries`（浏览器采到 35 条，
+含 `index1.js`），DG 仍在第 68 步分叉，说明注册表的构建路径不是这两个输入。
+
+探针：`probe_fy_p18.cjs`、`capture_resources.cjs`。
