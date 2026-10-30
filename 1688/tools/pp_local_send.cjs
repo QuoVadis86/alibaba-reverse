@@ -240,6 +240,9 @@ async function runCapture(options) {
 
       const sent = await localSend(request.url(), headers);
       outcome = {
+        capture: { dragCalls: capture.dragCalls, writes: capture.writes, track: capture.track },
+        initCommands,
+        page: profile,
         mode: 'local',
         localLength: localSign.length,
         browserLength: browserSign.length,
