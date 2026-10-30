@@ -49,15 +49,19 @@ class PointerEvent:
     y: int
     time_stamp: int
     buttons: int = 1
+    target: dict | None = None
 
-    def as_runtime_input(self) -> dict[str, int | str]:
-        return {
+    def as_runtime_input(self) -> dict:
+        payload = {
             "type": self.type,
             "x": self.x,
             "y": self.y,
             "timeStamp": self.time_stamp,
             "buttons": self.buttons,
         }
+        if self.target:
+            payload["target"] = self.target
+        return payload
 
 
 @dataclass(frozen=True, slots=True)

@@ -80,15 +80,17 @@ def trajectory_events(points, distance: float) -> tuple[PointerEvent, ...]:
     """转成 FY 需要的绝对坐标事件（与页面按钮位置一致）。"""
     origin_x = BUTTON.x + BUTTON.width / 2
     origin_y = BUTTON.y + BUTTON.height / 2
+    target = {"tag": "SPAN", "id": "", "className": "nc_iconfont btn_slide"}
     events = [PointerEvent(type="mousedown", x=int(origin_x), y=int(origin_y),
-                           time_stamp=int(points[0].t_ms), buttons=1)]
+                           time_stamp=int(points[0].t_ms), buttons=1, target=target)]
     events.extend(
         PointerEvent(type="mousemove", x=int(origin_x + point.x * distance), y=int(origin_y),
-                     time_stamp=int(point.t_ms), buttons=1)
+                     time_stamp=int(point.t_ms), buttons=1, target=target)
         for point in points
     )
     events.append(PointerEvent(type="mouseup", x=int(origin_x + points[-1].x * distance),
-                               y=int(origin_y), time_stamp=int(points[-1].t_ms), buttons=0))
+                               y=int(origin_y), time_stamp=int(points[-1].t_ms), buttons=0,
+                               target=target))
     return tuple(events)
 
 
