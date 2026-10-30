@@ -76,3 +76,33 @@ Document.prototype.dispatchEvent  → 读 nonceEventListeners  // 不匹配
 
 修复后 DG 调用次数**没有变化**（仍 75，浏览器 1），说明 document 监听器不是
 唯一来源——还需要继续对比事件对象的形状与投递顺序。
+
+### 2026-10-30：事件对象形状对比
+
+浏览器里 FY 监听器收到的真实事件（`probe_event_shape.cjs`）：
+
+```
+mousemove   MouseEvent   own=["isTrusted"]  offsetX=20 offsetY=14
+pointerdown PointerEvent own=["isTrusted"]  pointerId/pressure/tiltX...
+mousedown   MouseEvent   own=["isTrusted"]
+focus       FocusEvent   own=["isTrusted"]
+```
+
+要点：
+
+1. 浏览器**同时**派发 `pointerdown/pointermove` 与 `mousedown/mousemove`，
+   FY 对两者都注册了监听器；
+2. 真实事件的**自有属性只有 `isTrusted`**，其余全在原型链上；
+3. 不同类型事件的构造器不同（MouseEvent / PointerEvent / FocusEvent）。
+
+本地已按 type 选择对应原型（`MouseEvent`/`PointerEvent`/`FocusEvent`）。
+DG 调用次数仍未变化（75 vs 1），payload 3.5%。
+
+### 下一步（按优先级）
+
+1. 记录 `DG(zU,...)` 的**调用点 pc**（而非只记 zU），确认 70 次 `zU=13` 来自
+   哪个 opcode——`DG(S,...)` 只有一个静态调用点，说明其余来自 `DG(k,...)`
+   这类变量传参；
+2. 对比浏览器与本地在 `mr` 内的完整 `v` 序列（已有探针 `probe_fy_v56.cjs`），
+   找出第一处不同的 `v`；
+3. 用该 `v` 反查它由哪个事件属性推导（很可能是 `event.type` 的枚举值）。

@@ -3196,7 +3196,12 @@ try {
         preventDefault() {}, stopPropagation() {},
       };
       Object.assign(replay, event.props || {});
-      Object.setPrototypeOf(replay, MouseEvent.prototype);
+      const _replayProto = /^pointer/.test(event.type)
+        ? (global.PointerEvent && global.PointerEvent.prototype) || MouseEvent.prototype
+        : /^(focus|blur)/.test(event.type)
+          ? (global.FocusEvent && global.FocusEvent.prototype) || MouseEvent.prototype
+          : MouseEvent.prototype;
+      Object.setPrototypeOf(replay, _replayProto);
       replay.__fyMouseReplay = true;
       replay[FY_REPLAY] = true;
       const replayProxy = new Proxy(replay, {
