@@ -28,7 +28,7 @@ const VERIFY_RE = /\/(slide|newslidevalidate)(\/|\?|$)/;
 const PC_INIT_CALL = 5320;   // VM 内部：初始化命令写入点
 const PC_TRACK = 4117;       // VM 内部：轨迹编码入口
 const TRACK_COMMAND = '_$PS';
-const BOOLEAN_FLAGS = new Set(['headless', 'patch-events', 'os-drag']);
+const BOOLEAN_FLAGS = new Set(['headless', 'patch-events', 'os-drag', 'capture-only']);
 
 const log = (...args) => console.log(new Date().toISOString().slice(11, 19), ...args);
 
@@ -207,6 +207,13 @@ async function runCapture(options) {
   await page.route((url) => VERIFY_RE.test(url.pathname + url.search), async (route) => {
     const request = route.request();
     const headers = await request.allHeaders();
+    if (options['capture-only']) {
+      if (options.out) fs.writeFileSync(options.out, JSON.stringify({ url: request.url(), headers }, null, 1));
+      log(`已捕获请求 ${request.url().length} 字符（未发送）`);
+      await route.abort().catch(() => {});
+      outcome = { mode: 'capture-only', captured: true };
+      return;
+    }
     try {
       const capture = await page.evaluate(() => ({
         dragCalls: window.__ppVmCalls,
@@ -435,7 +442,7 @@ async function runCapture(options) {
     outcome,
     version: fingerprint,
   };
-  if (options.out) fs.writeFileSync(options.out, JSON.stringify(report, null, 1));
+  if (options.out && !options['capture-only']) fs.writeFileSync(options.out, JSON.stringify(report, null, 1));
   log('RESULT', JSON.stringify(report, null, 1));
   await page.waitForTimeout(2000);
   await browser.close();

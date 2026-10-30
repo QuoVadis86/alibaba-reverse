@@ -82,7 +82,7 @@ def trajectory_events(points, distance: float) -> tuple[PointerEvent, ...]:
     events.extend(
         PointerEvent(type="mousemove", x=int(point.x * distance), y=0,
                      time_stamp=int(point.t_ms), buttons=1)
-        for point in points[::4]
+        for point in points
     )
     events.append(PointerEvent(type="mouseup", x=int(points[-1].x * distance), y=0,
                                time_stamp=int(points[-1].t_ms), buttons=0))
@@ -167,6 +167,8 @@ def attempt(seed: int, templates: list, distance: float, dry_run: bool,
     if dry_run:
         result["url_length"] = len(url)
         result["url"] = url
+        result["pp_sign"] = sign
+        result["et"] = et
         return result
 
     response = session.get(url, timeout=20, headers={
