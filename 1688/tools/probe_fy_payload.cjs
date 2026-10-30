@@ -10,6 +10,35 @@ const PATCH = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),(globalThis.__fySer=
   const ctx = await browser.newContext({ viewport: { width: 1180, height: 780 } });
   await ctx.addCookies(ch.cookies.map(c => ({ name: c.name, value: c.value, domain: c.domain, path: c.path })));
   const page = await ctx.newPage();
+  if (process.env.PIN) {
+    await page.addInitScript(() => {
+      const FIXED = 1700000000000;
+      let rnd = 12345;
+      const nextRnd = () => { rnd = (rnd * 1103515245 + 12345) & 0x7fffffff; return rnd; };
+      Math.random = () => (nextRnd() % 100000) / 100000;
+      const D = Date;
+      class PinnedDate extends D {
+        constructor(...a) { super(...(a.length ? a : [FIXED])); }
+        static now() { return FIXED; }
+      }
+      window.Date = PinnedDate;
+      let perf = 0;
+      Object.defineProperty(Performance.prototype, 'now', {
+        configurable: true, value() { return (perf += 1); },
+      });
+      Object.defineProperty(Performance.prototype, 'timeOrigin', {
+        configurable: true, get() { return FIXED; },
+      });
+      const gRV = Crypto.prototype.getRandomValues;
+      Object.defineProperty(Crypto.prototype, 'getRandomValues', {
+        configurable: true,
+        value(arr) { for (let i = 0; i < arr.length; i++) arr[i] = nextRnd() & 0xff; return arr; },
+      });
+      try { Object.defineProperty(Crypto.prototype, 'randomUUID', { configurable: true, value() {
+        return '00000000-0000-4000-8000-' + String(nextRnd()).padStart(12, '0').slice(0, 12);
+      } }); } catch (e) {}
+    });
+  }
   if (process.env.UA_SUFFIX) {
     await page.addInitScript((suffix) => {
       const orig = Object.getOwnPropertyDescriptor(Navigator.prototype, 'userAgent');
@@ -44,14 +73,17 @@ const PATCH = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),(globalThis.__fySer=
   });
   const cdp = await ctx.newCDPSession(page);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  await cdp.send('Input.dispatchMouseEvent', { type:'mouseMoved', x:g.sx, y:g.sy, buttons:0 });
-  await sleep(40);
-  await cdp.send('Input.dispatchMouseEvent', { type:'mousePressed', x:g.sx, y:g.sy, button:'left', clickCount:1, buttons:1 });
-  for (let i=1;i<=60;i++){ await sleep(16); await cdp.send('Input.dispatchMouseEvent', { type:'mouseMoved', x:g.sx+800*i/60, y:g.sy, button:'left', buttons:1 }); }
-  await cdp.send('Input.dispatchMouseEvent', { type:'mouseReleased', x:g.sx+800, y:g.sy, button:'left', clickCount:1, buttons:0 });
+  if (!process.env.NO_DRAG) {
+    await cdp.send('Input.dispatchMouseEvent', { type:'mouseMoved', x:g.sx, y:g.sy, buttons:0 });
+    await sleep(40);
+    await cdp.send('Input.dispatchMouseEvent', { type:'mousePressed', x:g.sx, y:g.sy, button:'left', clickCount:1, buttons:1 });
+    for (let i=1;i<=60;i++){ await sleep(16); await cdp.send('Input.dispatchMouseEvent', { type:'mouseMoved', x:g.sx+800*i/60, y:g.sy, button:'left', buttons:1 }); }
+    await cdp.send('Input.dispatchMouseEvent', { type:'mouseReleased', x:g.sx+800, y:g.sy, button:'left', clickCount:1, buttons:0 });
+  }
   await page.waitForTimeout(4000);
   const info = await page.evaluate(() => {
     let tok = null; try { tok = window.__fyModule.getFYToken(); } catch (e) { tok = 'ERR'; }
+    const pinCheck = { dateNow: Date.now(), perfNow1: performance.now(), perfNow2: performance.now(), rnd: Math.random(), grv: Array.from(crypto.getRandomValues(new Uint8Array(4))) };
     let cfg = null; try { cfg = window._config_ ? { NCTOKENSTR: window._config_.NCTOKENSTR, NCAPPKEY: window._config_.NCAPPKEY, SECDATA: window._config_.SECDATA, HOST: window._config_.HOST, PATH: window._config_.PATH } : null; } catch (e) {}
     const ser = window.__fySer || [];
     const A='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -65,7 +97,7 @@ const PATCH = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),(globalThis.__fySer=
       const dec = Array.from(raw, c => c.charCodeAt(0));
       ks = dec.map((v,i) => v ^ (last.arr[i] ?? 0));
     } catch (e) { ks = null; }
-    return { cfg, tokLen: typeof tok === 'string' ? tok.length : null,
+    return { pinCheck, cfg, tokLen: typeof tok === 'string' ? tok.length : null,
              b64Len: enc.length, b64Match: typeof tok === 'string' ? tok.slice(4) === enc : false,
              ksLen: ks ? ks.length : null, ksHead: ks ? ks.slice(0, 48) : null, ksFull: ks,
              tokHead: typeof tok === 'string' ? tok.slice(0, 20) : null,
