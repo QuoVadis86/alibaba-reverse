@@ -2425,6 +2425,7 @@ try {
       global.__fyQzCalls = [];
       global.__fyQzSteps = [];
       global.__fyDgPcs = [];
+      global.__fyMrPcs = [];
       global.__fyRegChanges = [];
       global.__fyR16 = undefined;
       global.__fyR18 = undefined;
@@ -2614,7 +2615,7 @@ try {
       const mr11Needle = 'C[4]=function mr(xF,QO,z,FL,eo){var d=[];for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;switch(Kz){';
       if (!fySource.includes(mr11Needle)) throw new Error('FY mr(11) 探针位置不存在');
       fySource = fySource.replace(mr11Needle,
-        'C[4]=function mr(xF,QO,z,FL,eo){var d=[];var __fyMr11Call=xF===11&&globalThis.__fySerializing?++globalThis.__fyMr11CallCount:0;for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;if(__fyMr11Call&&globalThis.__fyMr11Steps.length<5000){var __fyMr11Index=globalThis.__fyMr11Steps.length;globalThis.__fyMr11Steps.push({call:__fyMr11Call,pc:d[m],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:__fyMr11Index<300?Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}):null})}switch(Kz){');
+        'C[4]=function mr(xF,QO,z,FL,eo){var d=[];var __fyMr11Call=xF===11&&globalThis.__fySerializing?++globalThis.__fyMr11CallCount:0;for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;if(globalThis.__fyMrPcs.length<400)globalThis.__fyMrPcs.push(d[m]);if(__fyMr11Call&&globalThis.__fyMr11Steps.length<5000){var __fyMr11Index=globalThis.__fyMr11Steps.length;globalThis.__fyMr11Steps.push({call:__fyMr11Call,pc:d[m],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:__fyMr11Index<300?Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}):null})}switch(Kz){');
       const c25Needle = 'C[F]=function vx(yi,OA,z,RK,HZ){var d=[];for(d[L]=RK,d[k]=i;d[k]!==U;){var Qu=d[k]&o,JY,O=d[k]>>5&o;switch(Qu){';
       if (!fySource.includes(c25Needle)) throw new Error('FY C25 探针位置不存在');
       fySource = fySource.replace(c25Needle,
@@ -2623,6 +2624,11 @@ try {
       if (!fySource.includes(pixelNeedle)) throw new Error('FY 像素探针位置不存在');
       fySource = fySource.replace(pixelNeedle,
         'd[X]=function(y){if(globalThis.__fyPixelTrace.length<10)globalThis.__fyPixelTrace.push({type:typeof y,length:y?.length,entryCount:globalThis.__fyEntryTrace.length,nonzero:y?.reduce?.((n,v)=>n+(v!==0),0),head:Array.from(y?.slice?.(0,32)||[]),tail:Array.from(y?.slice?.(-32)||[]),stack:new Error().stack.split("\\n").slice(1,4)});for(var k=4;');
+      const mrLoopNeedle = 'for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;switch(Kz){';
+      if (fySource.includes(mrLoopNeedle)) {
+        fySource = fySource.replace(mrLoopNeedle,
+          'for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;if(globalThis.__fyMrPcs.length<400)globalThis.__fyMrPcs.push(d[m]);switch(Kz){');
+      }
       const dgStepNeedle = 'for(d[1]=dC,d[2]=eM,d[7]=x;d[7]!==U;){var aE=d[7]&o,dn,O=d[7]>>5&o;';
       if (!fySource.includes(dgStepNeedle)) throw new Error('FY DG 步进探针位置不存在');
       fySource = fySource.replace(dgStepNeedle,
@@ -3592,6 +3598,7 @@ try {
       fyPixelTrace: global.__fyPixelTrace,
       fySmallCanvasTrace: global.__fySmallCanvasTrace,
       fyDgSteps: global.__fyDgSteps,
+      fyMrPcs: global.__fyMrPcs,
       fyDgWindowChecks: global.__fyDgWindowChecks,
       fyDgObjectChecks: global.__fyDgObjectChecks,
       fyDgStringChecks: global.__fyDgStringChecks,
