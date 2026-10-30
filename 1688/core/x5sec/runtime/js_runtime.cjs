@@ -2634,6 +2634,18 @@ try {
         fySource = fySource.replace(resKeyNeedle,
           'globalThis.__fyResKey=(globalThis.__fyResKey||[]).concat([{key:String(d[8]),d9type:Object.prototype.toString.call(d[9]),d9keys:d[9]&&typeof d[9]==="object"?Object.keys(d[9]).slice(0,8):null,found:!!(d[9]&&d[9][d[8]])}]),P=d[9][d[8]]),d[9]=P,');
       }
+      const mr16Needle = 'd[m]=W(C[4],null,x,d[8])';
+      if (fySource.includes(mr16Needle)) {
+        fySource = fySource.replace(mr16Needle,
+          'd[m]=W(C[4],null,x,d[8]),globalThis.__fyMr16=(globalThis.__fyMr16||[]).concat([{arg:d[8],ret:Object.prototype.toString.call(d[m]),retKeys:d[m]&&typeof d[m]==="object"?Object.keys(d[m]).slice(0,8):null,retLen:Array.isArray(d[m])?d[m].length:null,retStr:typeof d[m]==="string"?d[m].slice(0,80):null}])');
+      }
+      if (input.forceFyResourcePath) {
+        const forceNeedle = 'd[7]=P?352:293;break;case 19:var mr=0;';
+        if (fySource.includes(forceNeedle)) {
+          fySource = fySource.replace(forceNeedle,
+            'P=P||"https://o.alicdn.com/seclab/f/index1.js",d[7]=352;break;case 19:var mr=0;');
+        }
+      }
       const p18Needle = 'd[7]=P?352:293;break;case 19:var mr=0;';
       if (fySource.includes(p18Needle)) {
         fySource = fySource.replace(p18Needle,
@@ -3611,6 +3623,7 @@ try {
       fyMrPcs: global.__fyMrPcs,
       fyP18: global.__fyP18,
       fyResKey: global.__fyResKey,
+      fyMr16: global.__fyMr16,
       fyDgWindowChecks: global.__fyDgWindowChecks,
       fyDgObjectChecks: global.__fyDgObjectChecks,
       fyDgStringChecks: global.__fyDgStringChecks,
