@@ -2758,6 +2758,16 @@ try {
       if (!fySource.includes(pixelNeedle)) throw new Error('FY 像素探针位置不存在');
       fySource = fySource.replace(pixelNeedle,
         'd[X]=function(y){if(globalThis.__fyPixelTrace.length<10)globalThis.__fyPixelTrace.push({type:typeof y,length:y?.length,entryCount:globalThis.__fyEntryTrace.length,nonzero:y?.reduce?.((n,v)=>n+(v!==0),0),head:Array.from(y?.slice?.(0,32)||[]),tail:Array.from(y?.slice?.(-32)||[]),stack:new Error().stack.split("\\n").slice(1,4)});for(var k=4;');
+      const v38Needle = '(P=38===v)&&(d[a]=DG(0,Z,B))';
+      if (fySource.includes(v38Needle)) {
+        fySource = fySource.replace(v38Needle,
+          '(globalThis.__fyVSites||(globalThis.__fyVSites=[])).push(["38",v]),' + v38Needle);
+      }
+      const v56Needle2 = '(P=56===v)&&(d[a]=DG(S,z,s,AN,Z,B))';
+      if (fySource.includes(v56Needle2)) {
+        fySource = fySource.replace(v56Needle2,
+          '(globalThis.__fyVSites||(globalThis.__fyVSites=[])).push(["56",v]),' + v56Needle2);
+      }
       const c9Needle = 'd[c]=d[K][yj],d[m]=d[c]?720:750';
       if (fySource.includes(c9Needle)) {
         fySource = fySource.replace(c9Needle,
@@ -3838,6 +3848,7 @@ try {
       fyMrCalls: global.__fyMrCalls,
       fySerializerCalls: global.__fySerializerCalls,
       fyC9: globalThis.__fyC9,
+      vSites: globalThis.__fyVSites,
       fyAudioCalls: global.__fyAudioCalls,
       fyAudioErrors: global.__fyAudioErrors,
       fyDgPcs: global.__fyDgPcs,

@@ -11,6 +11,8 @@ const MR_LOOP = 'for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;
 const QZ_LOOP = 'for(d[x]=EL,d[i]=Kt,d[$]=a;d[$]!==U;){var JY=d[$]&o,wZ,O=d[$]>>5&o;';
 const SER = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),d[i]=d[p]';
 const DG_ENTRY = 'function DG(zU,dC,eM,Kt,wZ,Hj){';
+const V38 = '(P=38===v)&&(d[a]=DG(0,Z,B))';
+const V56 = '(P=56===v)&&(d[a]=DG(S,z,s,AN,Z,B))';
 const MR_ENTRY = 'C[4]=function mr(xF,QO,z,FL,eo){';
 const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
 
@@ -25,7 +27,22 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
   const page = await ctx.newPage();
 
   await page.addInitScript(() => {
-    window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], c9: null, calls: { dg: [], mr: [], qz: [] } };
+    window.__workerMsgs = [];
+    const OrigWorker = window.Worker;
+    if (OrigWorker) {
+      window.Worker = function (url, opts) {
+        const worker = new OrigWorker(url, opts);
+        worker.addEventListener('message', (event) => {
+          try {
+            window.__workerMsgs.push({ data: event.data, type: typeof event.data,
+              len: Array.isArray(event.data) ? event.data.length : null });
+          } catch (e) {}
+        });
+        return worker;
+      };
+      window.Worker.prototype = OrigWorker.prototype;
+    }
+    window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], c9: null, v: [], calls: { dg: [], mr: [], qz: [] } };
     window.__c9hook = (t) => {
       try {
         if (!t) return;
@@ -59,6 +76,8 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
       if (body.includes(DG_ENTRY)) { body = body.split(DG_ENTRY).join(DG_ENTRY + 'window.__t.calls.dg.push(zU);window.__dgCall=window.__t.calls.dg.length-1;'); patched.dgEntry = 1; }
       if (body.includes(MR_ENTRY)) { body = body.split(MR_ENTRY).join(MR_ENTRY + 'window.__t.calls.mr.push(xF);window.__mrCall=window.__t.calls.mr.length-1;'); patched.mrEntry = 1; }
       if (body.includes(QZ_ENTRY)) { body = body.split(QZ_ENTRY).join(QZ_ENTRY + 'window.__t.calls.qz.push(OA);window.__qzCall=window.__t.calls.qz.length-1;'); patched.qzEntry = 1; }
+      if (body.includes(V38)) { body = body.split(V38).join('window.__t.v.push(["38",v]),' + V38); patched.v38 = 1; }
+      if (body.includes(V56)) { body = body.split(V56).join('window.__t.v.push(["56",v]),' + V56); patched.v56 = 1; }
       if (body.includes(DG_LOOP)) { body = body.split(DG_LOOP).join(DG_LOOP + 'if(window.__t.dg.length<4000)window.__t.dg.push([d[7],aE,O,window.__dgCall]);'); patched.dg += 1; }
       if (body.includes(MR_LOOP)) { body = body.split(MR_LOOP).join(MR_LOOP + 'if(window.__t.mr.length<4000)window.__t.mr.push([d[m],Kz,O,window.__mrCall]);'); patched.mr += 1; }
       if (body.includes(QZ_LOOP)) { body = body.split(QZ_LOOP).join(QZ_LOOP + 'if(window.__t.qz.length<4000)window.__t.qz.push([d[$],JY,O,window.__qzCall]);'); patched.qz += 1; }
@@ -78,7 +97,7 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
     return { sx: b.x + b.width / 2, sy: b.y + b.height / 2,
       rect: { x: b.x, y: b.y, left: b.left, top: b.top, right: b.right, bottom: b.bottom, width: b.width, height: b.height } };
   });
-  await page.evaluate(() => { window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], calls: { dg: [], mr: [], qz: [] } }; });
+  await page.evaluate(() => { window.__t = { dg: [], mr: [], qz: [], ser: [], events: [], v: [], calls: { dg: [], mr: [], qz: [] } }; });
 
   const cdp = await ctx.newCDPSession(page);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -106,7 +125,8 @@ const QZ_ENTRY = 'function Qz(OA,P,EL,Kt,M,v,Z){';
 
   fs.writeFileSync(out, JSON.stringify({
     patched, rect: g.rect, cfg, fyState,
-    dg: t.dg, mr: t.mr, qz: t.qz, calls: t.calls,
+    dg: t.dg, mr: t.mr, qz: t.qz, calls: t.calls, v: t.v,
+    workerMessages: await page.evaluate(() => window.__workerMsgs || []),
     payload: t.ser.length ? t.ser[t.ser.length - 1] : null,
     events: t.events,
     c9: t.c9,

@@ -229,6 +229,12 @@ def main() -> int:
     print(f"mr 步数: browser={len(browser.get('mr') or [])} local={len(local_mr)}")
     print(f"Qz 步数: browser={len(browser.get('qz') or [])} local={len(local_qz)}")
 
+    browser_v = browser.get("v") or []
+    local_v = local.get("vSites") or []
+    if browser_v or local_v:
+        print(f"\nv 站点序列: browser={browser_v[:16]}")
+        print(f"             local  ={local_v[:16]}")
+
     browser_c9 = (browser.get("c9") or {}).get("snap") or {}
     local_c9 = (local.get("fyC9") or {}).get("sample") or {}
     if browser_c9 and local_c9:
