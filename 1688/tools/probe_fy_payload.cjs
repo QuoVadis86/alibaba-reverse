@@ -10,6 +10,14 @@ const PATCH = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),(globalThis.__fySer=
   const ctx = await browser.newContext({ viewport: { width: 1180, height: 780 } });
   await ctx.addCookies(ch.cookies.map(c => ({ name: c.name, value: c.value, domain: c.domain, path: c.path })));
   const page = await ctx.newPage();
+  if (process.env.UA_SUFFIX) {
+    await page.addInitScript((suffix) => {
+      const orig = Object.getOwnPropertyDescriptor(Navigator.prototype, 'userAgent');
+      Object.defineProperty(Navigator.prototype, 'userAgent', {
+        configurable: true, get() { return orig.get.call(this) + suffix; },
+      });
+    }, process.env.UA_SUFFIX);
+  }
   let patched = 0, scanned = 0;
   await page.route('**/*.js', async route => {
     try {
@@ -44,6 +52,7 @@ const PATCH = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),(globalThis.__fySer=
   await page.waitForTimeout(4000);
   const info = await page.evaluate(() => {
     let tok = null; try { tok = window.__fyModule.getFYToken(); } catch (e) { tok = 'ERR'; }
+    let cfg = null; try { cfg = window._config_ ? { NCTOKENSTR: window._config_.NCTOKENSTR, NCAPPKEY: window._config_.NCAPPKEY, SECDATA: window._config_.SECDATA, HOST: window._config_.HOST, PATH: window._config_.PATH } : null; } catch (e) {}
     const ser = window.__fySer || [];
     const A='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
     const b64 = bytes => { let o=''; for(let i=0;i<bytes.length;i+=3){const a=bytes[i],b=bytes[i+1],c=bytes[i+2];
@@ -56,7 +65,7 @@ const PATCH = 'd[p]=W(C[l],null,1,d[i],d[m],d[2],d[4],d[5]),(globalThis.__fySer=
       const dec = Array.from(raw, c => c.charCodeAt(0));
       ks = dec.map((v,i) => v ^ (last.arr[i] ?? 0));
     } catch (e) { ks = null; }
-    return { tokLen: typeof tok === 'string' ? tok.length : null,
+    return { cfg, tokLen: typeof tok === 'string' ? tok.length : null,
              b64Len: enc.length, b64Match: typeof tok === 'string' ? tok.slice(4) === enc : false,
              ksLen: ks ? ks.length : null, ksHead: ks ? ks.slice(0, 48) : null, ksFull: ks,
              tokHead: typeof tok === 'string' ? tok.slice(0, 20) : null,
