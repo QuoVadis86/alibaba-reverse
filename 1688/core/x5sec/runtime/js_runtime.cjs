@@ -2638,7 +2638,7 @@ try {
       const dgEntryNeedle = 'function DG(zU,dC,eM,Kt,wZ,Hj){';
       if (fySource.includes(dgEntryNeedle)) {
         fySource = fySource.replace(dgEntryNeedle,
-          'function DG(zU,dC,eM,Kt,wZ,Hj){globalThis.__fyDgCalls=(globalThis.__fyDgCalls||[]).concat([{zU:zU,args:[typeof dC,typeof eM,typeof Kt,typeof wZ,typeof Hj]}]);');
+          'function DG(zU,dC,eM,Kt,wZ,Hj){globalThis.__fyDgCalls=(globalThis.__fyDgCalls||[]).concat([{zU:zU,args:[typeof dC,typeof eM,typeof Kt,typeof wZ,typeof Hj],stack:String(new Error().stack||"").split("\\n").slice(1,3)}]);');
       }
       const mrLoopNeedle = 'for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;switch(Kz){';
       if (fySource.includes(mrLoopNeedle)) {

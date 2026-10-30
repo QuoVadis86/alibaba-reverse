@@ -106,3 +106,22 @@ DG 调用次数仍未变化（75 vs 1），payload 3.5%。
 2. 对比浏览器与本地在 `mr` 内的完整 `v` 序列（已有探针 `probe_fy_v56.cjs`），
    找出第一处不同的 `v`；
 3. 用该 `v` 反查它由哪个事件属性推导（很可能是 `event.type` 的枚举值）。
+
+### 2026-10-30：DG 调用栈
+
+DG 里 `new Error().stack` 可用（前两帧）：
+
+```
+zU=0  ← eval:1:549042
+zU=13 ← eval:1:531297
+```
+
+但 eval 后的列号受所有插桩位移影响，无法直接映射回原始源码偏移，
+需要先导出插桩后的源码（`input.traceFyBranch` 会写
+`.playwright-cli/fy_instrumented_local.js`），再在该文件里定位列号。
+
+### 下一步（修正后）
+
+1. 用 `.playwright-cli/fy_instrumented_local.js` 按列号定位真实调用点；
+2. 在浏览器侧用同样的插桩导出，对比两边的调用点分布；
+3. 差异点即为事件投递语义的分叉处。
