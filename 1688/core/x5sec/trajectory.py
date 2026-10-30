@@ -225,12 +225,14 @@ def load_templates(path: str) -> list[Template]:
         if distance < 20.0:
             continue
         unit_x, unit_y = (x1 - x0) / distance, (y1 - y0) / distance
-        start_t = down["t"]
-        span = max(up["t"] - start_t, 1.0)
+        # 以第一个采样点为时间原点：真人的"按下到第一次移动"是反应时间，
+        # 若保留会在生成轨迹开头造成一段不动的死区。
+        first_t = moves[0]["t"]
+        span = max(moves[-1]["t"] - first_t, 1.0)
         times: list[float] = []
         progress: list[float] = []
         for event in moves:
-            times.append((event["t"] - start_t) / span)
+            times.append((event["t"] - first_t) / span)
             projected = (event["x"] - x0) * unit_x + (event["y"] - y0) * unit_y
             progress.append(min(max(projected / distance, 0.0), 1.0))
         # 强制单调，消除噪声导致的回退。
@@ -242,7 +244,7 @@ def load_templates(path: str) -> list[Template]:
         span = max(high - low, 1e-6)
         progress = [(value - low) / span for value in progress]
         templates.append(Template(tuple(times), tuple(progress),
-                                  up["t"] - start_t, distance))
+                                  moves[-1]["t"] - first_t, distance))
     return templates
 
 
