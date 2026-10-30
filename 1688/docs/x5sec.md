@@ -283,7 +283,30 @@ CDP 的 `Input.dispatchMouseEvent` 可被识别：`pressure=0`、`movementX/Y=0`
 
 ---
 
-## 9. 下一步
+## 9. 完全离线的根因（2026-10-30）
+
+`tools/pp_offline.py` 能在无浏览器的情况下完成全部组装（`_config_` 来自处罚页 HTML，PoW/FY/nonce/ET 本地计算），但提交后 `code=300`。用同题单字段替换定位到：
+
+| 替换 | 响应 | 结论 |
+| --- | --- | --- |
+| `umidToken` | `code=0` | 服务端不校验 |
+| `bx-et` | `code=0` | 服务端不校验 |
+| `_rand` 或 `slidedata.n` 单独 | 处罚页 HTML | `n` 与 `_rand` 强绑定 |
+| `n` + `_rand` 成对 | JSON `code=300` | 完整性通过，风控拒绝 |
+| 跨挑战复用 `n` | 处罚页 HTML | `n` 与挑战绑定 |
+
+因此唯一不等价的是 `n`（FY token）。FY 的追踪显示它读取 **68 项环境属性**（`navigator.*`、`screen.*`、`performance.*`、`window.inner*/outer*/screenX/screenY/devicePixelRatio`、`WebGLRenderingContext`、`RTCPeerConnection` 等），并记录：
+
+```
+浏览器 window.ownPropertyCount = 1282
+本地 runtime  window.ownPropertyCount = 248
+```
+
+FY 把环境属性面（属性是否存在、描述符形状、自有属性数量）编码进 `n`。本地 Node 运行时的属性面只有浏览器的约 1/5，所以即使 `n` 结构合法、与挑战绑定、与 `_rand` 自洽，风控仍判定它不是真实页面产生的。
+
+要让 `n` 通过，必须完整复刻浏览器的 window 属性面（1282 个自有属性及其描述符），这等价于实现一个浏览器。这就是完全离线路径的真实边界。
+
+## 10. 下一步
 
 1. 用 `pp_local_send.py` 跑 `captchacapslidev2`，先确认 nonce/FY/ET 能否接入。
 2. 若接入成功，把 `dynamic.py` 的三个模块纳入同一 capture 契约。
