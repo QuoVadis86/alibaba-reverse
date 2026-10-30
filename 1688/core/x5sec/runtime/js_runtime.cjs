@@ -2877,6 +2877,33 @@ try {
         if (k === 'currentScript') continue;
         setGet(globalThis.document, k, v);
       }
+      if (Number.isFinite(Number(input.pinTime))) {
+        const fixed = Number(input.pinTime);
+        let tick = 0;
+        try { globalThis.performance.now = () => fixed + (tick += 1); } catch {}
+        try {
+          const RealDate = globalThis.Date;
+          const FakeDate = function (...args) {
+            if (args.length) return new RealDate(...args);
+            return new RealDate(fixed + (tick += 1));
+          };
+          FakeDate.now = () => fixed + (tick += 1);
+          FakeDate.parse = RealDate.parse;
+          FakeDate.UTC = RealDate.UTC;
+          FakeDate.prototype = RealDate.prototype;
+          globalThis.Date = FakeDate;
+        } catch {}
+      }
+      if (Array.isArray(input.cryptoRandomTape)) {
+        const tape = input.cryptoRandomTape;
+        let index = 0;
+        const fill = function (arr) {
+          for (let i = 0; i < arr.length; i += 1) { arr[i] = tape[index % tape.length] & 0xff; index += 1; }
+          return arr;
+        };
+        try { globalThis.crypto.getRandomValues = fill; } catch {}
+        try { globalThis.Crypto.prototype.getRandomValues = fill; } catch {}
+      }
       // 让被替换的方法在 toString/name/length 上看起来是原生函数
       const nativeize = (fn, name, length) => {
         try {
