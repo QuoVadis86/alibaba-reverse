@@ -1885,7 +1885,10 @@ global.PluginArray = PluginArray;
 global.MimeType = MimeType;
 global.MimeTypeArray = MimeTypeArray;
 const pluginValues = new PluginArray(page.plugins || []);
-const mimeTypeValues = new MimeTypeArray(Array.from({ length: pluginValues.length }, (_, index) => pluginValues[index]));
+const mimeProfiles = (page.mimeTypes && page.mimeTypes.length)
+  ? page.mimeTypes.map(profile => new MimeType(profile, null))
+  : Array.from({ length: pluginValues.length }, (_, index) => pluginValues[index]);
+const mimeTypeValues = new MimeTypeArray([mimeProfiles]);
 for (const [name, values] of [['plugins', pluginValues], ['mimeTypes', mimeTypeValues]]) {
   Object.defineProperty(Navigator.prototype, name, {
     enumerable: true, configurable: true,
@@ -2048,7 +2051,7 @@ for (const name of ['now', 'getEntries', 'getEntriesByName', 'getEntriesByType']
 }
 Object.defineProperty(Performance.prototype, 'now', {
   enumerable: true, configurable: true, writable: true,
-  value: function () { return noncePerformanceNow; },
+  value: browserNative('now', function now() { return noncePerformanceNow; }),
 });
 Object.defineProperty(Performance.prototype.now, 'name', { value: '' });
 Object.defineProperty(Performance.prototype, 'timeOrigin', {
@@ -2750,7 +2753,7 @@ try {
       const mr11Needle = 'C[4]=function mr(xF,QO,z,FL,eo){var d=[];for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;switch(Kz){';
       if (!fySource.includes(mr11Needle)) throw new Error('FY mr(11) 探针位置不存在');
       fySource = fySource.replace(mr11Needle,
-        'C[4]=function mr(xF,QO,z,FL,eo){var d=[];var __fyMr11Call=xF===11&&globalThis.__fySerializing?++globalThis.__fyMr11CallCount:0;for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;if(globalThis.__fyMrPcs.length<400)globalThis.__fyMrPcs.push(d[m]);if(__fyMr11Call&&globalThis.__fyMr11Steps.length<5000){var __fyMr11Index=globalThis.__fyMr11Steps.length;globalThis.__fyMr11Steps.push({call:__fyMr11Call,pc:d[m],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:__fyMr11Index<300?Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}):null})}switch(Kz){');
+        'C[4]=function mr(xF,QO,z,FL,eo){var d=[];globalThis.__fyMrCalls2=(globalThis.__fyMrCalls2||[]).concat([xF]);(globalThis.__fyMrStacks||(globalThis.__fyMrStacks=[])).length<40&&globalThis.__fyMrStacks.push([QO,String(new Error().stack||"").split("\\n").slice(2,4).join("|")]);var __fyMr11Call=xF===11&&globalThis.__fySerializing?++globalThis.__fyMr11CallCount:0;for(d[38]=QO,d[m]=b;d[m]!==U;){var Kz=d[m]&o,yn=d[m]>>5,O=yn&o;if(globalThis.__fyMrPcs.length<400)globalThis.__fyMrPcs.push(d[m]);if(__fyMr11Call&&globalThis.__fyMr11Steps.length<5000){var __fyMr11Index=globalThis.__fyMr11Steps.length;globalThis.__fyMr11Steps.push({call:__fyMr11Call,pc:d[m],branch:Kz,opcode:O,entryCount:globalThis.__fySerialEntryTrace.length,regs:__fyMr11Index<300?Object.keys(d).map(function(key){return[key,globalThis.__fyValueSig(d[key])]}):null})}switch(Kz){');
       const c25Needle = 'C[F]=function vx(yi,OA,z,RK,HZ){var d=[];for(d[L]=RK,d[k]=i;d[k]!==U;){var Qu=d[k]&o,JY,O=d[k]>>5&o;switch(Qu){';
       if (!fySource.includes(c25Needle)) throw new Error('FY C25 探针位置不存在');
       fySource = fySource.replace(c25Needle,
@@ -3077,22 +3080,27 @@ try {
     if (typeof page.umidStorage === 'string') localStorage.setItem('lswucn', page.umidStorage);
     if (input.envProfile) {
       const env = input.envProfile;
-      const setGet = (target, key, value) => {
-        try { Object.defineProperty(target, key, { configurable: true, enumerable: true, get: () => value }); }
+      const setGet = (target, key, value, enumerable) => {
+        try { Object.defineProperty(target, key, { configurable: true, enumerable, get: () => value }); }
         catch { try { target[key] = value; } catch {} }
       };
+      // 浏览器里 navigator/screen/document 的属性都在原型上且不可枚举，
+      // 直接定义到实例上会让 Object.keys() 暴露差异。
+      const navProto = Object.getPrototypeOf(globalThis.navigator);
+      const scrProto = Object.getPrototypeOf(globalThis.screen);
+      const docProto = Object.getPrototypeOf(globalThis.document);
       for (const [k, v] of Object.entries(env.navigator || {})) {
         if (k === 'mimeTypes' || k === 'plugins') continue;
-        setGet(globalThis.navigator, k, v);
+        setGet(navProto, k, v, false);
       }
-      for (const [k, v] of Object.entries(env.screen || {})) setGet(globalThis.screen, k, v);
+      for (const [k, v] of Object.entries(env.screen || {})) setGet(scrProto, k, v, false);
       for (const [k, v] of Object.entries(env.window || {})) {
         if (k === 'ownPropertyCount') continue;
-        setGet(globalThis, k, v);
+        setGet(globalThis, k, v, true);
       }
       for (const [k, v] of Object.entries(env.document || {})) {
         if (k === 'currentScript') continue;
-        setGet(globalThis.document, k, v);
+        setGet(docProto, k, v, false);
       }
       if (Number.isFinite(Number(input.pinTime))) {
         const fixed = Number(input.pinTime);
@@ -3140,10 +3148,16 @@ try {
       }
       if (input.envDeep) {
         for (const [dotted, value] of Object.entries(input.envDeep)) {
+          if (dotted === 'navigator.plugins' || dotted === 'navigator.mimeTypes') continue;
           const parts = String(dotted).split('.');
           let target = globalThis;
           for (let i = 0; i < parts.length - 1 && target; i += 1) target = target[parts[i]];
-          if (target) setGet(target, parts[parts.length - 1], value);
+          if (!target) continue;
+          // 浏览器里 navigator/screen/document 的属性在原型上，不能写进实例
+          if (target === globalThis.navigator || target === globalThis.screen || target === globalThis.document) {
+            target = Object.getPrototypeOf(target);
+          }
+          setGet(target, parts[parts.length - 1], value, false);
         }
       }
       if (Array.isArray(input.canvasTape) && input.canvasTape.length) {
@@ -3853,9 +3867,11 @@ try {
       fyMr47Writes: global.__fyMr47Writes,
       fyMrCalls: global.__fyMrCalls,
       fySerializerCalls: global.__fySerializerCalls,
+
       fyC9: globalThis.__fyC9,
       vSites: globalThis.__fyVSites,
       v0: globalThis.__fyV0,
+      mrStacks: globalThis.__fyMrStacks,
       fyAudioCalls: global.__fyAudioCalls,
       fyAudioErrors: global.__fyAudioErrors,
       fyDgPcs: global.__fyDgPcs,
