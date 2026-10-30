@@ -3124,13 +3124,17 @@ try {
     if (input.record && !fyEvents.some(event => event.type === 'mousedown')) {
       startFyRecord();
     }
+    const replayTargetCache = new Map();
     for (const [eventIndex, event] of fyEvents.entries()) {
       if (Number.isFinite(event.timeStamp)) {
         noncePerformanceNow = event.timeStamp;
         replayTimestamp = Math.floor(performanceTimeOrigin + event.timeStamp);
       }
       const _tRect = event.target?.rect || { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 };
-      let target = Object.assign(element((event.target?.tag || 'div').toLowerCase()), {
+      const _tKey = `${event.target?.tag || 'DIV'}|${event.target?.id || ''}|${event.target?.className || ''}`;
+      let target = replayTargetCache.get(_tKey);
+      if (!target) {
+        target = Object.assign(element((event.target?.tag || 'div').toLowerCase()), {
         tagName: event.target?.tag || 'DIV',
         nodeName: event.target?.tag || 'DIV',
         id: event.target?.id || '',
@@ -3162,6 +3166,8 @@ try {
         ownKeys() { return []; },
         getOwnPropertyDescriptor() { return undefined; },
       });
+        replayTargetCache.set(_tKey, target);
+      }
       const _rect = event.target?.rect || { left: 0, top: 0, width: 0, height: 0 };
       const _offX = event.x - (_rect.left || 0);
       const _offY = event.y - (_rect.top || 0);
