@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import ClassVar, Final, Literal, final
+from typing import ClassVar, Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -34,7 +34,6 @@ class MtopCallOptions(BaseModel):
     include_data_in_query: bool = False
 
 
-@final
 class EndpointGroup:
     """只允许调用所属业务模块登记的原始 JSON 接口。"""
 

@@ -6,15 +6,14 @@
 
 ```python
 from api import MtopClient, create_http_client
-from services import MtopCallOptions
 from services.platform.experiment import LoginExperimentQuery
 
 with create_http_client() as http:
     client = MtopClient(http, cookie_string="已授权的 Cookie")
-    suggestions = client.search.suggest.call(
-        "mtop.1688.industry.pc.search.hotword",
-        {},
-    )
+    new_user_offers = client.home.cards.list_new_user_offers()
+    opportunity = client.home.cards.get_opportunity()
+    alpha_bot = client.ai.assistant.show_global_alpha_bot()
+    suggestions = client.search.suggest.call("mtop.1688.industry.pc.search.hotword")
     categories = client.search.categories.call(
         "mtop.cbu.pc.web.api.cate.querycategories",
         {"categoryIds": "123,456"},
@@ -22,7 +21,6 @@ with create_http_client() as http:
     new_pool = client.recommend.pools.call(
         "mtop.1688.wirelesscenter.recommend.pc.getHotProductPoolId",
         {"appId": "42435", "params": {"serviceName": "HotProductPoolIdService"}},
-        options=MtopCallOptions(version="2.0"),
     )
     experiment = client.platform.experiment.get_by_login(
         LoginExperimentQuery(scene_code="AI_MODE_FRAME")
@@ -31,7 +29,9 @@ with create_http_client() as http:
 
 原始参数能力入口都提供 `list_endpoints()`，可枚举该模块的 API、默认方法和版本。未确认业务参数结构的接口用所属模块的 `call(api, data)` 传入页面原始 JSON；例如 `mtop.mbox.fc.common.gateway` 的 `params` 字段需要按调用场景构造 JSON 字符串。若查询参数或响应格式有差异，可传 `MtopCallOptions(extra_params=...)`。
 
-2026-10-29 使用 OpenSSL 3.6.2 的匿名会话做了真实请求：`mtop.1688.pc.guide.show`、`mtop.1688.industry.pc.search.hotword`、`mtop.1688.wirelesscenter.recommend.pc.getAllCategory`、`mtop.cbu.pc.web.api.cate.querycategories`、`mtop.cbu.pc.home.midcontrol.listDoorsV2` 均返回 `SUCCESS`；已有搜索热词入口也返回 `SUCCESS`。`mtop.cbu.global.marketing.search.suggest` 按 JS 的 `{query: ...}` 入参调用时返回 `UNKNOWN_FAIL_CODE`，当前未确认是否需要额外页面上下文。其余接口尚未逐项在线验证。
+`home.cards`、`home.feed`、`home.navigation` 和 `ai.assistant`、`ai.compare`、`ai.demand`、`ai.profile` 已对原始 JS 中能够确认请求体的调用补充了具体方法。固定分页、场景码等由方法填写，商品 ID、会话 ID 等动态字段由调用方传入；原始 `call(api, data)` 入口继续保留给尚未确认完整上下文的调用。`getHotProductPoolId` 匿名实测使用默认版本 `1.0` 返回 `SUCCESS`，指定 `2.0` 返回 `FAIL_SYS_API_NOT_FOUNDED`。
+
+2026-10-30 使用 OpenSSL 3.6.2 的匿名会话做了真实请求：81 个原始入口中，17 个在页面参数或空请求体下返回 MTOP `SUCCESS`，44 个返回 `FAIL_SYS_SESSION_EXPIRED`，2 个被风控拦截，2 个返回 `UNKNOWN_FAIL_CODE`，1 个仍缺场景参数；15 个可能写入状态的入口未发送请求。`mtop.cbu.global.marketing.search.suggest` 按 JS 的 `{query: ...}` 入参调用仍返回 `UNKNOWN_FAIL_CODE`。`SUCCESS` 仅表示 MTOP 返回码成功，尚未逐项确认业务数据是否非空。
 
 ## 新接入的普通接口
 
@@ -47,7 +47,7 @@ with create_http_client() as http:
 | `mtop.1688.industry.pc.search.hotword` | `client.search.suggest.call(api, data)` | GET | 1.0 |
 | `mtop.1688.mtoppurchaseservice.querypurchasehighlightskus` | `client.trade.cart.call(api, data)` | POST | 1.0 |
 | `mtop.1688.next.abtest.result.getbylogin` | `client.platform.experiment.get_by_login(...)` | GET | 1.0 |
-| `mtop.1688.opp.sel.aibot.querydownstreamperformance` | `client.ai.demand.call(api, data)` | GET | 1.0 |
+| `mtop.1688.opp.sel.aibot.querydownstreamperformance` | `client.ai.demand.get_downstream_performance(...)` | POST | 1.0 |
 | `mtop.1688.opp.sel.aibot.querysupportedcountries` | `client.ai.demand.call(api, data)` | GET | 1.0 |
 | `mtop.1688.pc.ai.entrence.crowds.query` | `client.ai.assistant.call(api, data)` | GET | 1.0 |
 | `mtop.1688.pc.guide.show` | `client.home.navigation.call(api, data)` | GET | 1.0 |
