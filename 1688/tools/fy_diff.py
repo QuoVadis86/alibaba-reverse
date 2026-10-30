@@ -200,17 +200,13 @@ def main() -> int:
         ("Qz", browser.get("qz") or [], local_qz),
     ]
 
-    found = None
+    any_divergence = False
     for label, left, right in comparisons:
         divergence = first_divergence(label, left, right)
         if divergence:
-            found = (label, divergence[1], left, right)
-            break
-
-    if found:
-        label, index, left, right = found
-        print(describe(label, index, left, right))
-    else:
+            any_divergence = True
+            print(describe(label, divergence[1], left, right))
+    if not any_divergence:
         print("\n三条轨迹完全一致")
 
     browser_payload = bytes(browser.get("payload") or [])
