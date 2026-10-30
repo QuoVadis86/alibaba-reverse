@@ -6,7 +6,7 @@
 
 - [安装与运行环境](#安装)
 - [Cookie、令牌与验证挑战](#cookie令牌与验证挑战)
-- [滑块校验请求与响应](docs/x5sec-challenge.md)
+- [滑块校验：参数、模块与本地管线](docs/x5sec.md)
 - [Python SDK 使用](#python-sdk)
 - [接口索引与目录结构](#接口路径和代码组织)
 - [真实请求与响应样例](samples/README.md)
@@ -67,9 +67,9 @@ uv sync --python "$PYTHON_BIN" --locked
 
 传输层能够识别带挑战 URL 的 `FAIL_SYS_USER_VALIDATE` 响应，并预留了 `x5sec` 加载入口；若加载器返回 Cookie 值，会设置 `x5sec` 并重试一次。目前加载器的具体实现仍为 TODO，SDK 不会自动完成验证码或风控挑战。命令行可通过 `MTOP_COOKIE` 环境变量提供已获授权的 Cookie，Python 客户端也可在 `MtopClient(http, cookie_string)` 中传入。请勿把 Cookie 或令牌提交到仓库。
 
-滑块校验请求参数、来源、响应正文和 `bx-x5sec` 响应头见 [`docs/x5sec-challenge.md`](docs/x5sec-challenge.md)。对应的 JS 样本保存在 [`docs/reference/`](docs/reference/)，已确认的明文字段可用 [`core/x5sec/slide_params.py`](core/x5sec/slide_params.py) 构造。
-FY 模块的调用链及 Python 移植进度见 [`docs/fy-module-analysis.md`](docs/fy-module-analysis.md)。
-`captchacapslidev2` 分支及复验方法见 [`docs/x5sec-reverse-playbook.md`](docs/x5sec-reverse-playbook.md)；`ppSign`、FY、nonce、ET 已在同题状态回放下与浏览器逐字节一致。当前仍依赖归档 JS/WASM 和浏览器采样的环境值，SDK 暂不能独立完成挑战。
+滑块校验的参数、模块、本地管线与验证边界见 [`docs/x5sec.md`](docs/x5sec.md)。对应的 JS 样本保存在 [`docs/reference/`](docs/reference/)，已确认的明文字段可用 [`core/x5sec/slide_params.py`](core/x5sec/slide_params.py) 构造。
+
+`captcha`（`/slide`）链路已验证：浏览器只采集拖拽事件，`bx-pp` 由本地归档 VM 计算，验证请求由本地 Node 发出，服务端返回 `code=0` 并下发 `x5sec`。入口是 [`tools/pp_local_send.py`](tools/pp_local_send.py)。`captchacapslidev2` 分支、nonce/FY/ET 的独立生成和自造拖拽曲线仍未完成，SDK 暂不能独立完成挑战。
 
 ## Python SDK
 

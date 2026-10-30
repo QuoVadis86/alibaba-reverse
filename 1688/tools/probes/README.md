@@ -9,4 +9,4 @@
 | `nonce_dispatch_probe.txt`、`nonce_jn_probe.txt`、`nonce_memory_probe.txt` | nonce 分发、注册和内部内存检查点 |
 | `environment_snapshot.js` | 浏览器与本地同路径环境快照 |
 
-脚本更新时，先核对新源码中的插桩锚点，再调整这些片段；锚点不存在时采集器应报错，不能静默跳过。定位流程见 [`docs/x5sec-reverse-playbook.md`](../../docs/x5sec-reverse-playbook.md)。
+脚本更新时，先核对新源码中的插桩锚点，再调整这些片段；锚点不存在时采集器应报错，不能静默跳过。定位流程见 [`docs/x5sec.md`](../../docs/x5sec.md)。
