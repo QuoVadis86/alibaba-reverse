@@ -1,0 +1,61 @@
+{
+  "source": "2026-11-18 Alibaba.com product detail page HAR and loaded JavaScript",
+  "sampleProductId": 1601383590524,
+  "requests": [
+    {
+      "purpose": "完整商品详情首屏数据",
+      "method": "GET",
+      "path": "/product-detail/<slug>_<productId>.html",
+      "response": "text/html",
+      "payload": "window.detailData.globalData",
+      "sdkMethod": "get_detail",
+      "liveStatus": "无会话请求返回登录验证页；真实 HAR HTML 解析成功"
+    },
+    {
+      "purpose": "商品图文描述",
+      "method": "GET",
+      "path": "/event/app/mainAction/desc.htm",
+      "query": ["detailId", "language"],
+      "payload": "data.productHtmlDescription",
+      "sdkMethod": "get_description",
+      "liveStatus": "成功"
+    },
+    {
+      "purpose": "物流试算",
+      "method": "POST",
+      "path": "/event/app/productDetail/logistics.do",
+      "body": ["productId", "quantity", "shipToCountry", "currencyCode", "dispatchCountry"],
+      "payload": "data.deliverInfo, data.hasValidLogistics",
+      "sdkMethod": "estimate_logistics",
+      "liveStatus": "成功；结果依赖商品、SKU 和收货地上下文"
+    },
+    {
+      "purpose": "详情页推荐商品",
+      "method": "GET",
+      "path": "/event/app/detailRecommendProducts/allRecommendationList",
+      "query": ["productId"],
+      "payload": "data.floors",
+      "sdkMethod": "get_recommendations",
+      "liveStatus": "成功；intentionId 在样本请求中存在，实测可省略"
+    },
+    {
+      "purpose": "商品装修内容",
+      "method": "GET",
+      "path": "/event/app/productQuickDetail/releaseContent.htm",
+      "query": ["productId", "terminalType", "detailId"],
+      "payload": "top.pcHtmlContent",
+      "sdkMethod": "get_release_content",
+      "liveStatus": "成功；以 isSuccess 判断，样本的 success 为 false"
+    },
+    {
+      "purpose": "多商品摘要",
+      "method": "GET",
+      "path": "/event/app/productsBrief/productsbrief.htm",
+      "query": ["ids", "language", "productId", "detailId"],
+      "requiredHeader": "Referer: /product-detail/description/descIframe.html?productId=<productId>",
+      "payload": "data[]",
+      "sdkMethod": "get_product_briefs",
+      "liveStatus": "成功；缺少 Referer 时返回 401"
+    }
+  ]
+}

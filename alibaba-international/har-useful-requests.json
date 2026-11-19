@@ -1,0 +1,220 @@
+{
+  "sourceFile": "www.alibaba.com.har",
+  "sourceSha256": "85a5dd3eaa10bce255ed668f5ce28e2aa2c2a5de56e6bc679ab63cc0be41b248",
+  "captureEntryCount": 378,
+  "selection": "仅保留本次抓包中返回有效搜索结果或有业务含义的页面数据的接口",
+  "privacy": "仅输出路径、参数名和字段名；不包含 Cookie、令牌、请求参数值或响应值",
+  "requests": [
+    {
+      "purpose": "商品搜索结果",
+      "group": "核心搜索",
+      "method": "GET",
+      "url": "https://www.alibaba.com/search/api/proTextSearch",
+      "queryParameterNames": [
+        "from",
+        "keywordsTranslate",
+        "langident",
+        "llmIntentionType",
+        "multiProTest",
+        "newPro",
+        "page",
+        "pageSize",
+        "proVersion",
+        "query",
+        "queryMultiIntentionType",
+        "requestId",
+        "startTime",
+        "intentionId"
+      ],
+      "harEntryIndices": [
+        39
+      ],
+      "responseMimeType": "application/json",
+      "httpStatus": 200,
+      "responseTopLevelFields": [
+        "success",
+        "model",
+        "msgCode",
+        "msgInfo"
+      ],
+      "responsePayloadFields": [
+        "offers",
+        "filterData",
+        "preSmartFilter",
+        "paginationData",
+        "globalCommonTrace",
+        "perfTraceInfo"
+      ],
+      "offerFields": [
+        "productId",
+        "productUrl",
+        "multiImage",
+        "pcLoopSellingPoints",
+        "badges",
+        "certifications",
+        "title",
+        "price",
+        "moq",
+        "companyName",
+        "companyId",
+        "mainAliId",
+        "supplierHomeHref",
+        "supplierHref",
+        "goldSupplierIcon",
+        "countryCode",
+        "goldSupplierYears",
+        "reviewScore",
+        "chatToken",
+        "tmlid",
+        "traceCommonArgs",
+        "loopSellingPoints",
+        "supplierService",
+        "shippingScore",
+        "productScore",
+        "displayStarLevel",
+        "eurl",
+        "isShowAd",
+        "showCrown",
+        "showAddToCart",
+        "koreaAgeRestricted",
+        "marketingInfo"
+      ],
+      "observedOfferCount": 60,
+      "paginationFields": [
+        "currentPage",
+        "totalPage",
+        "totalCount"
+      ]
+    },
+    {
+      "purpose": "站点导航菜单",
+      "group": "页面数据",
+      "method": "GET",
+      "url": "https://s.alicdn.com/@xconfig/header/subHeaderConfig",
+      "queryParameterNames": [],
+      "harEntryIndices": [
+        52,
+        63
+      ],
+      "responseMimeType": "application/json",
+      "httpStatus": 200,
+      "responseTopLevelFields": [
+        "subMenu",
+        "tradeAssurance",
+        "whyAlibaba",
+        "getApp",
+        "helpCenter",
+        "becomeSupplier",
+        "footerLink",
+        "__xconfig_meta__"
+      ]
+    },
+    {
+      "purpose": "税务入口显示状态",
+      "group": "页面数据",
+      "method": "GET",
+      "url": "https://biz.alibaba.com/contract/ajax/ajaxTaxHeaderEntrance.json",
+      "queryParameterNames": [
+        "_tb_token_"
+      ],
+      "harEntryIndices": [
+        53
+      ],
+      "responseMimeType": "application/json",
+      "httpStatus": 200,
+      "responseTopLevelFields": [
+        "code",
+        "message",
+        "data",
+        "userActions",
+        "autoRefresh"
+      ],
+      "responsePayloadFields": [
+        "show",
+        "countryCode",
+        "taxCollectionDecision"
+      ]
+    },
+    {
+      "purpose": "收藏组件显示状态",
+      "group": "页面数据",
+      "method": "GET",
+      "url": "https://insights.alibaba.com/openservice/gatewayService",
+      "queryParameterNames": [
+        "modelId"
+      ],
+      "harEntryIndices": [
+        56
+      ],
+      "responseMimeType": "application/json",
+      "httpStatus": 200,
+      "responseTopLevelFields": [
+        "code",
+        "data",
+        "msg",
+        "time"
+      ],
+      "responsePayloadFields": [
+        "showFavoriteComponent"
+      ]
+    },
+    {
+      "purpose": "本地化支付与安全标识",
+      "group": "页面数据",
+      "method": "GET",
+      "url": "https://cashier.alibaba.com/payment/ajaxQueryLocalizedLogo.json",
+      "queryParameterNames": [
+        "types",
+        "scene",
+        "buyerCountryCode",
+        "deviceType"
+      ],
+      "harEntryIndices": [
+        64
+      ],
+      "responseMimeType": "application/json",
+      "httpStatus": 200,
+      "responseTopLevelFields": [
+        "succeed",
+        "code",
+        "channel",
+        "data"
+      ],
+      "responsePayloadFields": [
+        "type",
+        "data"
+      ],
+      "logoTypes": [
+        "PAYMENT",
+        "SECURITY"
+      ]
+    },
+    {
+      "purpose": "收货地推荐状态",
+      "group": "页面数据",
+      "method": "GET",
+      "url": "https://biz.alibaba.com/lt-address/shipto/recommendShipTo",
+      "queryParameterNames": [
+        "json"
+      ],
+      "harEntryIndices": [
+        87
+      ],
+      "responseMimeType": "application/json",
+      "httpStatus": 200,
+      "responseTopLevelFields": [
+        "data",
+        "code"
+      ],
+      "responsePayloadFields": [
+        "hasRecommend",
+        "withoutRecommendReason",
+        "curIp"
+      ],
+      "requestJsonParameterFields": [
+        "scene",
+        "exposureMethod"
+      ]
+    }
+  ]
+}
